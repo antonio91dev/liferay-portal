@@ -608,6 +608,7 @@ public class ObjectDefinitionDeployerImpl implements ObjectDefinitionDeployer {
 					() -> {
 						com.liferay.portal.kernel.model.Portlet portlet =
 							_portletLocalService.getPortletById(
+								objectDefinition.getCompanyId(),
 								objectDefinition.getPortletId());
 
 						portlet.setControlPanelEntryCategory(
