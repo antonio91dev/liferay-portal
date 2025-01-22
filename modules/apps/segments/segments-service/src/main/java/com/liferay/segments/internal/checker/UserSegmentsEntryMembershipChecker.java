@@ -192,7 +192,7 @@ public class UserSegmentsEntryMembershipChecker {
 		while (matcher.find()) {
 			String group = matcher.group();
 
-			Object object = _getFieldValue(
+			Object fieldValue = _getFieldValue(
 				_getGroup(group, _fieldNamePattern), userAttributes);
 
 			String operatorGroup = StringUtil.trim(
@@ -203,13 +203,13 @@ public class UserSegmentsEntryMembershipChecker {
 
 			String value = _getValue(group);
 
-			if ((object == null) || Validator.isBlank(operator) ||
+			if ((fieldValue == null) || Validator.isBlank(operator) ||
 				Validator.isBlank(value)) {
 
 				continue;
 			}
 
-			Class<?> clazz = object.getClass();
+			Class<?> clazz = fieldValue.getClass();
 
 			if (clazz.isArray()) {
 				matcher.appendReplacement(
@@ -218,13 +218,13 @@ public class UserSegmentsEntryMembershipChecker {
 						"(", value, " in [",
 						StringUtil.merge(
 							TransformUtil.unsafeTransform(
-								_toArray(object),
+								_toArray(fieldValue),
 								item -> StringUtil.quote(String.valueOf(item)),
 								String.class)),
 						"])"));
 			}
 			else {
-				String objectString = _toString(object);
+				String objectString = _toString(fieldValue);
 
 				if (Validator.isNull(objectString)) {
 					matcher.appendReplacement(sb, "false");
