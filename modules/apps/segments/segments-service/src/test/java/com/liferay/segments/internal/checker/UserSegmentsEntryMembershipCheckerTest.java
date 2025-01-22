@@ -38,10 +38,10 @@ public class UserSegmentsEntryMembershipCheckerTest {
 				"(contains(firstName, 'Testing'))", _userAttributes));
 		Assert.assertTrue(
 			UserSegmentsEntryMembershipChecker.isMember(
-				"(contains(firstName, 'Test'))", _userAttributes));
+				"(contains(firstName, 'Tes'))", _userAttributes));
 		Assert.assertTrue(
 			UserSegmentsEntryMembershipChecker.isMember(
-				"(contains(firstName, 'Tes'))", _userAttributes));
+				"(contains(firstName, 'Test'))", _userAttributes));
 	}
 
 	@Test
@@ -135,10 +135,10 @@ public class UserSegmentsEntryMembershipCheckerTest {
 	public void testIsMemberIn() throws Exception {
 		Assert.assertFalse(
 			UserSegmentsEntryMembershipChecker.isMember(
-				"not (organizationIds in ('1'))", _userAttributes));
+				"(organizationIds in ('2'))", _userAttributes));
 		Assert.assertFalse(
 			UserSegmentsEntryMembershipChecker.isMember(
-				"(organizationIds in ('2'))", _userAttributes));
+				"not (organizationIds in ('1'))", _userAttributes));
 		Assert.assertTrue(
 			UserSegmentsEntryMembershipChecker.isMember(
 				"(organizationIds in ('1'))", _userAttributes));
@@ -202,13 +202,6 @@ public class UserSegmentsEntryMembershipCheckerTest {
 
 	@Test
 	public void testIsMemberLogicalOperators() throws Exception {
-		Assert.assertTrue(
-			UserSegmentsEntryMembershipChecker.isMember(
-				String.join(
-					StringPool.BLANK, "(((lastName eq 'test' or (not ",
-					"(dateModified eq 2025-01-08T00:00:00.000Z)) or jobTitle ",
-					"eq 'Test')) and ((userId eq '1'))) and (classPK eq '1')"),
-				_userAttributes));
 		Assert.assertFalse(
 			UserSegmentsEntryMembershipChecker.isMember(
 				String.join(
@@ -216,6 +209,13 @@ public class UserSegmentsEntryMembershipCheckerTest {
 					"(((lastName eq 'test' or (not (dateModified eq ",
 					"2025-01-08T00:00:00.000Z)) or jobTitle eq 'Test')) and ",
 					"((userId eq '0'))) and (classPK eq '1')"),
+				_userAttributes));
+		Assert.assertTrue(
+			UserSegmentsEntryMembershipChecker.isMember(
+				String.join(
+					StringPool.BLANK, "(((lastName eq 'test' or (not ",
+					"(dateModified eq 2025-01-08T00:00:00.000Z)) or jobTitle ",
+					"eq 'Test')) and ((userId eq '1'))) and (classPK eq '1')"),
 				_userAttributes));
 	}
 
@@ -249,7 +249,6 @@ public class UserSegmentsEntryMembershipCheckerTest {
 		Assert.assertTrue(
 			UserSegmentsEntryMembershipChecker.isMember(
 				"not (jobTitle eq 'aaa')", _userAttributes));
-
 		Assert.assertTrue(
 			UserSegmentsEntryMembershipChecker.isMember(
 				"not (roleIds eq '2')", _userAttributes));
