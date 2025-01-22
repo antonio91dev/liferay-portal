@@ -138,7 +138,7 @@ public class UserSegmentsEntryMembershipChecker {
 			matcher.appendReplacement(
 				sb,
 				StringBundler.concat(
-					_NOT_FOUND_INDEX, " < ",
+					"-1 < ",
 					StringUtil.quote(_toString(fieldValue), StringPool.QUOTE),
 					".indexOf(", group, ")"));
 		}
@@ -280,8 +280,6 @@ public class UserSegmentsEntryMembershipChecker {
 		"yyyy-MM-dd", "yyyy-MM-dd'T'HH:mm:ss.SSSZ",
 		"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
 	};
-
-	private static final int _NOT_FOUND_INDEX = -1;
 
 	private static final Pattern _containsOperationPattern = Pattern.compile(
 		"contains\\(\\w*, '\\w*'\\)");
