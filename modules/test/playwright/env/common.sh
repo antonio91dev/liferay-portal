@@ -76,11 +76,12 @@ function default_tear_down {
 
 function delete_property {
 	local liferay_home=${1}
+	local properties_file
 	local property_name=${2}
 
-	for file in ${liferay_home}/tomcat-*/webapps/ROOT/WEB-INF/classes/*.properties
+	for properties_file in ${liferay_home}/tomcat-*/webapps/ROOT/WEB-INF/classes/*.properties
 	do
-		sed -i "s/${property_name}=.*//g" "${file}"
+		sed -i "s/${property_name}=.*//g" "${properties_file}"
 	done
 }
 
@@ -654,12 +655,13 @@ function update_portal_ext_properties {
 
 function update_property {
 	local liferay_home=${1}
+	local properties_file
 	local property_name=${2}
 	local property_value=${3}
 
-	for file in ${liferay_home}/tomcat-*/webapps/ROOT/WEB-INF/classes/*.properties
+	for properties_file in ${liferay_home}/tomcat-*/webapps/ROOT/WEB-INF/classes/*.properties
 	do
-		sed -i "s/${property_name}=.*/${property_name}=${property_value}/g" "${file}"
+		sed -i "s/${property_name}=.*/${property_name}=${property_value}/g" "${properties_file}"
 	done
 }
 
