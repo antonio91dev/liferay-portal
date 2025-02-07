@@ -1898,8 +1898,8 @@ test.describe('Form Localization', () => {
 					name: 'Plant',
 					objectFields: [
 						{
-							DBType: ObjectField.DBTypeEnum.String,
-							businessType: ObjectField.BusinessTypeEnum.Text,
+							DBType: "String",
+							businessType: "Text",
 							externalReferenceCode: 'countryERC',
 							indexed: true,
 							indexedAsKeyword: false,
@@ -1911,8 +1911,8 @@ test.describe('Form Localization', () => {
 							required: false,
 						},
 						{
-							DBType: ObjectField.DBTypeEnum.Clob,
-							businessType: ObjectField.BusinessTypeEnum.RichText,
+							DBType: "Clob",
+							businessType: "RichText",
 							externalReferenceCode: 'descriptionERC',
 							indexed: true,
 							indexedAsKeyword: false,
@@ -1924,8 +1924,8 @@ test.describe('Form Localization', () => {
 							required: false,
 						},
 						{
-							DBType: ObjectField.DBTypeEnum.Clob,
-							businessType: ObjectField.BusinessTypeEnum.LongText,
+							DBType: "Clob",
+							businessType: "LongText",
 							externalReferenceCode: 'nameERC',
 							indexed: true,
 							indexedAsKeyword: false,
@@ -1937,8 +1937,8 @@ test.describe('Form Localization', () => {
 							required: false,
 						},
 						{
-							DBType: ObjectField.DBTypeEnum.String,
-							businessType: ObjectField.BusinessTypeEnum.Text,
+							DBType: "String",
+							businessType: "Text",
 							externalReferenceCode: 'scientificName',
 							indexed: true,
 							indexedAsKeyword: false,
@@ -3391,8 +3391,8 @@ test.describe('Picklist input field', () => {
 					name: 'Plant',
 					objectFields: [
 						{
-							DBType: ObjectField.DBTypeEnum.String,
-							businessType: ObjectField.BusinessTypeEnum.Picklist,
+							DBType: "String",
+							businessType: "Picklist",
 							externalReferenceCode: 'countryERC',
 							indexed: true,
 							indexedAsKeyword: false,
@@ -5494,8 +5494,8 @@ test.describe('Edit mode form errors', () => {
 					name: 'Student',
 					objectFields: [
 						{
-							DBType: ObjectField.DBTypeEnum.String,
-							businessType: ObjectField.BusinessTypeEnum.Text,
+							DBType: "String",
+							businessType: "Text",
 							externalReferenceCode: 'nameERC',
 							indexed: true,
 							indexedAsKeyword: true,
@@ -5506,8 +5506,8 @@ test.describe('Edit mode form errors', () => {
 							required: true,
 						},
 						{
-							DBType: ObjectField.DBTypeEnum.Integer,
-							businessType: ObjectField.BusinessTypeEnum.Integer,
+							DBType: "Integer",
+							businessType: "Integer",
 							externalReferenceCode: 'ageERC',
 							indexed: true,
 							indexedAsKeyword: false,
@@ -6063,7 +6063,7 @@ test(
 				name: 'ReadOnlyObject',
 				objectFields: [
 					{
-						DBType: ObjectField.DBTypeEnum.Boolean,
+						DBType: "Boolean",
 						externalReferenceCode: 'boolean-erc',
 						indexed: true,
 						indexedAsKeyword: true,
@@ -6073,7 +6073,7 @@ test(
 						name: 'boolean',
 					},
 					{
-						DBType: ObjectField.DBTypeEnum.DateTime,
+						DBType: 'DateTime',
 						externalReferenceCode: 'date-time-erc',
 						indexed: true,
 						indexedAsKeyword: false,
@@ -6089,7 +6089,7 @@ test(
 						],
 					},
 					{
-						DBType: ObjectField.DBTypeEnum.Date,
+						DBType: 'Date',
 						externalReferenceCode: 'date-erc',
 						indexed: true,
 						indexedAsKeyword: false,
@@ -6099,7 +6099,7 @@ test(
 						name: 'date',
 					},
 					{
-						DBType: ObjectField.DBTypeEnum.Clob,
+						DBType: "Clob",
 						externalReferenceCode: 'long-text-erc',
 						indexed: true,
 						indexedAsKeyword: false,
@@ -6109,8 +6109,8 @@ test(
 						name: 'longText',
 					},
 					{
-						DBType: ObjectField.DBTypeEnum.Long,
-						businessType: ObjectField.BusinessTypeEnum.Attachment,
+						DBType: "Long",
+						businessType: "Attachment",
 						externalReferenceCode: 'dl-file-upload-erc',
 						indexed: true,
 						indexedAsKeyword: false,
@@ -6133,10 +6133,10 @@ test(
 								value: 'documentsAndMedia',
 							},
 						] as any,
-						type: ObjectField.TypeEnum.Long,
+						type: "Long",
 					},
 					{
-						DBType: ObjectField.DBTypeEnum.String,
+						DBType: "String",
 						externalReferenceCode: 'text-erc',
 						indexed: true,
 						indexedAsKeyword: true,
@@ -6146,8 +6146,8 @@ test(
 						name: 'text',
 					},
 					{
-						DBType: ObjectField.DBTypeEnum.Clob,
-						businessType: ObjectField.BusinessTypeEnum.RichText,
+						DBType: "Clob",
+						businessType: "RichText",
 						externalReferenceCode: 'rich-text-erc',
 						indexed: true,
 						indexedAsKeyword: false,
@@ -6157,8 +6157,8 @@ test(
 						name: 'richText',
 					},
 					{
-						DBType: ObjectField.DBTypeEnum.String,
-						businessType: ObjectField.BusinessTypeEnum.Picklist,
+						DBType: "String",
+						businessType: "Picklist",
 						externalReferenceCode: 'picklist-erc',
 						indexed: true,
 						indexedAsKeyword: false,
@@ -6170,9 +6170,9 @@ test(
 						name: 'picklist',
 					},
 					{
-						DBType: ObjectField.DBTypeEnum.String,
+						DBType: "String",
 						businessType:
-							ObjectField.BusinessTypeEnum.MultiselectPicklist,
+							"MultiselectPicklist",
 						externalReferenceCode: 'multiselect-picklist-erc',
 						indexed: true,
 						indexedAsKeyword: false,
@@ -6184,7 +6184,7 @@ test(
 						name: 'multiSelectPicklist',
 					},
 					{
-						DBType: ObjectField.DBTypeEnum.Integer,
+						DBType: "Integer",
 						externalReferenceCode: 'numeric-erc',
 						indexed: true,
 						indexedAsKeyword: false,
@@ -6212,7 +6212,7 @@ test(
 		for (const objectField of objectDefinition.objectFields) {
 			await objectFieldApiClient.putObjectField(objectField.id, {
 				...objectField,
-				readOnly: ObjectField.ReadOnlyEnum.True,
+				readOnly: "true",
 			});
 		}
 

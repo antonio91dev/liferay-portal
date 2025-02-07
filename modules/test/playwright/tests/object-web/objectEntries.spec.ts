@@ -164,8 +164,8 @@ test.describe('Manage object entries through Page Templates', () => {
 	}) => {
 		const objectFields: ObjectField[] = [
 			{
-				DBType: ObjectField.DBTypeEnum.Boolean,
-				businessType: ObjectField.BusinessTypeEnum.Boolean,
+				DBType: "Boolean",
+				businessType: "Boolean",
 				externalReferenceCode: 'booleanField',
 				indexed: true,
 				indexedAsKeyword: false,
@@ -176,11 +176,11 @@ test.describe('Manage object entries through Page Templates', () => {
 				name: 'booleanField',
 				required: false,
 				system: false,
-				type: ObjectField.TypeEnum.Boolean,
+				type: "Boolean",
 			},
 			{
-				DBType: ObjectField.DBTypeEnum.String,
-				businessType: ObjectField.BusinessTypeEnum.Text,
+				DBType: "String",
+				businessType: "Text",
 				externalReferenceCode: 'textField',
 				indexed: true,
 				indexedAsKeyword: false,
@@ -191,7 +191,7 @@ test.describe('Manage object entries through Page Templates', () => {
 				name: 'textField',
 				required: false,
 				system: false,
-				type: ObjectField.TypeEnum.String,
+				type: "String",
 			},
 		];
 
@@ -260,7 +260,7 @@ test.describe('Manage object entries through Page Templates', () => {
 				objectDefinitionId1: objectDefinition1.id,
 				objectDefinitionId2: objectDefinition2.id,
 				objectDefinitionName2: objectDefinition2.name,
-				type: ObjectRelationship.TypeEnum.OneToMany,
+				type: "oneToMany",
 			}
 		);
 
@@ -438,12 +438,12 @@ test.describe('Manage object entries through Page Templates', () => {
 			let matchString: string;
 
 			switch (objectField.businessType) {
-				case ObjectField.BusinessTypeEnum.AutoIncrement: {
+				case "AutoIncrement": {
 					matchString = '1';
 
 					break;
 				}
-				case ObjectField.BusinessTypeEnum.Date: {
+				case 'Date': {
 					const date = new Date(
 						Date.parse(objectEntry[objectField.name])
 					);
@@ -454,14 +454,14 @@ test.describe('Manage object entries through Page Templates', () => {
 
 					continue overloop;
 				}
-				case ObjectField.BusinessTypeEnum.Picklist: {
+				case "Picklist": {
 					matchString = (
 						objectEntry[objectField.name] as {key: string}
 					).key;
 
 					break;
 				}
-				case ObjectField.BusinessTypeEnum.MultiselectPicklist: {
+				case "MultiselectPicklist": {
 					(objectEntry[objectField.name] as string[]).forEach(
 						(listTypeEntry, index) => {
 							index < 1
@@ -557,14 +557,14 @@ test.describe('Manage object entries through View Object Entries', () => {
 
 		for (const objectField of objectFields) {
 			switch (objectField.businessType) {
-				case ObjectField.BusinessTypeEnum.Attachment: {
+				case "Attachment": {
 					await viewObjectEntriesPage.selectFileFromDocumentsAndMedia(
 						ATTACHMENT_FILE_NAME
 					);
 
 					break;
 				}
-				case ObjectField.BusinessTypeEnum.Boolean: {
+				case "Boolean": {
 					objectEntry[objectField.name]
 						? await page
 								.getByLabel(objectField.label['en_US'])
@@ -575,7 +575,7 @@ test.describe('Manage object entries through View Object Entries', () => {
 
 					break;
 				}
-				case ObjectField.BusinessTypeEnum.Picklist: {
+				case "Picklist": {
 					await viewObjectEntriesPage.selectDropdownItem(
 						objectField.label['en_US'],
 						objectEntry[objectField.name].key.toString()
@@ -604,29 +604,29 @@ test.describe('Manage object entries through View Object Entries', () => {
 			let matchString: string;
 
 			switch (businessType) {
-				case ObjectField.BusinessTypeEnum.Attachment: {
+				case "Attachment": {
 					matchString = ATTACHMENT_FILE_NAME;
 
 					break;
 				}
-				case ObjectField.BusinessTypeEnum.Boolean: {
+				case "Boolean": {
 					matchString = objectEntry[name] ? 'Yes' : 'No';
 
 					break;
 				}
-				case ObjectField.BusinessTypeEnum.Date: {
+				case 'Date': {
 					const date = new Date(objectEntry[name]);
 
 					matchString = getFDSDateFormat(date);
 
 					break;
 				}
-				case ObjectField.BusinessTypeEnum.Picklist: {
+				case "Picklist": {
 					matchString = (objectEntry[name] as {key: string}).key;
 
 					break;
 				}
-				case ObjectField.BusinessTypeEnum.MultiselectPicklist: {
+				case "MultiselectPicklist": {
 					(objectEntry[name] as string[]).forEach(
 						(listTypeEntry, index) => {
 							index < 1
@@ -637,7 +637,7 @@ test.describe('Manage object entries through View Object Entries', () => {
 
 					break;
 				}
-				case ObjectField.BusinessTypeEnum.RichText: {
+				case "RichText": {
 					matchString = objectEntry[name].substring(0, 35);
 
 					break;
@@ -727,7 +727,7 @@ test.describe('Manage object entries through View Object Entries', () => {
 		const multiselectPicklistField = objectFields.find(
 			({businessType}) =>
 				businessType ===
-				ObjectField.BusinessTypeEnum.MultiselectPicklist
+				"MultiselectPicklist"
 		);
 
 		const firstOptionName = objectEntry[multiselectPicklistField.name][0];
@@ -882,7 +882,7 @@ test.describe('Manage object entries through View Object Entries', () => {
 				objectDefinitionId1: objectDefinition1.id,
 				objectDefinitionId2: objectDefinition2.id,
 				objectDefinitionName2: objectDefinition2.name,
-				type: ObjectRelationship.TypeEnum.OneToMany,
+				type: "oneToMany",
 			}
 		);
 
@@ -970,7 +970,7 @@ test.describe('Manage object entries through View Object Entries', () => {
 			objectDefinitionId1: objectDefinition1.id,
 			objectDefinitionId2: objectDefinition2.id,
 			objectDefinitionName2: objectDefinition2.name,
-			type: ObjectRelationship.TypeEnum.ManyToMany,
+			type: "manyToMany",
 		};
 
 		await objectRelationshipApiClient.postObjectDefinitionByExternalReferenceCodeObjectRelationship(
@@ -1030,7 +1030,7 @@ test.describe('Manage object entries through View Object Entries', () => {
 		);
 
 		await viewObjectEntriesPage.fillObjectEntry({
-			objectFieldBusinessType: ObjectField.BusinessTypeEnum.Text,
+			objectFieldBusinessType: "Text",
 			objectFieldLabel: objectField,
 			objectFieldValue: 'tests',
 		});
@@ -1400,7 +1400,7 @@ test.describe('Manage object entries through Workflow', () => {
 		const objectFieldValue = getRandomString();
 
 		await viewObjectEntriesPage.fillObjectEntry({
-			objectFieldBusinessType: ObjectField.BusinessTypeEnum.Text,
+			objectFieldBusinessType: "Text",
 			objectFieldLabel: objectDefinition.titleObjectFieldName,
 			objectFieldValue,
 		});
