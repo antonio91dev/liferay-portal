@@ -62,8 +62,8 @@ describe('MiniCart tests_utilities', () => {
 	});
 
 	describe('regenerateOrderDetailURL', () => {
-		const VALID_ORDER_UUID = '00000-00000-22222-213jd-qwerty';
 		const VALID_BASE_ORDER_DETAIL_URL = 'http://localhost:3333/group/name/';
+		const VALID_ORDER_UUID = '00000-00000-22222-213jd-qwerty';
 
 		const errorMessage = (argName) =>
 			`Cannot generate a new Order Detail URL. Invalid "${argName}"`;
