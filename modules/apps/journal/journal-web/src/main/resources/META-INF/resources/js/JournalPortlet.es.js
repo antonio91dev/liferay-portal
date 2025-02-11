@@ -70,6 +70,12 @@ export default function _JournalPortlet({
 
 	const editingDefaultValues = classNameId && classNameId !== '0';
 
+	if (editingDefaultValues) {
+		actionInput.value = articleId
+			? '/journal/update_data_engine_default_values'
+			: '/journal/add_data_engine_default_values';
+	}
+
 	const handleContextualSidebarButton = () => {
 		contextualSidebarContainer?.classList.toggle(
 			'contextual-sidebar-visible'
@@ -243,10 +249,6 @@ export default function _JournalPortlet({
 				.forEach((field) => {
 					field.required = false;
 				});
-
-			actionInput.value = articleId
-				? '/journal/update_data_engine_default_values'
-				: '/journal/add_data_engine_default_values';
 		}
 		else {
 			articleId = document.getElementById(`${namespace}articleId`).value;
