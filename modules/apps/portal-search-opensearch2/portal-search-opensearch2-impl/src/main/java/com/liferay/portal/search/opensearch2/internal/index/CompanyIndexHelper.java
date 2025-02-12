@@ -61,7 +61,7 @@ import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 
 /**
- * @author Joao Victor Alves
+ * @author João Victor Alves
  * @author Petteri Karttunen
  */
 @Component(service = CompanyIndexHelper.class)
