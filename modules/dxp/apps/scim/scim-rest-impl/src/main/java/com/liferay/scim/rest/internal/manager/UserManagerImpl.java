@@ -25,7 +25,6 @@ import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Contact;
 import com.liferay.portal.kernel.model.UserGroup;
 import com.liferay.portal.kernel.search.Field;
-import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.service.ClassNameLocalService;
@@ -42,6 +41,7 @@ import com.liferay.portal.kernel.transaction.TransactionInvokerUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.CalendarFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
@@ -295,12 +295,15 @@ public class UserManagerImpl implements UserManager {
 
 					ExpressionNode expressionNode = (ExpressionNode)node;
 
-					if (expressionNode != null) {
-						if (expressionNode.getAttributeValue().contains("displayName")) {
-							searchContext.setAttribute(
-								"name", expressionNode.getValue());
-						}
+					if ((expressionNode != null) &&
+						StringUtil.contains(
+							expressionNode.getAttributeValue(), "displayName",
+							StringPool.COLON)) {
+
+						searchContext.setAttribute(
+							"name", expressionNode.getValue());
 					}
+
 					searchContext.setUserId(serviceContext.getUserId());
 				}
 			).build();
@@ -386,11 +389,18 @@ public class UserManagerImpl implements UserManager {
 					ExpressionNode expressionNode = (ExpressionNode)node;
 
 					if (expressionNode != null) {
-						if (expressionNode.getAttributeValue().contains("externalId")) {
+						if (StringUtil.contains(
+								expressionNode.getAttributeValue(),
+								"externalId", StringPool.COLON)) {
+
 							searchContext.setAttribute(
-								"externalReferenceCode", expressionNode.getValue());
+								"externalReferenceCode",
+								expressionNode.getValue());
 						}
-						if (expressionNode.getAttributeValue().contains("userName")) {
+						else if (StringUtil.contains(
+									expressionNode.getAttributeValue(),
+									"userName", StringPool.COLON)) {
+
 							searchContext.setAttribute(
 								"screenName", expressionNode.getValue());
 						}

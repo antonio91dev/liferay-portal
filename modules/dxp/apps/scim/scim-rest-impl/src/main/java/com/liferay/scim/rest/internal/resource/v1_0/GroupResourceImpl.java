@@ -16,6 +16,7 @@ import com.liferay.portal.kernel.service.UserGroupService;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.service.UserService;
 import com.liferay.portal.kernel.util.MapUtil;
+import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.search.searcher.SearchRequestBuilderFactory;
 import com.liferay.portal.search.searcher.Searcher;
 import com.liferay.scim.rest.dto.v1_0.Group;
@@ -60,10 +61,12 @@ public class GroupResourceImpl extends BaseGroupResourceImpl {
 	@Override
 	public Object getV2Groups(Integer count, Integer startIndex, Filter filter)
 		throws Exception {
+
 		return _buildResponse(
 			_groupResourceManager.listWithGET(
-				_userManager, contextHttpServletRequest.getParameter("filter"), startIndex, count, null, null, null, null,
-				null));
+				_userManager,
+				ParamUtil.getString(contextHttpServletRequest, "filter", null),
+				startIndex, count, null, null, null, null, null));
 	}
 
 	@Override
