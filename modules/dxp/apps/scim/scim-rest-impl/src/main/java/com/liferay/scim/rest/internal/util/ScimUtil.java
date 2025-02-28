@@ -243,15 +243,88 @@ public class ScimUtil {
 			if (SCIMConstants.OperationalConstants.ADD.equalsIgnoreCase(
 					operation.getOp())) {
 
-				_transformAddOperation(operation, operationJSONObject);
+				if (!SCIMConstants.GroupSchemaConstants.MEMBERS.
+						equalsIgnoreCase(operation.getPath())) {
+
+					continue;
+				}
+
+				Object value = operation.getValue();
+
+				if (!(value instanceof ArrayList)) {
+					operationJSONObject.put(
+						SCIMConstants.OperationalConstants.VALUE,
+						JSONUtil.put(
+							SCIMConstants.GroupSchemaConstants.MEMBERS, value));
+
+					continue;
+				}
+
+				JSONArray valueJSONArray = JSONFactoryUtil.createJSONArray(
+					(ArrayList)value);
+
+				JSONObject valueJSONObject = valueJSONArray.getJSONObject(0);
+
+				if (!valueJSONObject.has(
+						SCIMConstants.GroupSchemaConstants.DISPLAY)) {
+
+					valueJSONObject.put(
+						SCIMConstants.GroupSchemaConstants.DISPLAY,
+						StringPool.BLANK);
+				}
+
+				operationJSONObject.put(
+					SCIMConstants.OperationalConstants.VALUE,
+					JSONUtil.put(
+						SCIMConstants.GroupSchemaConstants.MEMBERS,
+						valueJSONArray));
 			}
 			else if (SCIMConstants.OperationalConstants.REMOVE.equalsIgnoreCase(
 						operation.getOp())) {
 
-				_transformRemoveOperation(operation, operationJSONObject);
+				Object value = operation.getValue();
+
+				if (!(value instanceof ArrayList)) {
+					operationJSONObject.put(
+						SCIMConstants.OperationalConstants.PATH,
+						operation.getPath()
+					).put(
+						SCIMConstants.OperationalConstants.VALUE, value
+					);
+
+					continue;
+				}
+
+				JSONArray valueJSONArray = JSONFactoryUtil.createJSONArray(
+					(ArrayList)value);
+
+				JSONObject valueJSONObject = valueJSONArray.getJSONObject(0);
+
+				operationJSONObject.put(
+					SCIMConstants.OperationalConstants.PATH,
+					StringBundler.concat(
+						operation.getPath(), StringPool.OPEN_BRACKET,
+						SCIMConstants.OperationalConstants.VALUE, " eq \"",
+						valueJSONObject.get(
+							SCIMConstants.OperationalConstants.VALUE),
+						StringPool.QUOTE, StringPool.CLOSE_BRACKET));
 			}
 			else {
-				_transformUpdateOperation(operation, operationJSONObject);
+				operationJSONObject.put(
+					SCIMConstants.OperationalConstants.PATH,
+					operation.getPath());
+
+				Object value = operation.getValue();
+
+				if (value instanceof ArrayList) {
+					operationJSONObject.put(
+						SCIMConstants.OperationalConstants.VALUE,
+						JSONFactoryUtil.createJSONArray((ArrayList)value));
+				}
+				else {
+					operationJSONObject.put(
+						SCIMConstants.OperationalConstants.VALUE, value);
+				}
 			}
 
 			operationsJSONArray.put(operationJSONObject);
@@ -492,90 +565,6 @@ public class ScimUtil {
 			}
 
 			return true;
-		}
-	}
-
-	private static void _transformAddOperation(
-		Operation operation, JSONObject operationJSONObject) {
-
-		if (!SCIMConstants.GroupSchemaConstants.MEMBERS.equalsIgnoreCase(
-				operation.getPath())) {
-
-			return;
-		}
-
-		Object value = operation.getValue();
-
-		if (!(value instanceof ArrayList)) {
-			operationJSONObject.put(
-				SCIMConstants.OperationalConstants.VALUE,
-				JSONUtil.put(
-					SCIMConstants.GroupSchemaConstants.MEMBERS, value));
-
-			return;
-		}
-
-		JSONArray valueJSONArray = JSONFactoryUtil.createJSONArray(
-			(ArrayList)value);
-
-		JSONObject valueJSONObject = valueJSONArray.getJSONObject(0);
-
-		if (!valueJSONObject.has(SCIMConstants.GroupSchemaConstants.DISPLAY)) {
-			valueJSONObject.put(
-				SCIMConstants.GroupSchemaConstants.DISPLAY, StringPool.BLANK);
-		}
-
-		operationJSONObject.put(
-			SCIMConstants.OperationalConstants.VALUE,
-			JSONUtil.put(
-				SCIMConstants.GroupSchemaConstants.MEMBERS, valueJSONArray));
-	}
-
-	private static void _transformRemoveOperation(
-		Operation operation, JSONObject operationJSONObject) {
-
-		Object value = operation.getValue();
-
-		if (!(value instanceof ArrayList)) {
-			operationJSONObject.put(
-				SCIMConstants.OperationalConstants.PATH, operation.getPath()
-			).put(
-				SCIMConstants.OperationalConstants.VALUE, value
-			);
-
-			return;
-		}
-
-		JSONArray valueJSONArray = JSONFactoryUtil.createJSONArray(
-			(ArrayList)value);
-
-		JSONObject valueJSONObject = valueJSONArray.getJSONObject(0);
-
-		operationJSONObject.put(
-			SCIMConstants.OperationalConstants.PATH,
-			StringBundler.concat(
-				operation.getPath(), StringPool.OPEN_BRACKET,
-				SCIMConstants.OperationalConstants.VALUE, " eq \"",
-				valueJSONObject.get(SCIMConstants.OperationalConstants.VALUE),
-				StringPool.QUOTE, StringPool.CLOSE_BRACKET));
-	}
-
-	private static void _transformUpdateOperation(
-		Operation operation, JSONObject operationJSONObject) {
-
-		operationJSONObject.put(
-			SCIMConstants.OperationalConstants.PATH, operation.getPath());
-
-		Object value = operation.getValue();
-
-		if (value instanceof ArrayList) {
-			operationJSONObject.put(
-				SCIMConstants.OperationalConstants.VALUE,
-				JSONFactoryUtil.createJSONArray((ArrayList)value));
-		}
-		else {
-			operationJSONObject.put(
-				SCIMConstants.OperationalConstants.VALUE, value);
 		}
 	}
 

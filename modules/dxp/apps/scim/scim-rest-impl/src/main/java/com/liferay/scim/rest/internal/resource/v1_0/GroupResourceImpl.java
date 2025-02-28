@@ -72,9 +72,7 @@ public class GroupResourceImpl extends BaseGroupResourceImpl {
 	}
 
 	@Override
-	public Response patchV2Group(String id, PatchOp patchOp)
-		throws Exception {
-
+	public Response patchV2Group(String id, PatchOp patchOp) throws Exception {
 		return _buildResponse(
 			_groupResourceManager.updateWithPATCH(
 				id, ScimUtil.transformGroupPatchOp(patchOp), _userManager));
