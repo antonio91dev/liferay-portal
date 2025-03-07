@@ -41,7 +41,6 @@ import com.liferay.portal.kernel.transaction.TransactionInvokerUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.CalendarFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.Validator;
@@ -61,7 +60,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
@@ -258,7 +256,7 @@ public class UserManagerImpl implements UserManager {
 			Map<String, Boolean> requiredAttributes)
 		throws BadRequestException {
 
-		_validateFilterableAttributeName(node, _filterableGroupFieldNames);
+		_validate(node, "displayName");
 
 		if (startIndex != null) {
 			startIndex--;
@@ -352,7 +350,7 @@ public class UserManagerImpl implements UserManager {
 			Map<String, Boolean> requiredAttributes)
 		throws BadRequestException {
 
-		_validateFilterableAttributeName(node, _filterableUserFieldNames);
+		_validate(node, "externalId", "userName");
 
 		if (startIndex != null) {
 			startIndex--;
@@ -1043,35 +1041,30 @@ public class UserManagerImpl implements UserManager {
 				}));
 	}
 
-	private void _validateFilterableAttributeName(
-			Node node, Set<String> filterableFieldNames)
+	private void _validate(Node node, String... fieldNames)
 		throws BadRequestException {
 
-		if (node != null) {
-			ExpressionNode expressionNode = (ExpressionNode)node;
-
-			for (String field : filterableFieldNames) {
-				if (StringUtil.contains(
-						expressionNode.getAttributeValue(), field,
-						StringPool.COLON)) {
-
-					return;
-				}
-			}
-
-			throw new BadRequestException(
-				"Invalid filterable Attribute", "invalidValue");
+		if (node == null) {
+			return;
 		}
+
+		ExpressionNode expressionNode = (ExpressionNode)node;
+
+		for (String fieldName : fieldNames) {
+			if (StringUtil.contains(
+					expressionNode.getAttributeValue(), fieldName,
+					StringPool.COLON)) {
+
+				return;
+			}
+		}
+
+		throw new BadRequestException();
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		UserManagerImpl.class);
 
-	private static final Set<String> _filterableGroupFieldNames =
-		Collections.unmodifiableSet(SetUtil.fromArray("displayName"));
-	private static final Set<String> _filterableUserFieldNames =
-		Collections.unmodifiableSet(
-			SetUtil.fromArray("externalId", "userName"));
 	private static final TransactionConfig _transactionConfig =
 		TransactionConfig.Factory.create(
 			Propagation.REQUIRED, new Class<?>[] {Exception.class});
