@@ -45,6 +45,7 @@ import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.upload.configuration.UploadServletRequestConfigurationProviderUtil;
 import com.liferay.portal.kernel.util.ContentTypes;
+import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
@@ -153,6 +154,22 @@ public class DLAppServiceWhenAddingAFileEntryTest extends BaseDLAppTestCase {
 			DLFileEntryConstants.getClassName(), fileEntry.getFileEntryId());
 
 		AssertUtils.assertEqualsSorted(assetTagNames, assetEntry.getTagNames());
+	}
+
+	@Test
+	public void testFileEntryShouldSaveCorrectMimeTypeForGpxExtension()
+		throws Exception {
+
+		String fileName = "test.gpx";
+
+		FileEntry fileEntry = dlAppService.addFileEntry(
+			null, group.getGroupId(), parentFolder.getFolderId(), fileName,
+			ContentTypes.APPLICATION_OCTET_STREAM, fileName, StringPool.BLANK,
+			StringPool.BLANK, StringPool.BLANK,
+			FileUtil.getBytes(getClass(), _TEST_GPX), null, null, null,
+			ServiceContextTestUtil.getServiceContext(group.getGroupId()));
+
+		Assert.assertEquals("application/gpx+xml", fileEntry.getMimeType());
 	}
 
 	@Test
@@ -518,6 +535,9 @@ public class DLAppServiceWhenAddingAFileEntryTest extends BaseDLAppTestCase {
 			StringPool.BLANK, StringPool.BLANK, null, 0, null, null, null,
 			ServiceContextTestUtil.getServiceContext(group.getGroupId()));
 	}
+
+	private static final String _TEST_GPX =
+		"/com/liferay/document/library/dependencies/test.gpx";
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		DLAppServiceWhenAddingAFileEntryTest.class);
