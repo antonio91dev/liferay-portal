@@ -5,6 +5,22 @@
 
 package com.liferay.scim.rest.internal.resource.v1_0;
 
+import com.liferay.expando.kernel.service.ExpandoColumnLocalService;
+import com.liferay.expando.kernel.service.ExpandoTableLocalService;
+import com.liferay.expando.kernel.service.ExpandoValueLocalService;
+import com.liferay.portal.kernel.service.ClassNameLocalService;
+import com.liferay.portal.kernel.service.CompanyLocalService;
+import com.liferay.portal.kernel.service.UserGroupLocalService;
+import com.liferay.portal.kernel.service.UserGroupService;
+import com.liferay.portal.kernel.service.UserLocalService;
+import com.liferay.portal.kernel.service.UserService;
+import com.liferay.portal.kernel.util.MapUtil;
+import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.search.searcher.SearchRequestBuilderFactory;
+import com.liferay.portal.search.searcher.Searcher;
+import com.liferay.scim.rest.internal.manager.SchemaResourceManagerImpl;
+import com.liferay.scim.rest.internal.manager.UserManagerImpl;
 import com.liferay.scim.rest.resource.v1_0.SchemaResource;
 
 import org.osgi.service.component.annotations.Component;
@@ -24,8 +40,9 @@ public class SchemaResourceImpl extends BaseSchemaResourceImpl {
 		return _buildResponse(
 			_schemaResourceManager.get(
 				id, _userManager,
-				(String)contextHttpServletRequest.getAttribute(
-					WebKeys.CURRENT_COMPLETE_URL),
+				ParamUtil.getString(
+					contextHttpServletRequest, WebKeys.CURRENT_COMPLETE_URL,
+					null),
 				null));
 	}
 
@@ -34,8 +51,9 @@ public class SchemaResourceImpl extends BaseSchemaResourceImpl {
 		return _buildResponse(
 			_schemaResourceManager.get(
 				(String)null, _userManager,
-				(String)contextHttpServletRequest.getAttribute(
-					WebKeys.CURRENT_COMPLETE_URL),
+				ParamUtil.getString(
+					contextHttpServletRequest, WebKeys.CURRENT_COMPLETE_URL,
+					null),
 				null));
 	}
 
