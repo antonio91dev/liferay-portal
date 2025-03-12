@@ -77,7 +77,7 @@ public class SchemaResourceImpl extends BaseSchemaResourceImpl {
 		return responseBuilder.build();
 	}
 
-	private Map<String, String> _getResponseHeaders() throws NotFoundException {
+	private Map<String, String> _getHeaders() throws NotFoundException {
 		return HashMapBuilder.put(
 			SCIMConstants.CONTENT_TYPE_HEADER, SCIMConstants.APPLICATION_JSON
 		).put(
@@ -87,9 +87,9 @@ public class SchemaResourceImpl extends BaseSchemaResourceImpl {
 		).build();
 	}
 
-	private String _getSchema(String id) throws AbstractCharonException {
-		if (_schemasMap.containsKey(id)) {
-			JSONObject schemaJSONObject = _read(_schemasMap.get(id));
+	private String _getSchemaJSON(String id) throws AbstractCharonException {
+		if (_schemaFileNames.containsKey(id)) {
+			JSONObject schemaJSONObject = _read(_schemaFileNames.get(id));
 
 			return schemaJSONObject.toString();
 		}
@@ -97,19 +97,21 @@ public class SchemaResourceImpl extends BaseSchemaResourceImpl {
 		throw new NotFoundException("No schema found with schema ID " + id);
 	}
 
-	private String _getSchemas() throws AbstractCharonException {
+	private String _getSchemasJSON() throws AbstractCharonException {
 		return JSONUtil.put(
 			"itemsPerPage", 3
 		).put(
 			"Resources",
 			() -> {
-				JSONArray resourcesJSONArray = _jsonFactory.createJSONArray();
+				JSONArray jsonArray = _jsonFactory.createJSONArray();
 
-				for (Map.Entry<String, String> entry : _schemasMap.entrySet()) {
-					resourcesJSONArray.put(_read(entry.getValue()));
+				for (Map.Entry<String, String> entry :
+						_schemaFileNames.entrySet()) {
+
+					jsonArray.put(_read(entry.getValue()));
 				}
 
-				return resourcesJSONArray;
+				return jsonArray;
 			}
 		).put(
 			"schemas",
@@ -117,7 +119,7 @@ public class SchemaResourceImpl extends BaseSchemaResourceImpl {
 		).put(
 			"startIndex", 1
 		).put(
-			"totalResults", _schemasMap.size()
+			"totalResults", _schemaFileNames.size()
 		).toString();
 	}
 
@@ -131,19 +133,19 @@ public class SchemaResourceImpl extends BaseSchemaResourceImpl {
 
 			if (Validator.isNull(id)) {
 				return new SCIMResponse(
-					ResponseCodeConstants.CODE_OK, _getSchemas(),
-					_getResponseHeaders());
+					ResponseCodeConstants.CODE_OK, _getSchemasJSON(),
+					_getHeaders());
 			}
 
-			String schema = _getSchema(id);
+			String schemaJSON = _getSchemaJSON(id);
 
-			if (Validator.isNull(schema)) {
+			if (Validator.isNull(schemaJSON)) {
 				throw new NotFoundException(
 					"No schema found with schema ID " + id);
 			}
 
 			return new SCIMResponse(
-				ResponseCodeConstants.CODE_OK, schema, _getResponseHeaders());
+				ResponseCodeConstants.CODE_OK, schemaJSON, _getHeaders());
 		}
 		catch (AbstractCharonException abstractCharonException) {
 			return AbstractResourceManager.encodeSCIMException(
@@ -188,8 +190,7 @@ public class SchemaResourceImpl extends BaseSchemaResourceImpl {
 				_log.debug(exception);
 			}
 
-			throw new InternalErrorException(
-				"Error reading schema file " + fileName);
+			throw new InternalErrorException("Unable to read " + fileName);
 		}
 	}
 
@@ -202,10 +203,10 @@ public class SchemaResourceImpl extends BaseSchemaResourceImpl {
 	@Reference
 	private JSONFactory _jsonFactory;
 
-	private final Map<String, String> _schemasMap = Map.of(
-		"urn:ietf:params:scim:schemas:core:2.0:Group", "group-schema.json",
-		"urn:ietf:params:scim:schemas:core:2.0:User", "user-schema.json",
+	private final Map<String, String> _schemaFileNames = Map.of(
+		"urn:ietf:params:scim:schemas:core:2.0:Group", "group.json",
+		"urn:ietf:params:scim:schemas:core:2.0:User", "user.json",
 		"urn:ietf:params:scim:schemas:extension:liferay:2.0:User",
-		"user-extension-schema.json");
+		"user-extension.json");
 
 }
