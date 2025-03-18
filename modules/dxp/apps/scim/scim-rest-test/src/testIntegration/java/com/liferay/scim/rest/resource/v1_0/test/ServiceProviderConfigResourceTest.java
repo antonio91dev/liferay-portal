@@ -52,7 +52,7 @@ public class ServiceProviderConfigResourceTest
 
 		_pid = ConfigurationTestUtil.createFactoryConfiguration(
 			"com.liferay.scim.rest.internal.configuration." +
-			"ScimClientOAuth2ApplicationConfiguration",
+				"ScimClientOAuth2ApplicationConfiguration",
 			HashMapDictionaryBuilder.<String, Object>put(
 				"companyId", TestPropsValues.getCompanyId()
 			).put(
@@ -88,12 +88,10 @@ public class ServiceProviderConfigResourceTest
 		Assert.assertEquals(100, filterJSONObject.getInt("maxResults"));
 		Assert.assertTrue(filterJSONObject.getBoolean("supported"));
 
-		Assert.assertTrue(
-			serviceProviderConfigJSONObject.getJSONObject(
-				"patch"
-			).getBoolean(
-				"supported"
-			));
+		JSONObject patchJSONObject =
+			serviceProviderConfigJSONObject.getJSONObject("patch");
+
+		Assert.assertTrue(patchJSONObject.getBoolean("supported"));
 
 		JSONArray schemasJSONArray =
 			serviceProviderConfigJSONObject.getJSONArray("schemas");
