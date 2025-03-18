@@ -725,6 +725,11 @@ public class FinderCacheImpl
 					Class<?> modelImplClass = classLoader.loadClass(
 						argumentsResolver.getClassName());
 
+					if (DBPartition.isPartitionEnabled()) {
+						sharded = DBPartition.isPartitionedModel(
+							modelImplClass);
+					}
+
 					ctAware = CTModel.class.isAssignableFrom(modelImplClass);
 
 					if (ctAware) {
