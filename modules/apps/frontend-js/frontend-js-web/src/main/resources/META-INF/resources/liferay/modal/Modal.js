@@ -474,7 +474,6 @@ const openSelectionModal = ({
 
 						onSelect(
 							allSelectedNodes.map((node) => {
-								let dataset = undefined;
 								let item = {};
 
 								if (node.value) {
@@ -485,17 +484,16 @@ const openSelectionModal = ({
 									item.checked = node.checked;
 								}
 
-								const row = node.closest('dd, tr, li');
-
-								if (row) {
-									dataset = row.dataset;
+								if (node.dataset?.id && node.dataset.name) {
+									item = {...item, ...node.dataset};
 								}
 								else {
-									dataset = node.dataset;
-								}
+									const row =
+										node.closest('dd, tr, li');
 
-								if (dataset && Object.keys(dataset).length) {
-									item = {...item, ...dataset};
+									if (row && Object.keys(row.dataset).length) {
+										item = {...item, ...row.dataset};
+									}
 								}
 
 								return item;
