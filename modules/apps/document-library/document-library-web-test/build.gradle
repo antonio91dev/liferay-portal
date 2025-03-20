@@ -20,5 +20,6 @@ dependencies {
 	testIntegrationImplementation project(":apps:portal:portal-upload-test-util")
 	testIntegrationImplementation project(":apps:product-navigation:product-navigation-control-menu-api")
 	testIntegrationImplementation project(":apps:ratings:ratings-test-util")
+	testIntegrationImplementation project(":apps:upload:upload-api")
 	testIntegrationImplementation project(":test:arquillian-extension-junit-bridge")
 }
