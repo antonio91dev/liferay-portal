@@ -118,7 +118,7 @@ public class UploadFileEntryMVCActionCommand extends BaseMVCActionCommand {
 				(ThemeDisplay)uploadPortletRequest.getAttribute(
 					WebKeys.THEME_DISPLAY);
 
-			Group group = _getScopeGroup(themeDisplay);
+			Group group = _getGroup(themeDisplay);
 
 			long folderId = ParamUtil.getLong(uploadPortletRequest, "folderId");
 
@@ -152,7 +152,7 @@ public class UploadFileEntryMVCActionCommand extends BaseMVCActionCommand {
 				ThemeDisplay themeDisplay)
 			throws PortalException {
 
-			Group group = _getScopeGroup(themeDisplay);
+			Group group = _getGroup(themeDisplay);
 
 			_dlValidator.validateFileSize(
 				group.getGroupId(), fileName,
@@ -248,7 +248,7 @@ public class UploadFileEntryMVCActionCommand extends BaseMVCActionCommand {
 			return fileEntry.getDescription();
 		}
 
-		private Group _getScopeGroup(ThemeDisplay themeDisplay)
+		private Group _getGroup(ThemeDisplay themeDisplay)
 			throws PortalException {
 
 			Group group = themeDisplay.getScopeGroup();
@@ -299,7 +299,7 @@ public class UploadFileEntryMVCActionCommand extends BaseMVCActionCommand {
 					WebKeys.THEME_DISPLAY);
 
 			Layout layout = themeDisplay.getLayout();
-			Group group = _getScopeGroup(themeDisplay);
+			Group group = _getGroup(themeDisplay);
 
 			if (layout.isPublicLayout() ||
 				(layout.isTypeControlPanel() && !group.hasPrivateLayouts())) {
