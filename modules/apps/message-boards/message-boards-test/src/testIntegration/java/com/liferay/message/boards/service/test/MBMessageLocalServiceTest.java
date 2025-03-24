@@ -180,12 +180,12 @@ public class MBMessageLocalServiceTest {
 	public void testAddMessageWithMultipleRepliesToParentThreadWithMaxSubjectLength()
 		throws Exception {
 
+		String subject = StringUtil.randomString(
+			ModelHintsUtil.getMaxLength(MBMessage.class.getName(), "subject"));
+
 		ServiceContext serviceContext =
 			ServiceContextTestUtil.getServiceContext(
 				_group.getGroupId(), TestPropsValues.getUserId());
-
-		String subject = StringUtil.randomString(
-			ModelHintsUtil.getMaxLength(MBMessage.class.getName(), "subject"));
 
 		MBMessage parentMessage = MBMessageLocalServiceUtil.addMessage(
 			TestPropsValues.getUserId(), RandomTestUtil.randomString(),
