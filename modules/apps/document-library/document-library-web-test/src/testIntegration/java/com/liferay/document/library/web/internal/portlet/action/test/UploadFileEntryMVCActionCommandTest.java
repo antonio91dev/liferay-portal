@@ -120,7 +120,7 @@ public class UploadFileEntryMVCActionCommandTest {
 
 	@Test
 	public void testProcessAction() throws Exception {
-		int currentCount = _dlFileEntryLocalService.getGroupFileEntriesCount(
+		int count = _dlFileEntryLocalService.getGroupFileEntriesCount(
 			_group.getGroupId());
 
 		JSONObject jsonObject = _processAction();
@@ -133,7 +133,7 @@ public class UploadFileEntryMVCActionCommandTest {
 		Assert.assertEquals(
 			_dlFileEntryLocalService.getGroupFileEntriesCount(
 				_group.getGroupId()),
-			currentCount);
+			count);
 
 		Assert.assertEquals(_company.getGroupId(), dlFileEntry.getGroupId());
 	}
