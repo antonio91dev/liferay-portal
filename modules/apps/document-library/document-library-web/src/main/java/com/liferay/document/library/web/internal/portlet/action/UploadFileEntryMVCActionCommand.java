@@ -118,9 +118,9 @@ public class UploadFileEntryMVCActionCommand extends BaseMVCActionCommand {
 				(ThemeDisplay)uploadPortletRequest.getAttribute(
 					WebKeys.THEME_DISPLAY);
 
-			long folderId = ParamUtil.getLong(uploadPortletRequest, "folderId");
-
 			Group group = _getScopeGroup(themeDisplay);
+
+			long folderId = ParamUtil.getLong(uploadPortletRequest, "folderId");
 
 			ModelResourcePermissionUtil.check(
 				_folderModelResourcePermission,
