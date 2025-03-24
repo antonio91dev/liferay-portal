@@ -66,9 +66,14 @@ public class ItemSelectorRepositoryEntryBrowserUtilTest {
 		_company = _companyLocalService.getCompany(
 			TestPropsValues.getCompanyId());
 
+		_themeDisplay.setCompany(_company);
+		_themeDisplay.setRefererGroupId(_company.getGroupId());
+		_themeDisplay.setScopeGroupId(_company.getGroupId());
+		_themeDisplay.setSiteGroupId(_company.getGroupId());
+
 		_user = UserTestUtil.addUser();
 
-		_setUpThemeDisplay();
+		_themeDisplay.setUser(_user);
 	}
 
 	@Test
@@ -160,15 +165,6 @@ public class ItemSelectorRepositoryEntryBrowserUtilTest {
 			PermissionThreadLocal.setPermissionChecker(
 				originalPermissionChecker);
 		}
-	}
-
-	private void _setUpThemeDisplay() throws Exception {
-		_themeDisplay.setCompany(_company);
-
-		_themeDisplay.setRefererGroupId(_company.getGroupId());
-		_themeDisplay.setScopeGroupId(_company.getGroupId());
-		_themeDisplay.setSiteGroupId(_company.getGroupId());
-		_themeDisplay.setUser(_user);
 	}
 
 	@Inject
