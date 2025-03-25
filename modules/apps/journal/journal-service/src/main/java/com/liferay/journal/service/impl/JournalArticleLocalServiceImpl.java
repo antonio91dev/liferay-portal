@@ -5963,7 +5963,10 @@ public class JournalArticleLocalServiceImpl
 
 		Group group = _groupLocalService.getGroup(article.getGroupId());
 
-		if (!group.isStaged() || group.isStagingGroup()) {
+		if ((!group.isStaged() || group.isStagingGroup()) &&
+			!((oldStatus == WorkflowConstants.STATUS_PENDING) &&
+			  action.equals("move_to_trash"))) {
+
 			notifySubscribers(
 				user.getUserId(), article, action, serviceContext);
 		}
