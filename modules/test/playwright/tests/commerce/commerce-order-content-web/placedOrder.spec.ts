@@ -13,7 +13,8 @@ import {loginTest} from '../../../fixtures/loginTest';
 import {systemSettingsPageTest} from '../../../fixtures/systemSettingsPageTest';
 import {usersAndOrganizationsPagesTest} from '../../../fixtures/usersAndOrganizationsPagesTest';
 import getRandomString from '../../../utils/getRandomString';
-import performLogin, {
+import {
+	performLoginViaApi, 
 	performLogout,
 	userData,
 } from '../../../utils/performLogin';
@@ -255,7 +256,7 @@ test('LPD-26643 Reorder from placed orders details page', async ({
 
 	await performLogout(page);
 
-	await performLogin(page, user.alternateName);
+	await performLoginViaApi({page, screenName: user.alternateName});	
 
 	await page.goto(`/web/${site.name}`);
 
@@ -436,7 +437,7 @@ test('LPD-32095 A user can search orders by account name', async ({
 	});
 
 	await performLogout(page);
-	await performLogin(page, userAccount.alternateName);
+	await performLoginViaApi({page, screenName: userAccount.alternateName});
 
 	await page.goto(`/web/${site.name}`);
 
@@ -744,7 +745,7 @@ test('LPD-33658 Global Settings for order date configuration', async ({
 
 		await performLogout(page);
 
-		await performLogin(page, user.alternateName);
+		await performLoginViaApi({page, screenName: user.alternateName});
 
 		await page.goto(`/web/${site.name}`);
 
@@ -776,7 +777,7 @@ test('LPD-33658 Global Settings for order date configuration', async ({
 
 		await performLogout(page);
 
-		await performLogin(page, 'test');
+		await performLoginViaApi({page, screenName: 'test'});
 
 		await systemSettingsPage.goToSystemSetting('Orders', 'Placed Orders');
 
@@ -786,7 +787,7 @@ test('LPD-33658 Global Settings for order date configuration', async ({
 
 		await performLogout(page);
 
-		await performLogin(page, user.alternateName);
+		await performLoginViaApi({page, screenName: user.alternateName});
 
 		await page.goto(`/web/${site.name}`);
 
@@ -815,7 +816,7 @@ test('LPD-33658 Global Settings for order date configuration', async ({
 	finally {
 		await performLogout(page);
 
-		await performLogin(page, 'test');
+		await performLoginViaApi({page, screenName: 'test'});
 
 		await systemSettingsPage.goToSystemSetting('Orders', 'Placed Orders');
 

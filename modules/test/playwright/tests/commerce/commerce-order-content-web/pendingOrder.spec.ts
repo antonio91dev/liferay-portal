@@ -14,7 +14,7 @@ import {notificationPagesTest} from '../../../fixtures/notificationPagesTest';
 import {usersAndOrganizationsPagesTest} from '../../../fixtures/usersAndOrganizationsPagesTest';
 import {liferayConfig} from '../../../liferay.config';
 import getRandomString from '../../../utils/getRandomString';
-import performLogin, {performLogout} from '../../../utils/performLogin';
+import {performLoginViaApi, performLogout} from '../../../utils/performLogin';
 import {miniumSetUp} from '../utils/commerce';
 
 export const test = mergeTests(
@@ -459,7 +459,7 @@ test('LPD-28683 When clicking on order item without visibility the user is not r
 
 	await performLogout(page);
 
-	await performLogin(page, user.alternateName);
+	await performLoginViaApi({page, screenName: user.alternateName});
 
 	await page.goto(`/web/${site.name}`);
 
@@ -640,7 +640,7 @@ test('LPD-26906 As a buyer, I can edit product options from the pending orders p
 
 	await performLogout(page);
 
-	await performLogin(page, user.alternateName);
+	await performLoginViaApi({page, screenName: user.alternateName});
 
 	await page.goto(
 		`${liferayConfig.environment.baseUrl}/web${site.friendlyUrlPath}/catalog`
@@ -794,7 +794,7 @@ test('LPD-3259 As a buyer with approval workflow, when I click review order in m
 
 	await performLogout(page);
 
-	await performLogin(page, 'demo.unprivileged');
+	await performLoginViaApi({page, screenName: 'demo.unprivileged'});
 
 	await apiHelpers.headlessCommerceDeliveryCart.postCart(
 		{
@@ -990,7 +990,7 @@ test('LPD-3440 As a order manager with buyer approval workflow, I can approve or
 
 	await performLogout(page);
 
-	await performLogin(page, 'demo.unprivileged');
+	await performLoginViaApi({page, screenName: 'demo.unprivileged'});
 
 	await page.goto(`/web/${site.name}`);
 

@@ -6,7 +6,7 @@
 import {expect, mergeTests} from '@playwright/test';
 
 import {apiHelpersTest} from '../../../../../fixtures/apiHelpersTest';
-import performLogin from '../../../../../utils/performLogin';
+import {performLoginViaApi} from '../../../../../utils/performLogin';
 import {marketplaceHelper} from '../../fixtures/marketplaceHelper';
 import {marketplacePagesTest} from '../../fixtures/marketplacePages';
 import {PublishProductPayload} from '../../types';
@@ -30,7 +30,7 @@ test.describe('Publish Marketplace Apps', () => {
 		marketplaceHelper,
 		page,
 	}) => {
-		await performLogin(page, 'test');
+		await performLoginViaApi({page, screenName: 'test'});
 
 		const {account, catalog} =
 			await marketplaceHelper.createAccountUserCatalog({
@@ -74,7 +74,7 @@ test.describe('Publish Marketplace Apps', () => {
 			publisherAppPage,
 			publisherDashboardPage,
 		}) => {
-			await performLogin(page, 'demo.unprivileged');
+			await performLoginViaApi({page, screenName: 'demo.unprivileged'});
 
 			publisherAppPage.setPublishProduct(
 				product as unknown as PublishProductPayload

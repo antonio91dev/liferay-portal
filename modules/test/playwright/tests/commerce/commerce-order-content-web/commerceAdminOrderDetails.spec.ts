@@ -12,7 +12,7 @@ import {dataApiHelpersTest} from '../../../fixtures/dataApiHelpersTest';
 import {loginTest} from '../../../fixtures/loginTest';
 import {getRandomInt} from '../../../utils/getRandomInt';
 import getRandomString from '../../../utils/getRandomString';
-import performLogin, {performLogout} from '../../../utils/performLogin';
+import {performLoginViaApi, performLogout} from '../../../utils/performLogin';
 import {waitForAlert} from '../../../utils/waitForAlert';
 import {miniumSetUp} from '../utils/commerce';
 
@@ -378,7 +378,7 @@ test('COMMERCE-11888. As a supplier user, I can edit the order details, payments
 	apiHelpers.data.push({id: order.id, type: 'order'});
 
 	await performLogout(page);
-	await performLogin(page, 'demo.unprivileged');
+	await performLoginViaApi({page, screenName: 'demo.unprivileged'});
 
 	await applicationsMenuPage.goToCommerceOrders(false);
 

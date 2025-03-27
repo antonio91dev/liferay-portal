@@ -10,7 +10,7 @@ import {changeTrackingPagesTest} from '../../fixtures/changeTrackingPagesTest';
 import {isolatedSiteTest} from '../../fixtures/isolatedSiteTest';
 import {productMenuPageTest} from '../../fixtures/productMenuPageTest';
 import getRandomString from '../../utils/getRandomString';
-import performLogin, {performLogout} from '../../utils/performLogin';
+import {performLoginViaApi, performLogout} from '../../utils/performLogin';
 import {waitForAlert} from '../../utils/waitForAlert';
 import {journalPagesTest} from '../journal-web/fixtures/journalPagesTest';
 
@@ -52,7 +52,7 @@ test('LPD-30098 Invite user as admin', async ({
 
 	await performLogout(page);
 
-	await performLogin(page, user1.alternateName);
+	await performLoginViaApi({page, screenName: user1.alternateName});
 
 	await page.getByTestId('userPersonalMenu').click();
 
@@ -98,7 +98,7 @@ test('LPD-30098 Invite user as admin', async ({
 
 	await performLogout(page);
 
-	await performLogin(page, 'test');
+	await performLoginViaApi({page, screenName: 'test'});
 
 	await apiHelpers.headlessAdminUser.deleteUserAccount(Number(user1.id));
 	await apiHelpers.headlessAdminUser.deleteUserAccount(Number(user2.id));

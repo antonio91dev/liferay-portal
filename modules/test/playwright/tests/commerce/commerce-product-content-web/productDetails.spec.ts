@@ -13,7 +13,8 @@ import {dataApiHelpersTest} from '../../../fixtures/dataApiHelpersTest';
 import {loginTest} from '../../../fixtures/loginTest';
 import {getRandomInt} from '../../../utils/getRandomInt';
 import getRandomString from '../../../utils/getRandomString';
-import performLogin, {
+import {
+	performLoginViaApi, 
 	performLogout,
 	userData,
 } from '../../../utils/performLogin';
@@ -120,7 +121,7 @@ test('LPD-31658 Users cannot view and download owner limited product attachments
 
 	try {
 		await performLogout(page);
-		await performLogin(page, userAccount.alternateName);
+		await performLoginViaApi({page, screenName: userAccount.alternateName});
 
 		const document2 = await apiHelpers.headlessDelivery.postDocument(
 			site.id,
@@ -139,7 +140,7 @@ test('LPD-31658 Users cannot view and download owner limited product attachments
 		apiHelpers.data.push({id: document2.id, type: 'document'});
 
 		await performLogout(page);
-		await performLogin(page, 'test');
+		await performLoginViaApi({page, screenName: 'test'});
 
 		const attachment2 =
 			await apiHelpers.headlessCommerceAdminCatalog.postAttachment(
@@ -161,7 +162,7 @@ test('LPD-31658 Users cannot view and download owner limited product attachments
 		await expect(await productDetailsPage.attachmentItems).toHaveCount(2);
 
 		await performLogout(page);
-		await performLogin(page, userAccount.alternateName);
+		await performLoginViaApi({page, screenName: userAccount.alternateName});
 
 		await page.goto(`/web/${site.name}/p/` + product.name['en_US']);
 
@@ -179,7 +180,7 @@ test('LPD-31658 Users cannot view and download owner limited product attachments
 	}
 	finally {
 		await performLogout(page);
-		await performLogin(page, 'test');
+		await performLoginViaApi({page, screenName: 'test'});
 	}
 });
 
@@ -731,7 +732,7 @@ test(`LPD-29993 Users can view and download a product's attachments`, async ({
 
 	await performLogout(page);
 
-	await performLogin(page, 'demo.unprivileged');
+	await performLoginViaApi({page, screenName: 'demo.unprivileged'});
 
 	await page.goto(`/web/${site.name}/p/` + product.name['en_US']);
 
@@ -880,7 +881,7 @@ test('LPD-39598 Can view SKU UOM discount is applied on product details page', a
 
 	await performLogout(page);
 
-	await performLogin(page, user.alternateName);
+	await performLoginViaApi({page, screenName: user.alternateName});
 
 	await page.goto(`/web/${site.name}/p/` + product.name['en_US']);
 
@@ -932,7 +933,7 @@ test('LPD-39598 Can view SKU UOM discount is applied on product details page', a
 
 	await performLogout(page);
 
-	await performLogin(page, 'test');
+	await performLoginViaApi({page, screenName: 'test'});
 
 	await apiHelpers.headlessCommerceAdminPricing.deleteDiscountSku(
 		discount2.discountSkuId
@@ -940,7 +941,7 @@ test('LPD-39598 Can view SKU UOM discount is applied on product details page', a
 
 	await performLogout(page);
 
-	await performLogin(page, user.alternateName);
+	await performLoginViaApi({page, screenName: user.alternateName});
 
 	await page.goto(`/web/${site.name}/p/` + product.name['en_US']);
 

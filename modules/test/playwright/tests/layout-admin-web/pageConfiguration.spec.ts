@@ -1246,7 +1246,7 @@ test.describe('SEO configuration', () => {
 			`${liferayConfig.environment.baseUrl}/web${site.friendlyUrlPath}`
 		);
 
-		await performLoginViaApi(page, 'test');
+		await performLoginViaApi({page, screenName: 'test'});
 
 		// Go to SEO
 

@@ -9,7 +9,7 @@ import {apiHelpersTest} from '../../fixtures/apiHelpersTest';
 import {changeTrackingPagesTest} from '../../fixtures/changeTrackingPagesTest';
 import {loginTest} from '../../fixtures/loginTest';
 import getRandomString from '../../utils/getRandomString';
-import performLogin, {performLogout, userData} from '../../utils/performLogin';
+import {performLoginViaApi, performLogout, userData} from '../../utils/performLogin';
 import {featureFlagPagesTest} from '../feature-flag-web/fixtures/featureFlagPagesTest';
 
 export const test = mergeTests(
@@ -41,7 +41,7 @@ test('LPD-31710 Publication bar disappears when trying to select a publication',
 
 	await performLogout(page);
 
-	await performLogin(page, user.alternateName);
+	await performLoginViaApi({page, screenName: user.alternateName});
 
 	const ctCollection =
 		await apiHelpers.headlessChangeTracking.createCTCollection(
@@ -50,7 +50,7 @@ test('LPD-31710 Publication bar disappears when trying to select a publication',
 
 	await performLogout(page);
 
-	await performLogin(page, 'test');
+	await performLoginViaApi({page, screenName: 'test'});
 
 	await apiHelpers.headlessAdminUser.deleteUserAccount(Number(user.id));
 
@@ -140,7 +140,7 @@ test('LPD-44274 Assert cursor type is pointer when hover over a not selected pub
 		);
 
 	await performLogout(page);
-	await performLogin(page, 'test');
+	await performLoginViaApi({page, screenName: 'test'});
 
 	await apiHelpers.headlessChangeTracking.checkoutCTCollection(
 		ctCollection2.body.id
