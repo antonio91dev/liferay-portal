@@ -124,7 +124,7 @@ export async function performLoginViaApi({
 		await page.goto(loginUrl);
 
 		if (!apiHelpers) {
-			apiHelpers = new ApiHelpers(page);
+			apiHelpers = new ApiHelpers(page, loginUrl);
 		}
 
 		const {alternateName} =
