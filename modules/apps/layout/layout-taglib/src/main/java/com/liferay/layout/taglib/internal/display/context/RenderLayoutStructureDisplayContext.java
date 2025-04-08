@@ -71,6 +71,7 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.segments.SegmentsEntryRetriever;
+import com.liferay.segments.constants.SegmentsWebKeys;
 import com.liferay.segments.context.RequestContextMapper;
 
 import java.util.ArrayList;
@@ -1062,15 +1063,23 @@ public class RenderLayoutStructureDisplayContext {
 			return _segmentsEntryIds;
 		}
 
-		SegmentsEntryRetriever segmentsEntryRetriever =
-			ServletContextUtil.getSegmentsEntryRetriever();
+		long[] cachedSegmentEntryIds = (long[])_httpServletRequest.getAttribute(
+			SegmentsWebKeys.SEGMENTS_ENTRY_IDS);
 
-		RequestContextMapper requestContextMapper =
-			ServletContextUtil.getRequestContextMapper();
+		if (cachedSegmentEntryIds != null) {
+			_segmentsEntryIds = cachedSegmentEntryIds;
+		}
+		else {
+			SegmentsEntryRetriever segmentsEntryRetriever =
+				ServletContextUtil.getSegmentsEntryRetriever();
 
-		_segmentsEntryIds = segmentsEntryRetriever.getSegmentsEntryIds(
-			_themeDisplay.getScopeGroupId(), _themeDisplay.getUserId(),
-			requestContextMapper.map(_httpServletRequest), new long[0]);
+			RequestContextMapper requestContextMapper =
+				ServletContextUtil.getRequestContextMapper();
+
+			_segmentsEntryIds = segmentsEntryRetriever.getSegmentsEntryIds(
+				_themeDisplay.getScopeGroupId(), _themeDisplay.getUserId(),
+				requestContextMapper.map(_httpServletRequest), new long[0]);
+		}
 
 		return _segmentsEntryIds;
 	}
