@@ -3,9 +3,28 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {Locator, Page} from '@playwright/test';
+import {FrameLocator, Locator, Page} from '@playwright/test';
 
 export class CommerceAdminProductDetailsPage {
+	readonly addExistingSpecificationValueTextbox: Locator;
+	readonly addSpecification: Locator;
+	readonly addSpecificationFrame: FrameLocator;
+	readonly createNewSpecificationProduct: Locator;
+	readonly createNewValueSpecificationProduct: Locator;
+	readonly dropdownProductSpecification: (
+		chooseEditOrDelete: string
+	) => Promise<Locator>;
+	readonly frameChooseSpecification: (
+		specificationName: string
+	) => Promise<Locator>;
+	readonly frameChooseSpecificationValue: (
+		specificationValue: string
+	) => Promise<string[]>;
+	readonly frameDropdownSpecification: Locator;
+	readonly frameSubmitSpecification: Locator;
+	readonly menuItemSpecification: (
+		chooseAddOrCreate: string
+	) => Promise<Locator>;
 	readonly page: Page;
 	readonly productConfigurationLink: Locator;
 	readonly productDetailsInput: (inputName: string) => Promise<Locator>;
@@ -18,6 +37,44 @@ export class CommerceAdminProductDetailsPage {
 	readonly publishLink: Locator;
 
 	constructor(page: Page) {
+		this.addSpecification = page
+			.getByTestId('management-toolbar')
+			.locator('[data-testid="fdsCreationActionButton"]');
+		this.addSpecificationFrame = page.frameLocator('iframe >> nth=2');
+		this.addExistingSpecificationValueTextbox =
+			this.addSpecificationFrame.getByRole('textbox');
+		this.createNewSpecificationProduct =
+			this.addSpecificationFrame.getByPlaceholder('Specification');
+		this.createNewValueSpecificationProduct = this.addSpecificationFrame
+			.getByRole('textbox')
+			.nth(1);
+		this.dropdownProductSpecification = async (
+			chooseEditOrDelete: string
+		) => {
+			return page.getByRole('menuitem', {name: chooseEditOrDelete});
+		};
+		this.frameChooseSpecification = async (specificationName: string) => {
+			return this.addSpecificationFrame.getByRole('option', {
+				name: specificationName,
+			});
+		};
+		this.frameChooseSpecificationValue = async (
+			specificationValue: string
+		) => {
+			return this.addSpecificationFrame
+				.locator('select[name="listTypeEntriesSelect"]')
+				.selectOption(specificationValue);
+		};
+		this.frameDropdownSpecification = this.addSpecificationFrame.getByLabel(
+			'SpecificationRequired'
+		);
+		this.frameSubmitSpecification = this.addSpecificationFrame.getByRole(
+			'button',
+			{name: 'Submit'}
+		);
+		this.menuItemSpecification = async (chooseAddOrCreate: string) => {
+			return page.getByRole('menuitem', {name: chooseAddOrCreate});
+		};
 		this.page = page;
 		this.productConfigurationLink = page.getByRole('link', {
 			name: 'Configuration',
@@ -43,6 +100,37 @@ export class CommerceAdminProductDetailsPage {
 			name: 'Visibility',
 		});
 		this.publishLink = page.getByRole('link', {name: 'Publish'});
+	}
+
+	async addExistingProductSpecification(
+		chooseAddOrEdit: string,
+		specificationName: string,
+		specificationValue: string
+	) {
+		await this.addSpecification.click();
+		await (await this.menuItemSpecification(chooseAddOrEdit)).click();
+		await this.frameDropdownSpecification.click();
+		await (await this.frameChooseSpecification(specificationName)).click();
+		await this.addExistingSpecificationValueTextbox.fill(
+			specificationValue
+		);
+		await this.frameSubmitSpecification.click();
+	}
+
+	async createSpecificationProduct(
+		chooseAddOrCreate: string,
+		specificationName: string,
+		specificationValue?: string
+	) {
+		await this.addSpecification.click();
+		await (await this.menuItemSpecification(chooseAddOrCreate)).click();
+		await this.createNewSpecificationProduct.fill(specificationName);
+		if (specificationValue) {
+			await this.createNewValueSpecificationProduct.fill(
+				specificationValue
+			);
+		}
+		await this.frameSubmitSpecification.click();
 	}
 
 	async goToProductConfiguration() {
