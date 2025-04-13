@@ -21,13 +21,13 @@ dependencies {
 }
 
 deploy {
-	from "scripts"
-
 	doLast {
 		File libDir = new File("${destinationDir}", "lib")
 
 		libDir.mkdirs()
 	}
+
+	from "scripts"
 }
 
 distZip {
