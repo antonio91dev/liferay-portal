@@ -1468,6 +1468,104 @@ public class ObjectEntryLocalServiceImpl
 	}
 
 	@Override
+	public ObjectEntry partialUpdateObjectEntry(
+			long userId, long objectEntryId, Map<String, Serializable> values,
+			ServiceContext serviceContext)
+		throws PortalException {
+
+		User user = _userLocalService.getUser(userId);
+
+		ObjectEntry objectEntry = objectEntryPersistence.findByPrimaryKey(
+			objectEntryId);
+
+		ObjectDefinition objectDefinition =
+			_objectDefinitionPersistence.findByPrimaryKey(
+				objectEntry.getObjectDefinitionId());
+
+		_contributeValues(
+			objectEntry.getGroupId(), objectDefinition, userId, values);
+
+		Set<Long> dlFileEntryIds = new HashSet<>();
+
+		_validateValues(
+			dlFileEntryIds, objectEntry, user.isGuestUser(),
+			objectEntry.getGroupId(), objectDefinition, objectEntryId,
+			serviceContext, userId, values);
+
+		int workflowAction = serviceContext.getWorkflowAction();
+
+		_validateWorkflowAction(
+			objectDefinition.isEnableObjectEntryDraft(),
+			objectEntry.getStatus(), workflowAction);
+
+		Map<String, Serializable> transientValues = objectEntry.getValues();
+
+		_deleteFromLocalizationTable(objectDefinition, objectEntryId);
+		_insertIntoLocalizationTable(
+			new HashMap<>(), objectDefinition, objectEntryId, values,
+			workflowAction);
+		_updateTable(
+			_getDynamicObjectDefinitionTable(
+				objectEntry.getObjectDefinitionId()),
+			objectEntryId, values, workflowAction);
+		_updateTable(
+			_getExtensionDynamicObjectDefinitionTable(
+				objectEntry.getObjectDefinitionId()),
+			objectEntryId, values, workflowAction);
+
+		objectEntryPersistence.clearCache(SetUtil.fromArray(objectEntryId));
+
+		objectEntry = objectEntryPersistence.findByPrimaryKey(objectEntryId);
+
+		_setExternalReferenceCode(objectEntry, values);
+
+		objectEntry.setModifiedDate(serviceContext.getModifiedDate(null));
+
+		_setRootObjectEntryId(objectDefinition, objectEntry, values);
+
+		objectEntry.setTransientValues(transientValues);
+
+		ObjectEntry originalObjectEntry = objectEntry.cloneWithOriginalValues();
+
+		try {
+			if (workflowAction == WorkflowConstants.ACTION_SAVE_DRAFT) {
+				ObjectEntryThreadLocal.setSkipObjectValidationRules(true);
+			}
+
+			objectEntry = objectEntryPersistence.update(objectEntry);
+		}
+		finally {
+			ObjectEntryThreadLocal.setSkipObjectValidationRules(false);
+		}
+
+		_updateAsset(
+			serviceContext.getUserId(), objectEntry,
+			serviceContext.getAssetCategoryIds(),
+			serviceContext.getAssetTagNames(),
+			serviceContext.getAssetLinkEntryIds(),
+			serviceContext.getAssetPriority(), serviceContext);
+
+		_startWorkflowInstance(userId, objectEntry, serviceContext, true);
+
+		_updateResourcePermissions(
+			objectDefinition, objectEntry, serviceContext);
+
+		_deleteFileEntries(
+			objectEntry.getValues(), objectEntry.getObjectDefinitionId(),
+			transientValues);
+
+		_executeObjectActions(
+			objectEntry.getCompanyId(),
+			ObjectActionTriggerConstants.KEY_ON_AFTER_UPDATE, objectDefinition,
+			objectEntry, originalObjectEntry, serviceContext.getLanguageId(),
+			user);
+
+		_deleteTempFileEntries(dlFileEntryIds);
+
+		return objectEntry;
+	}
+
+	@Override
 	public BaseModelSearchResult<ObjectEntry> searchObjectEntries(
 			long groupId, long objectDefinitionId, String keywords, int cur,
 			int delta)
