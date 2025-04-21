@@ -105,9 +105,9 @@ public class PostalAddressResourceDTOConverterTest {
 
 		Map<String, String> titleMap = postalAddress.getAddressCountry_i18n();
 
-		Assert.assertEquals(titleMap.toString(), 2, titleMap.size());
 		Assert.assertTrue(titleMap.containsKey("en_US"));
 		Assert.assertTrue(titleMap.containsKey("pt_BR"));
+		Assert.assertEquals(titleMap.toString(), 2, titleMap.size());
 
 		_companyLocalService.updatePreferences(
 			TestPropsValues.getCompanyId(),
