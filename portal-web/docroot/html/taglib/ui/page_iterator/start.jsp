@@ -446,7 +446,7 @@ NumberFormat numberFormat = NumberFormat.getNumberInstance(locale);
 
 						<li class="page-item">
 							<liferay-ui:csp>
-								<a class="page-link" href="<%= _getHREF(formName, namespace + curParam, pages, jsCall, url, urlAnchor) %>" onclick="<%= forcePost ? _getOnClick(namespace, curParam, pages) : "" %>"><span class="sr-only"><liferay-ui:message key="page" /><%= StringPool.NBSP %></span><%= pages %></a>
+								<a class="page-link" href="<%= _getHREF(formName, namespace + curParam, pages, jsCall, url, urlAnchor) %>" onclick="<%= forcePost ? _getOnClick(namespace, curParam, pages) : "" %>" role="menuitem"><span class="sr-only"><liferay-ui:message key="page" /><%= StringPool.NBSP %></span><%= pages %></a>
 							</liferay-ui:csp>
 						</li>
 					</c:otherwise>
@@ -521,18 +521,6 @@ NumberFormat numberFormat = NumberFormat.getNumberInstance(locale);
 				data: data
 			}
 		);
-	}
-</aui:script>
-
-<aui:script senna="temporary" type="text/javascript">
-	var pageIterator = document.getElementById('<%= namespace + id %>');
-	var button = pageIterator?.querySelector('.pagination .dropdown-toggle');
-
-	if (button) {
-		var list = pageIterator.querySelector('.pagination .dropdown-menu');
-		var options = list?.querySelectorAll('.pagination .dropdown-item');
-
-		<portlet:namespace />handleDropdownKeyPress(button, list, options, pageIterator);
 	}
 </aui:script>
 
