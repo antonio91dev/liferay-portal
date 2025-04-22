@@ -20,19 +20,24 @@ import com.liferay.list.type.model.ListTypeEntry;
 import com.liferay.list.type.service.ListTypeEntryLocalServiceUtil;
 import com.liferay.object.constants.ObjectFieldConstants;
 import com.liferay.object.field.util.ObjectFieldUtil;
+import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.model.ObjectEntry;
 import com.liferay.object.model.ObjectField;
 import com.liferay.object.model.ObjectRelationship;
+import com.liferay.object.relationship.util.ObjectRelationshipUtil;
 import com.liferay.object.rest.dto.v1_0.FileEntry;
 import com.liferay.object.rest.dto.v1_0.ListEntry;
+import com.liferay.object.service.ObjectDefinitionLocalServiceUtil;
 import com.liferay.object.service.ObjectEntryLocalServiceUtil;
 import com.liferay.object.service.ObjectRelationshipLocalServiceUtil;
 import com.liferay.object.web.internal.model.ProxyObjectEntry;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.DateUtil;
 import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.KeyValuePair;
-import com.liferay.portal.vulcan.util.LocalizedMapUtil;
+import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.StringUtil;
 
 import java.text.Format;
 
@@ -158,7 +163,7 @@ public class ObjectEntryUtil {
 	}
 
 	public static Map<String, Object> toProperties(
-		InfoItemFieldValues infoItemFieldValues) {
+		long companyId, InfoItemFieldValues infoItemFieldValues) {
 
 		Map<String, Object> properties = new HashMap<>();
 
@@ -167,55 +172,113 @@ public class ObjectEntryUtil {
 
 			InfoField<?> infoField = infoFieldValue.getInfoField();
 
-			Object value = infoFieldValue.getValue();
+			if (!StringUtil.startsWith(
+					infoField.getUniqueId(),
+					ObjectRelationship.class.getSimpleName() +
+						StringPool.POUND)) {
 
-			if (Objects.equals(
-					DateInfoFieldType.INSTANCE, infoField.getInfoFieldType()) &&
-				(value instanceof Date)) {
+				_addPropertyValue(infoField, infoFieldValue, properties);
 
-				Format format = FastDateFormatFactoryUtil.getSimpleDateFormat(
-					"yyyy-MM-dd");
-
-				properties.put(infoField.getName(), format.format(value));
+				continue;
 			}
-			else if (Objects.equals(
-						DateTimeInfoFieldType.INSTANCE,
-						infoField.getInfoFieldType()) &&
-					 (value instanceof LocalDateTime)) {
 
-				DateTimeFormatter dateTimeFormatter =
-					DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+			String[] parts = StringUtil.split(
+				StringUtil.removeLast(
+					infoField.getUniqueId(),
+					StringPool.UNDERLINE + infoField.getName()),
+				StringPool.POUND);
 
-				properties.put(
-					infoField.getName(),
-					dateTimeFormatter.format((LocalDateTime)value));
+			String objectRelationshipName = parts[2];
+
+			Map<String, Object> relatedProperties =
+				(Map<String, Object>)properties.computeIfAbsent(
+					objectRelationshipName, key -> new HashMap<>());
+
+			_addPropertyValue(infoField, infoFieldValue, relatedProperties);
+
+			if (relatedProperties.containsKey("externalReferenceCode")) {
+				continue;
 			}
-			else if ((Objects.equals(
-						HTMLInfoFieldType.INSTANCE,
-						infoField.getInfoFieldType()) ||
-					  Objects.equals(
-						  LongTextInfoFieldType.INSTANCE,
-						  infoField.getInfoFieldType()) ||
-					  Objects.equals(
-						  TextInfoFieldType.INSTANCE,
-						  infoField.getInfoFieldType())) &&
-					 infoField.isLocalizable() &&
-					 (value instanceof InfoLocalizedValue)) {
 
-				InfoLocalizedValue<String> infoLocalizedValue =
-					(InfoLocalizedValue<String>)value;
+			ObjectDefinition relatedObjectDefinition =
+				ObjectDefinitionLocalServiceUtil.fetchObjectDefinition(
+					companyId, parts[1]);
 
-				properties.put(
-					infoField.getName() + "_i18n",
-					LocalizedMapUtil.getLanguageIdMap(
-						infoLocalizedValue.getValues()));
+			InfoFieldValue<Object> relatedInfoFieldValue =
+				infoItemFieldValues.getInfoFieldValue(
+					ObjectRelationshipUtil.getObjectRelationshipFieldName(
+						relatedObjectDefinition, objectRelationshipName));
+
+			if (relatedInfoFieldValue == null) {
+				continue;
 			}
-			else {
-				properties.put(infoField.getName(), value);
+
+			ObjectEntry relatedObjectEntry =
+				ObjectEntryLocalServiceUtil.fetchObjectEntry(
+					GetterUtil.getLong(relatedInfoFieldValue.getValue()));
+
+			if (relatedObjectEntry == null) {
+				continue;
 			}
+
+			relatedProperties.put(
+				"externalReferenceCode",
+				relatedObjectEntry.getExternalReferenceCode());
 		}
 
 		return properties;
+	}
+
+	private static void _addPropertyValue(
+		InfoField<?> infoField, InfoFieldValue<Object> infoFieldValue,
+		Map<String, Object> properties) {
+
+		Object value = infoFieldValue.getValue();
+
+		if (infoField.isLocalizable() &&
+			(value instanceof InfoLocalizedValue)) {
+
+			InfoLocalizedValue<Object> infoLocalizedValue =
+				(InfoLocalizedValue<Object>)value;
+
+			Map<Locale, Object> values = infoLocalizedValue.getValues();
+
+			Map<String, Object> languageIdMap = new HashMap<>();
+
+			values.forEach(
+				(locale, localizedValue) -> languageIdMap.put(
+					LocaleUtil.toLanguageId(locale),
+					_parseValue(infoField, localizedValue)));
+
+			properties.put(infoField.getName() + "_i18n", languageIdMap);
+		}
+		else {
+			properties.put(infoField.getName(), _parseValue(infoField, value));
+		}
+	}
+
+	private static Object _parseValue(InfoField<?> infoField, Object value) {
+		if (Objects.equals(
+				DateInfoFieldType.INSTANCE, infoField.getInfoFieldType()) &&
+			(value instanceof Date)) {
+
+			Format format = FastDateFormatFactoryUtil.getSimpleDateFormat(
+				"yyyy-MM-dd");
+
+			return format.format(value);
+		}
+		else if (Objects.equals(
+					DateTimeInfoFieldType.INSTANCE,
+					infoField.getInfoFieldType()) &&
+				 (value instanceof LocalDateTime)) {
+
+			DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(
+				"yyyy-MM-dd HH:mm");
+
+			return dateTimeFormatter.format((LocalDateTime)value);
+		}
+
+		return value;
 	}
 
 }

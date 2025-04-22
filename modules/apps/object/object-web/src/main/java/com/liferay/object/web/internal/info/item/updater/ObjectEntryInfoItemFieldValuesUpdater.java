@@ -69,6 +69,8 @@ public class ObjectEntryInfoItemFieldValuesUpdater
 				_objectDefinition.getStorageType());
 
 		int objectEntryStatus = status;
+		Map<String, Object> curProperties = ObjectEntryUtil.toProperties(
+			themeDisplay.getCompanyId(), infoItemFieldValues);
 
 		try {
 			return ObjectEntryUtil.toObjectEntry(
