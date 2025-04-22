@@ -39,7 +39,6 @@ import com.liferay.object.service.ObjectEntryLocalService;
 import com.liferay.object.service.ObjectFieldLocalService;
 import com.liferay.object.service.ObjectRelationshipLocalService;
 import com.liferay.petra.function.transform.TransformUtil;
-import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
@@ -140,6 +139,10 @@ public class ObjectEntryInfoItemValuesProviderUtil {
 					objectFieldLocalService.getObjectFields(
 						parentObjectDefinition.getObjectDefinitionId(),
 						false)) {
+
+				String namespace =
+					ObjectEntryInfoItemUtil.getInfoFieldNamespace(
+						parentObjectDefinition, objectRelationship);
 
 				value = properties.get(relatedObjectField.getName());
 
