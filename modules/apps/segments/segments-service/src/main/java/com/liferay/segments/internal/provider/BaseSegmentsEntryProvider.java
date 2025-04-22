@@ -48,6 +48,7 @@ import com.liferay.segments.provider.SegmentsEntryProvider;
 import com.liferay.segments.service.SegmentsEntryLocalService;
 import com.liferay.segments.service.SegmentsEntryRelLocalService;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -127,10 +128,24 @@ public abstract class BaseSegmentsEntryProvider
 		long groupId, String className, long classPK, Context context,
 		long[] filterSegmentsEntryIds, long[] segmentsEntryIds) {
 
-		List<SegmentsEntry> segmentsEntries =
-			segmentsEntryLocalService.getSegmentsEntries(
+		List<SegmentsEntry> segmentsEntries = new ArrayList<>();
+
+		if (ArrayUtil.isNotEmpty(filterSegmentsEntryIds)) {
+			for (long filterSegmentsEntryId : filterSegmentsEntryIds) {
+				SegmentsEntry segmentsEntry =
+					segmentsEntryLocalService.fetchSegmentsEntry(
+						filterSegmentsEntryId);
+
+				if (segmentsEntry != null) {
+					segmentsEntries.add(segmentsEntry);
+				}
+			}
+		}
+		else {
+			segmentsEntries = segmentsEntryLocalService.getSegmentsEntries(
 				groupId, getSource(), QueryUtil.ALL_POS, QueryUtil.ALL_POS,
 				null);
+		}
 
 		if (segmentsEntries.isEmpty()) {
 			return new long[0];
@@ -144,22 +159,27 @@ public abstract class BaseSegmentsEntryProvider
 			return new long[0];
 		}
 
-		return TransformUtil.transformToLongArray(
-			segmentsEntries,
-			segmentsEntry -> {
-				if ((ArrayUtil.isNotEmpty(filterSegmentsEntryIds) &&
-					 !ArrayUtil.contains(
-						 filterSegmentsEntryIds,
-						 segmentsEntry.getSegmentsEntryId())) ||
-					!isMember(
-						className, classPK, context, segmentsEntry,
-						segmentsEntryIds, _getUserAttributes(user))) {
+		try {
+			Map<String, Object> userAttributes = _getUserAttributes(user);
+
+			return TransformUtil.transformToLongArray(
+				segmentsEntries,
+				segmentsEntry -> {
+					if (isMember(
+							className, classPK, context, segmentsEntry,
+							segmentsEntryIds, userAttributes)) {
+
+						return segmentsEntry.getSegmentsEntryId();
+					}
 
 					return null;
-				}
+				});
+		}
+		catch (Exception exception) {
+			_log.error(exception);
+		}
 
-				return segmentsEntry.getSegmentsEntryId();
-			});
+		return new long[0];
 	}
 
 	protected Criteria.Conjunction getConjunction(
@@ -214,9 +234,9 @@ public abstract class BaseSegmentsEntryProvider
 		String contextFilterString = getFilterString(
 			segmentsEntry, Criteria.Type.CONTEXT);
 
-		if (segmentsEntryRelLocalService.hasSegmentsEntryRel(
-				segmentsEntry.getSegmentsEntryId(),
-				portal.getClassNameId(className), classPK) &&
+		if (ArrayUtil.contains(
+				(long[])userAttributes.get("segmentsEntryIds"),
+				segmentsEntry.getSegmentsEntryId()) &&
 			Validator.isNull(contextFilterString)) {
 
 			return true;
@@ -233,7 +253,7 @@ public abstract class BaseSegmentsEntryProvider
 		String modelFilterString = getFilterString(
 			segmentsEntry, Criteria.Type.MODEL);
 
-		if (context != null) {
+		if ((context != null) && Validator.isNotNull(contextFilterString)) {
 			boolean guestUser = !GetterUtil.getBoolean(
 				context.get(Context.SIGNED_IN), true);
 
@@ -419,13 +439,6 @@ public abstract class BaseSegmentsEntryProvider
 			"classPK", user.getUserId()
 		).put(
 			"groupIds", user.getGroupIds()
-		).put(
-			"inheritedRoleIds",
-			TransformUtil.transform(
-				user.getInheritedRoles(), role -> role.getRoleId()
-			).toArray(
-				new Long[0]
-			)
 		).put(
 			"organizationIds", user.getOrganizationIds()
 		).put(
