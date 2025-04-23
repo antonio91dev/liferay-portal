@@ -467,7 +467,6 @@ public class PlacedOrderResourceTest extends BasePlacedOrderResourceTestCase {
 		throws Exception {
 
 		User omniadminUser = UserTestUtil.addOmniadminUser();
-
 		String password = RandomTestUtil.randomString();
 
 		_userLocalService.updatePassword(
@@ -482,9 +481,9 @@ public class PlacedOrderResourceTest extends BasePlacedOrderResourceTestCase {
 			"nestedFields", "placedOrderBillingAddress"
 		).build();
 
-		PlacedOrderAddress placedOrderAddress = _addPlacedOrderAddress();
-
 		PlacedOrder placedOrder = randomPlacedOrder();
+
+		PlacedOrderAddress placedOrderAddress = _addPlacedOrderAddress();
 
 		placedOrder.setPlacedOrderBillingAddressId(placedOrderAddress.getId());
 
