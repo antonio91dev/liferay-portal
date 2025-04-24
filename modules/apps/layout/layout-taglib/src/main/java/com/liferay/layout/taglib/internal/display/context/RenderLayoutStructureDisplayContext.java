@@ -1063,11 +1063,11 @@ public class RenderLayoutStructureDisplayContext {
 			return _segmentsEntryIds;
 		}
 
-		long[] cachedSegmentEntryIds = (long[])_httpServletRequest.getAttribute(
+		long[] segmentEntryIds = (long[])_httpServletRequest.getAttribute(
 			SegmentsWebKeys.SEGMENTS_ENTRY_IDS);
 
-		if (cachedSegmentEntryIds != null) {
-			_segmentsEntryIds = cachedSegmentEntryIds;
+		if (segmentEntryIds != null) {
+			_segmentsEntryIds = segmentEntryIds;
 		}
 		else {
 			SegmentsEntryRetriever segmentsEntryRetriever =
