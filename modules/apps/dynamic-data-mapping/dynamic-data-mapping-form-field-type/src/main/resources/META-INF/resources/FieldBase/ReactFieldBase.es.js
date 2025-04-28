@@ -281,7 +281,8 @@ export default function FieldBase({
 		accessible && fieldDetails && readFieldDetails && type !== 'select';
 
 	const accessiblePropsGroup = {
-		...(!renderLabel && {'aria-labelledby': fieldDetailsId}),
+		...(!renderLabel &&
+			hasFieldDetails && {'aria-labelledby': fieldDetailsId}),
 		...(type === 'fieldset' && {role: 'group'}),
 	};
 
