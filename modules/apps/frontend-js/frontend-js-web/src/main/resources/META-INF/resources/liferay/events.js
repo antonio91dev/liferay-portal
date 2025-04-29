@@ -168,7 +168,12 @@
 
 				form.attr('action', action);
 
-				Util.submitForm(form);
+				if (Util.submitForm) {
+					Util.submitForm(form);
+				}
+				else {
+					form.submit();
+				}
 
 				form.attr('target', '');
 
