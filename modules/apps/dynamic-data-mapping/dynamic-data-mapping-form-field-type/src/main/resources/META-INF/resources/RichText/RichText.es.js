@@ -259,7 +259,6 @@ const RichText = ({
 			label={label}
 			name={name}
 			readOnly={readOnly}
-			style={readOnly ? {pointerEvents: 'none'} : null}
 			tip={tip}
 			visible={visible}
 		>
@@ -274,11 +273,26 @@ const RichText = ({
 								? currentValue[currentEditingLocale?.localeId]
 								: ''
 						}
-						editorConfig={{
-							...editorConfig,
-							applicationTitle:
-								(label || tip) && `${label}, ${tip}`,
-						}}
+						editorConfig={
+								readOnly
+									? {
+											...editorConfig,
+											applicationTitle:
+												(label || tip) &&
+												`${label}, ${tip}`,
+											removePlugins:
+												'codemirror, autogrow',
+											resize_enabled: true,
+										}
+									: {
+											...editorConfig,
+											applicationTitle:
+												(label || tip) &&
+												`${label}, ${tip}`,
+											removePlugins: 'autogrow',
+											resize_enabled: true,
+										}
+							}
 						name={name}
 						onBlur={onBlur}
 						onChange={(content) => handleContentChange(content)}
@@ -299,6 +313,7 @@ const RichText = ({
 						readOnly={readOnly}
 						ref={editorRef}
 					/>
+
 				</ClayInput.GroupItem>
 
 				<input
