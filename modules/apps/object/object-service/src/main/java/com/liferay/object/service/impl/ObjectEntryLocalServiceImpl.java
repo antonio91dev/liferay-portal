@@ -1902,7 +1902,103 @@ public class ObjectEntryLocalServiceImpl
 			StringPool.BLANK, null, null, dlFileEntry.getContentStream(),
 			dlFileEntry.getSize(), null, null, null, serviceContext);
 
-		values.put(objectField.getName(), fileEntry.getFileEntryId());
+		if (objectField.isLocalized()) {
+			Map<String, Serializable> localizedValues =
+				(Map<String, Serializable>)values.get(
+					objectField.getI18nObjectFieldName());
+
+			for (Map.Entry<String, Serializable> entry :
+					localizedValues.entrySet()) {
+
+				if (dlFileEntry.getFileEntryId() != GetterUtil.getLong(
+						entry.getValue())) {
+
+					continue;
+				}
+
+				entry.setValue(fileEntry.getFileEntryId());
+			}
+		}
+		else {
+			values.put(objectField.getName(), fileEntry.getFileEntryId());
+		}
+	}
+
+	private void _addFriendlyURLEntry(
+			ObjectDefinition objectDefinition, ObjectEntry objectEntry,
+			ServiceContext serviceContext, Map<String, Serializable> values)
+		throws PortalException {
+
+		if (!FeatureFlagManagerUtil.isEnabled("LPD-21926")) {
+			return;
+		}
+
+		long classNameId = _classNameLocalService.getClassNameId(
+			objectDefinition.getClassName());
+
+		Map<String, String> friendlyUrlMap = new HashMap<>();
+
+		if (objectDefinition.isEnableFriendlyURLCustomization()) {
+			friendlyUrlMap = (Map<String, String>)serviceContext.getAttribute(
+				"friendlyUrlMap");
+		}
+
+		long groupId = objectEntry.getNonzeroGroupId();
+		ObjectField objectField = _objectFieldLocalService.fetchObjectField(
+			objectDefinition.getTitleObjectFieldId());
+		Map<String, String> urlTitleMap = new HashMap<>();
+
+		for (Map.Entry<String, String> entry : friendlyUrlMap.entrySet()) {
+			if (Validator.isNotNull(entry.getValue())) {
+				urlTitleMap.put(
+					entry.getKey(),
+					_friendlyURLEntryLocalService.getUniqueUrlTitle(
+						groupId, classNameId, objectEntry.getObjectEntryId(),
+						entry.getValue(), entry.getKey()));
+
+				continue;
+			}
+
+			urlTitleMap.put(
+				entry.getKey(),
+				_getUrlTitle(
+					classNameId, groupId, entry.getKey(), objectEntry,
+					objectField,
+					HashMapBuilder.<String, Object>putAll(
+						values
+					).putAll(
+						objectEntry.getModelAttributes()
+					).build()));
+		}
+
+		Map<String, Object> localizedValues = new HashMap<>();
+
+		if (objectField != null) {
+			localizedValues = (Map<String, Object>)values.getOrDefault(
+				objectField.getI18nObjectFieldName(), new HashMap<>());
+		}
+
+		for (Map.Entry<String, Object> entry : localizedValues.entrySet()) {
+			urlTitleMap.computeIfAbsent(
+				entry.getKey(),
+				key -> _getUrlTitle(
+					classNameId, groupId, entry.getKey(), objectEntry,
+					objectField, new HashMap<>(values)));
+		}
+
+		urlTitleMap.computeIfAbsent(
+			_language.getLanguageId(LocaleUtil.getSiteDefault()),
+			key -> _getUrlTitle(
+				classNameId, groupId, null, objectEntry, objectField,
+				HashMapBuilder.<String, Object>putAll(
+					values
+				).putAll(
+					objectEntry.getModelAttributes()
+				).build()));
+
+		_friendlyURLEntryLocalService.addFriendlyURLEntry(
+			groupId, classNameId, objectEntry.getObjectEntryId(), urlTitleMap,
+			serviceContext);
 	}
 
 	private JoinStep _addInnerJoinON(
