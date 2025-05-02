@@ -508,6 +508,13 @@ public class ObjectEntryLocalServiceTest {
 		ObjectDefinition objectDefinition2 =
 			ObjectDefinitionTestUtil.publishObjectDefinition();
 
+		ObjectRelationshipTestUtil.addObjectRelationship(
+			_objectRelationshipLocalService, objectDefinition1,
+			objectDefinition2,
+			ObjectRelationshipConstants.DELETION_TYPE_CASCADE,
+			StringUtil.randomId(),
+			ObjectRelationshipConstants.TYPE_MANY_TO_MANY);
+
 		ObjectRelationship objectRelationship1 =
 			ObjectRelationshipTestUtil.addObjectRelationship(
 				_objectRelationshipLocalService, objectDefinition1,
@@ -1597,7 +1604,13 @@ public class ObjectEntryLocalServiceTest {
 			_objectRelationshipLocalService, objectDefinition1,
 			objectDefinition2,
 			ObjectRelationshipConstants.DELETION_TYPE_CASCADE,
-			"objectRelationship");
+			StringUtil.randomId(),
+			ObjectRelationshipConstants.TYPE_MANY_TO_MANY);
+		ObjectRelationshipTestUtil.addObjectRelationship(
+			_objectRelationshipLocalService, objectDefinition1,
+			objectDefinition2,
+			ObjectRelationshipConstants.DELETION_TYPE_CASCADE,
+			"objectRelationship", ObjectRelationshipConstants.TYPE_ONE_TO_MANY);
 
 		ObjectField objectField1 = ObjectFieldUtil.addCustomObjectField(
 			new IntegerObjectFieldBuilder(
