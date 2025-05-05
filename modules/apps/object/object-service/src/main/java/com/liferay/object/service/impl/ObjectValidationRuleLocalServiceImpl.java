@@ -594,12 +594,11 @@ public class ObjectValidationRuleLocalServiceImpl
 			Map<String, Object> variables)
 		throws PortalException {
 
-		if (!FeatureFlagManagerUtil.isEnabled("LPD-43542")) {
-			return;
-		}
+		ObjectRelationshipLocalService objectRelationshipLocalService =
+			_objectRelationshipLocalServiceSnapshot.get();
 
 		for (ObjectRelationship objectRelationship :
-				_objectRelationshipLocalService.
+				objectRelationshipLocalService.
 					getObjectRelationshipsByObjectDefinitionId2(
 						objectDefinitionId,
 						ObjectRelationshipConstants.TYPE_ONE_TO_MANY)) {
@@ -985,6 +984,10 @@ public class ObjectValidationRuleLocalServiceImpl
 		_objectFieldLocalServiceSnapshot = new Snapshot<>(
 			ObjectValidationRuleSettingLocalServiceImpl.class,
 			ObjectFieldLocalService.class, null, true);
+	private static final Snapshot<ObjectRelationshipLocalService>
+		_objectRelationshipLocalServiceSnapshot = new Snapshot<>(
+			ObjectRelationshipLocalServiceImpl.class,
+			ObjectRelationshipLocalService.class, null, true);
 
 	@Reference
 	private DDMExpressionFactory _ddmExpressionFactory;
@@ -1003,9 +1006,6 @@ public class ObjectValidationRuleLocalServiceImpl
 
 	@Reference
 	private ObjectFieldPersistence _objectFieldPersistence;
-
-	@Reference
-	private ObjectRelationshipLocalService _objectRelationshipLocalService;
 
 	@Reference
 	private ObjectScriptingValidator _objectScriptingValidator;
