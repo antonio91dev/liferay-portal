@@ -7,7 +7,9 @@ import {expect, mergeTests} from '@playwright/test';
 
 import {apiHelpersTest} from '../../fixtures/apiHelpersTest';
 import {changeTrackingPagesTest} from '../../fixtures/changeTrackingPagesTest';
+import {customFieldsPagesTest} from '../../fixtures/customFieldsPagesTest';
 import {productMenuPageTest} from '../../fixtures/productMenuPageTest';
+import {TCustomField} from '../../helpers/CustomFieldTypesHelper';
 import getRandomString from '../../utils/getRandomString';
 import {waitForAlert} from '../../utils/waitForAlert';
 import {blogsPagesTest} from '../blogs-web/fixtures/blogsPagesTest';
@@ -17,9 +19,47 @@ export const test = mergeTests(
 	apiHelpersTest,
 	blogsPagesTest,
 	changeTrackingPagesTest,
+	customFieldsPagesTest,
 	journalPagesTest,
 	productMenuPageTest
 );
+
+test('LPD-54602 Edit in Production action should not be visible if entity does not have an edit url', async ({
+	addCustomFieldPage,
+	changeTrackingPage,
+	ctCollection,
+	page,
+}) => {
+	const customField: TCustomField = {
+		fieldName: getRandomString(),
+		fieldType: 'inputField',
+		resource: 'Page',
+	};
+
+	await changeTrackingPage.workOnPublication(ctCollection);
+
+	await addCustomFieldPage.addCustomField(customField);
+
+	await changeTrackingPage.workOnProduction();
+
+	await addCustomFieldPage.addCustomField(customField);
+
+	await changeTrackingPage.goToReviewChanges(ctCollection.body.name);
+
+	await page.getByRole('link', {name: 'Publish'}).click();
+
+	await expect(page.getByText('Checking Changes')).toBeVisible();
+
+	await expect(
+		page.getByText('Test Test added a Custom Field')
+	).toBeVisible();
+
+	await expect(page.getByRole('menuitem')).not.toBeVisible();
+
+	await expect(
+		page.getByRole('link', {name: 'Discard Change'})
+	).toBeVisible();
+});
 
 test('Resolve deletion modification conflict publications by discarding', async ({
 	apiHelpers,
