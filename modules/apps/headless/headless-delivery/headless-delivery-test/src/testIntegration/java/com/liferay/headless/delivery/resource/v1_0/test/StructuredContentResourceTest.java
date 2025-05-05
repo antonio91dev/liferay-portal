@@ -45,7 +45,6 @@ import com.liferay.headless.delivery.client.dto.v1_0.StructuredContent;
 import com.liferay.headless.delivery.client.dto.v1_0.StructuredContentLink;
 import com.liferay.headless.delivery.client.pagination.Page;
 import com.liferay.headless.delivery.client.pagination.Pagination;
-import com.liferay.headless.delivery.client.permission.Permission;
 import com.liferay.headless.delivery.client.problem.Problem;
 import com.liferay.headless.delivery.client.resource.v1_0.StructuredContentResource;
 import com.liferay.journal.constants.JournalArticleConstants;
@@ -60,7 +59,6 @@ import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalServ
 import com.liferay.layout.test.util.LayoutTestUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
-import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
@@ -111,6 +109,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import org.junit.After;
@@ -718,6 +717,15 @@ public class StructuredContentResourceTest
 	}
 
 	@Override
+	@Test
+	public void testPutStructuredContent() throws Exception {
+		super.testPutStructuredContent();
+
+		_testPutStructuredContentWithLocalizedValues();
+		_testPutStructuredContentWithoutLocalizedValues();
+	}
+
+	@Override
 	protected String[] getAdditionalAssertFieldNames() {
 		return new String[] {
 			"contentStructureId", "description", "priority", "title"
@@ -941,6 +949,15 @@ public class StructuredContentResourceTest
 			_read("test-structured-content-template.vm"), LocaleUtil.US);
 	}
 
+	private void _assertEquals(
+		StructuredContent structuredContent1,
+		StructuredContent structuredContent2) {
+
+		Assert.assertTrue(
+			structuredContent1 + " does not equal " + structuredContent2,
+			_equals(structuredContent1, structuredContent2));
+	}
+
 	private void _assertFilterSiteStructuredContentsPageFilteredByDateField(
 			Locale locale)
 		throws Exception {
@@ -1075,6 +1092,60 @@ public class StructuredContentResourceTest
 				_jsonDDMFormDeserializer.deserialize(builder.build());
 
 		return ddmFormDeserializerDeserializeResponse.getDDMForm();
+	}
+
+	private boolean _equals(
+		StructuredContent structuredContent1,
+		StructuredContent structuredContent2) {
+
+		assertEquals(structuredContent1, structuredContent2);
+
+		if (!Objects.deepEquals(
+				structuredContent1.getDescription(),
+				structuredContent2.getDescription()) ||
+			!equals(
+				(Map)structuredContent1.getDescription_i18n(),
+				(Map)structuredContent2.getDescription_i18n()) ||
+			!Objects.deepEquals(
+				structuredContent1.getFriendlyUrlPath(),
+				structuredContent2.getFriendlyUrlPath()) ||
+			!equals(
+				(Map)structuredContent1.getFriendlyUrlPath_i18n(),
+				(Map)structuredContent2.getFriendlyUrlPath_i18n()) ||
+			!Objects.deepEquals(
+				structuredContent1.getTitle(), structuredContent2.getTitle()) ||
+			!equals(
+				(Map)structuredContent1.getTitle_i18n(),
+				(Map)structuredContent2.getTitle_i18n())) {
+
+			return false;
+		}
+
+		ContentField[] contentFields1 = structuredContent1.getContentFields();
+		ContentField[] contentFields2 = structuredContent1.getContentFields();
+
+		if (contentFields1.length != contentFields2.length) {
+			return false;
+		}
+
+		for (int i = 0; i < contentFields1.length; i++) {
+			ContentField contentField1 = contentFields1[i];
+			ContentField contentField2 = contentFields2[i];
+
+			if (!Objects.equals(
+					contentField1.getName(), contentField2.getName()) ||
+				!Objects.equals(
+					contentField1.getContentFieldValue(),
+					contentField2.getContentFieldValue()) ||
+				!equals(
+					(Map)contentField1.getContentFieldValue_i18n(),
+					(Map)contentField2.getContentFieldValue_i18n())) {
+
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	private String _randomColor() {
@@ -1427,9 +1498,13 @@ public class StructuredContentResourceTest
 		structuredContent.setDescription_i18n(description_i18n);
 
 		Map<String, String> friendlyUrlPath_i18n = HashMapBuilder.put(
-			"en-US", RandomTestUtil.randomString()
+			"en-US",
+			RandomTestUtil.randomString(
+			).toLowerCase()
 		).put(
-			"es-ES", RandomTestUtil.randomString()
+			"es-ES",
+			RandomTestUtil.randomString(
+			).toLowerCase()
 		).build();
 
 		structuredContent.setFriendlyUrlPath(
@@ -2471,6 +2546,106 @@ public class StructuredContentResourceTest
 
 		Assert.assertEquals(1, jsonObject.getLong("processedItemsCount"));
 		Assert.assertEquals(1, jsonObject.getLong("totalItemsCount"));
+	}
+
+	private void _testPutStructuredContentWithLocalizedValues()
+		throws Exception {
+
+		Locale locale = LocaleUtil.getDefault();
+
+		StructuredContent randomLocalizedStructuredContent =
+			_randomStructuredContent(locale);
+
+		StructuredContent postStructuredContent =
+			structuredContentResource.postSiteStructuredContent(
+				testGetSiteStructuredContentsPage_getSiteId(),
+				randomLocalizedStructuredContent);
+
+		randomLocalizedStructuredContent = _randomStructuredContent(locale);
+
+		StructuredContentResource englishStructuredContentResource =
+			_buildStructureContentResource(locale);
+
+		StructuredContent putStructuredContent =
+			englishStructuredContentResource.putStructuredContent(
+				postStructuredContent.getId(),
+				randomLocalizedStructuredContent);
+
+		_assertLocalizedValues(
+			putStructuredContent, LocaleUtil.toW3cLanguageId(locale));
+		_assertEquals(randomLocalizedStructuredContent, putStructuredContent);
+		assertValid(putStructuredContent);
+	}
+
+	private void _testPutStructuredContentWithoutLocalizedValues()
+		throws Exception {
+
+		Locale locale = LocaleUtil.getDefault();
+
+		StructuredContent structuredContent1 = _randomStructuredContent(locale);
+
+		StructuredContent postStructuredContent =
+			structuredContentResource.postSiteStructuredContent(
+				testGetSiteStructuredContentsPage_getSiteId(),
+				structuredContent1);
+
+		StructuredContent structuredContent2 = _randomStructuredContent(locale);
+
+		ContentFieldValue englishContentFieldValue = new ContentFieldValue() {
+			{
+				data = RandomTestUtil.randomString(10);
+			}
+		};
+
+		structuredContent2.setContentFields(
+			new ContentField[] {
+				new ContentField() {
+					{
+						contentFieldValue = englishContentFieldValue;
+						name = "MyText";
+					}
+				}
+			});
+
+		StructuredContentResource englishStructuredContentResource =
+			_buildStructureContentResource(locale);
+
+		StructuredContent putStructuredContent =
+			englishStructuredContentResource.putStructuredContent(
+				postStructuredContent.getId(), structuredContent2);
+
+		Map<String, ContentFieldValue> expectedContentFieldValues =
+			HashMapBuilder.put(
+				"en-US", () -> englishContentFieldValue
+			).put(
+				"es-ES",
+				() -> {
+					ContentField initialContentField =
+						structuredContent1.getContentFields()[0];
+
+					return initialContentField.getContentFieldValue_i18n(
+					).get(
+						"es-ES"
+					);
+				}
+			).build();
+
+		structuredContent2.setContentFields(
+			new ContentField[] {
+				new ContentField() {
+					{
+						contentFieldValue = expectedContentFieldValues.get(
+							LocaleUtil.toW3cLanguageId(locale));
+						contentFieldValue_i18n = expectedContentFieldValues;
+						name = "MyText";
+					}
+				}
+			});
+
+		_assertLocalizedValues(
+			putStructuredContent, LocaleUtil.toW3cLanguageId(locale));
+		_assertEquals(structuredContent2, putStructuredContent);
+		assertValid(putStructuredContent);
 	}
 
 	private JSONObject _waitForFinish(
