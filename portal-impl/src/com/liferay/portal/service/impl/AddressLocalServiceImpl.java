@@ -10,6 +10,8 @@ import com.liferay.portal.kernel.exception.AddressCityException;
 import com.liferay.portal.kernel.exception.AddressStreetException;
 import com.liferay.portal.kernel.exception.AddressZipException;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Address;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Contact;
@@ -33,6 +35,7 @@ import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.SearchException;
 import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.service.ClassNameLocalService;
+import com.liferay.portal.kernel.service.ContactLocalService;
 import com.liferay.portal.kernel.service.ListTypeLocalService;
 import com.liferay.portal.kernel.service.PhoneLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -107,6 +110,8 @@ public class AddressLocalServiceImpl extends AddressLocalServiceBaseImpl {
 			_addAddressPhone(addressId, address.getCompanyId(), phoneNumber);
 		}
 
+		_reindexUser(address.getClassName(), address.getClassPK());
+
 		return address;
 	}
 
@@ -142,6 +147,8 @@ public class AddressLocalServiceImpl extends AddressLocalServiceBaseImpl {
 		_phoneLocalService.deletePhones(
 			address.getCompanyId(), address.getClassName(),
 			address.getAddressId());
+
+		_reindexUser(address.getClassName(), address.getClassPK());
 
 		return address;
 	}
@@ -309,6 +316,8 @@ public class AddressLocalServiceImpl extends AddressLocalServiceBaseImpl {
 				_phoneLocalService.updatePhone(phone);
 			}
 		}
+
+		_reindexUser(address.getClassName(), address.getClassPK());
 
 		return address;
 	}
@@ -531,8 +540,40 @@ public class AddressLocalServiceImpl extends AddressLocalServiceBaseImpl {
 			serviceContext);
 	}
 
+	private void _reindexUser(String className, long classPK) {
+		if (!Objects.equals(className, Contact.class.getName())) {
+			return;
+		}
+
+		Contact contact = _contactLocalService.fetchContact(classPK);
+
+		if ((contact == null) ||
+			!Objects.equals(contact.getClassName(), User.class.getName())) {
+
+			return;
+		}
+
+		try {
+			Indexer<User> indexer = IndexerRegistryUtil.nullSafeGetIndexer(
+				User.class);
+
+			indexer.reindex(contact.getClassName(), contact.getClassPK());
+		}
+		catch (PortalException portalException) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(portalException);
+			}
+		}
+	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		AddressLocalServiceImpl.class);
+
 	@BeanReference(type = ClassNameLocalService.class)
 	private ClassNameLocalService _classNameLocalService;
+
+	@BeanReference(type = ContactLocalService.class)
+	private ContactLocalService _contactLocalService;
 
 	@BeanReference(type = CountryPersistence.class)
 	private CountryPersistence _countryPersistence;
