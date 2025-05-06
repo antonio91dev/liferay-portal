@@ -12,6 +12,8 @@ import com.liferay.commerce.context.CommerceContext;
 import com.liferay.commerce.currency.model.CommerceCurrency;
 import com.liferay.commerce.currency.model.CommerceMoney;
 import com.liferay.commerce.currency.test.util.CommerceCurrencyTestUtil;
+import com.liferay.commerce.discount.CommerceDiscountCalculation;
+import com.liferay.commerce.discount.CommerceDiscountValue;
 import com.liferay.commerce.discount.constants.CommerceDiscountConstants;
 import com.liferay.commerce.discount.model.CommerceDiscount;
 import com.liferay.commerce.discount.test.util.CommerceDiscountTestUtil;
@@ -689,6 +691,16 @@ public class CommerceOrderDiscountV2Test {
 				BigDecimal.valueOf(commerceTaxFixedRate.getRate()),
 				RoundingMode.HALF_EVEN);
 
+		CommerceDiscountValue totalCommerceDiscountValue =
+			_commerceDiscountCalculation.getOrderTotalCommerceDiscountValue(
+				commerceOrder, expectedTotalValue, commerceContext);
+
+		CommerceMoney discountAmountCommerceMoney =
+			totalCommerceDiscountValue.getDiscountAmount();
+
+		expectedTotalValue = expectedTotalValue.subtract(
+			discountAmountCommerceMoney.getPrice());
+
 		CommerceMoney totalCommerceMoney =
 			_commerceOrderPriceCalculation.getTotal(
 				commerceOrder, commerceContext);
@@ -717,6 +729,9 @@ public class CommerceOrderDiscountV2Test {
 	private CommerceChannel _commerceChannel;
 
 	private CommerceCurrency _commerceCurrency;
+
+	@Inject
+	private CommerceDiscountCalculation _commerceDiscountCalculation;
 
 	@Inject
 	private CommerceOrderLocalService _commerceOrderLocalService;
