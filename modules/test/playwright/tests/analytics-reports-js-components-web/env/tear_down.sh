@@ -1,6 +1,6 @@
 #!/bin/bash
 
-CURRENT_DIR_NAME=$(dirname ${BASH_SOURCE[0]})
+source $(dirname ${BASH_SOURCE[0]})/../../../../env/common.sh
 
 echo CURRENT_DIR_NAME=${CURRENT_DIR_NAME}
 
