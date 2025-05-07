@@ -1344,7 +1344,7 @@ public class UserLocalServiceTest {
 	}
 
 	@Test
-	public void testUpdatePasswordNotificationUserNotApproved()
+	public void testUpdatePasswordDoesNotNotifyUnapprovedUser()
 		throws Exception {
 
 		_workflowDefinitionLinkLocalService.addWorkflowDefinitionLink(
