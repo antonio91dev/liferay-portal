@@ -6353,11 +6353,10 @@ public class ObjectEntryLocalServiceTest {
 
 		Assert.assertEquals("Julia", values.get("firstName"));
 		Assert.assertEquals(
-			partialUpdate ? objectEntry2.getExternalReferenceCode() :
-				StringPool.BLANK,
+			objectEntry2.getExternalReferenceCode(),
 			values.get("r_objectRelationship_c_relatedObjectDefinitionERC"));
 		Assert.assertEquals(
-			partialUpdate ? objectEntry2.getObjectEntryId() : 0L,
+			objectEntry2.getObjectEntryId(),
 			values.get("r_objectRelationship_c_relatedObjectDefinitionId"));
 
 		objectEntry1 = _objectEntryLocalService.updateObjectEntry(
