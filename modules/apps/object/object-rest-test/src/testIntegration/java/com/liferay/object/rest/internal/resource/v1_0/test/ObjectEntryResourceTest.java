@@ -9182,17 +9182,6 @@ public class ObjectEntryResourceTest {
 			TestPropsValues.getGroupId());
 	}
 
-	@FeatureFlags("LPD-54417")
-	@Test
-	@TestInfo("LPD-53245")
-	public void testPutByExternalReferenceCodeCustomObjectEntryWithDeprecatedFeatureFlag()
-		throws Exception {
-
-		_testPatchByExternalReferenceCodeCustomObjectEntry(
-			_objectDefinition1, _objectDefinition2,
-			TestPropsValues.getGroupId());
-	}
-
 	@Test
 	public void testPutByExternalReferenceCodeManyToManyRelationship()
 		throws Exception {
@@ -9395,16 +9384,165 @@ public class ObjectEntryResourceTest {
 	public void testPutByExternalReferenceCodeMultipleOneToManyRelationships()
 		throws Exception {
 
-		_testPutByExternalReferenceCodeMultipleOneToManyRelationships(true);
-	}
+		_objectRelationship1 = ObjectRelationshipTestUtil.addObjectRelationship(
+			_objectDefinition1, _objectDefinition2, TestPropsValues.getUserId(),
+			ObjectRelationshipConstants.TYPE_ONE_TO_MANY);
 
-	@FeatureFlags("LPD-54417")
-	@Test
-	@TestInfo("LPD-53245")
-	public void testPutByExternalReferenceCodeMultipleOneToManyRelationshipsWithDeprecatedFeatureFlag()
-		throws Exception {
+		_objectRelationship2 = ObjectRelationshipTestUtil.addObjectRelationship(
+			_objectDefinition2, _objectDefinition3, TestPropsValues.getUserId(),
+			ObjectRelationshipConstants.TYPE_ONE_TO_MANY);
 
-		_testPutByExternalReferenceCodeMultipleOneToManyRelationships(false);
+		JSONObject jsonObject = HTTPTestUtil.invokeToJSONObject(
+			JSONUtil.put(
+				_OBJECT_FIELD_NAME_2, RandomTestUtil.randomString()
+			).put(
+				"externalReferenceCode", _ERC_VALUE_2
+			).put(
+				_objectRelationship1.getName(),
+				JSONUtil.put(
+					_OBJECT_FIELD_NAME_1, RandomTestUtil.randomString()
+				).put(
+					"externalReferenceCode", _ERC_VALUE_1
+				)
+			).put(
+				_objectRelationship2.getName(),
+				JSONUtil.putAll(
+					JSONUtil.put(
+						_OBJECT_FIELD_NAME_3, RandomTestUtil.randomString()
+					).put(
+						"externalReferenceCode", _ERC_VALUE_3
+					),
+					JSONUtil.put(
+						_OBJECT_FIELD_NAME_3, RandomTestUtil.randomString()
+					).put(
+						"externalReferenceCode", RandomTestUtil.randomString()
+					))
+			).toString(),
+			_objectDefinition2.getRESTContextPath(), Http.Method.POST);
+
+		Assert.assertEquals(
+			200,
+			HTTPTestUtil.invokeToHttpCode(
+				JSONUtil.put(
+					_OBJECT_FIELD_NAME_2, _NEW_OBJECT_FIELD_VALUE_2
+				).toString(),
+				StringBundler.concat(
+					_objectDefinition2.getRESTContextPath(),
+					"/by-external-reference-code/", _ERC_VALUE_2),
+				Http.Method.PUT));
+
+		String objectEntryId = HTTPTestUtil.invokeToJSONObject(
+			null,
+			StringBundler.concat(
+				_objectDefinition1.getRESTContextPath(),
+				"/by-external-reference-code/", _ERC_VALUE_1),
+			Http.Method.GET
+		).get(
+			"id"
+		).toString();
+
+		JSONAssert.assertEquals(
+			JSONUtil.put(
+				"items",
+				JSONUtil.putAll(
+					JSONUtil.put("externalReferenceCode", _ERC_VALUE_2))
+			).put(
+				"lastPage", 1
+			).put(
+				"page", 1
+			).put(
+				"pageSize", 20
+			).put(
+				"totalCount", 1
+			).toString(),
+			HTTPTestUtil.invokeToJSONObject(
+				null,
+				StringBundler.concat(
+					_objectDefinition1.getRESTContextPath(), StringPool.SLASH,
+					objectEntryId, StringPool.SLASH,
+					_objectRelationship1.getName()),
+				Http.Method.GET
+			).toString(),
+			JSONCompareMode.LENIENT);
+
+		Assert.assertEquals(
+			200,
+			HTTPTestUtil.invokeToHttpCode(
+				JSONUtil.put(
+					_OBJECT_FIELD_NAME_2, _NEW_OBJECT_FIELD_VALUE_2
+				).put(
+					_objectRelationship1.getName(),
+					JSONUtil.put(
+						_OBJECT_FIELD_NAME_1, _NEW_OBJECT_FIELD_VALUE_1
+					).put(
+						"externalReferenceCode", _ERC_VALUE_1
+					)
+				).put(
+					_objectRelationship2.getName(),
+					_createObjectEntriesJSONArray(
+						new String[] {_ERC_VALUE_3}, _OBJECT_FIELD_NAME_3,
+						new String[] {_NEW_OBJECT_FIELD_VALUE_3})
+				).toString(),
+				StringBundler.concat(
+					_objectDefinition2.getRESTContextPath(),
+					"/by-external-reference-code/", _ERC_VALUE_2),
+				Http.Method.PUT));
+
+		JSONAssert.assertEquals(
+			JSONUtil.put(
+				"items",
+				JSONUtil.putAll(
+					JSONUtil.put(
+						_OBJECT_FIELD_NAME_2, _NEW_OBJECT_FIELD_VALUE_2
+					).put(
+						"externalReferenceCode", _ERC_VALUE_2
+					))
+			).put(
+				"lastPage", 1
+			).put(
+				"page", 1
+			).put(
+				"pageSize", 20
+			).put(
+				"totalCount", 1
+			).toString(),
+			HTTPTestUtil.invokeToJSONObject(
+				null,
+				StringBundler.concat(
+					_objectDefinition1.getRESTContextPath(), StringPool.SLASH,
+					objectEntryId, StringPool.SLASH,
+					_objectRelationship1.getName()),
+				Http.Method.GET
+			).toString(),
+			JSONCompareMode.LENIENT);
+
+		JSONAssert.assertEquals(
+			JSONUtil.put(
+				"items",
+				JSONUtil.putAll(
+					JSONUtil.put(
+						_OBJECT_FIELD_NAME_3, _NEW_OBJECT_FIELD_VALUE_3
+					).put(
+						"externalReferenceCode", _ERC_VALUE_3
+					))
+			).put(
+				"lastPage", 1
+			).put(
+				"page", 1
+			).put(
+				"pageSize", 20
+			).put(
+				"totalCount", 1
+			).toString(),
+			HTTPTestUtil.invokeToJSONObject(
+				null,
+				StringBundler.concat(
+					_objectDefinition2.getRESTContextPath(), StringPool.SLASH,
+					jsonObject.get("id"), StringPool.SLASH,
+					_objectRelationship2.getName()),
+				Http.Method.GET
+			).toString(),
+			JSONCompareMode.LENIENT);
 	}
 
 	@Test
@@ -9413,17 +9551,6 @@ public class ObjectEntryResourceTest {
 		throws Exception {
 
 		_testPutByExternalReferenceCodeCustomObjectEntry(
-			_siteScopedObjectDefinition1, _siteScopedObjectDefinition2,
-			TestPropsValues.getGroupId());
-	}
-
-	@FeatureFlags("LPD-54417")
-	@Test
-	@TestInfo("LPD-53245")
-	public void testPutByExternalReferenceCodeSiteScopedCustomObjectEntryWithDeprecatedFeatureFlag()
-		throws Exception {
-
-		_testPatchByExternalReferenceCodeCustomObjectEntry(
 			_siteScopedObjectDefinition1, _siteScopedObjectDefinition2,
 			TestPropsValues.getGroupId());
 	}
@@ -9634,17 +9761,6 @@ public class ObjectEntryResourceTest {
 
 		_testPutCustomObjectEntryUnlinkNestedCustomObjectEntriesByExternalReferenceCode(
 			false);
-	}
-
-	@FeatureFlags("LPD-54417")
-	@Test
-	@TestInfo("LPD-53245")
-	public void testPutCustomObjectEntryWithDeprecatedFeatureFlag()
-		throws Exception {
-
-		_testPatchCustomObjectEntry(
-			_objectDefinition1, _objectDefinition2,
-			TestPropsValues.getGroupId());
 	}
 
 	@Test
@@ -10093,17 +10209,6 @@ public class ObjectEntryResourceTest {
 	@TestInfo("LPD-53245")
 	public void testPutSiteScopedCustomObjectEntry() throws Exception {
 		_testPutCustomObjectEntry(
-			_siteScopedObjectDefinition1, _siteScopedObjectDefinition2,
-			TestPropsValues.getGroupId());
-	}
-
-	@FeatureFlags("LPD-54417")
-	@Test
-	@TestInfo("LPD-53245")
-	public void testPutSiteScopedCustomObjectEntryWithDeprecatedFeatureFlag()
-		throws Exception {
-
-		_testPatchCustomObjectEntry(
 			_siteScopedObjectDefinition1, _siteScopedObjectDefinition2,
 			TestPropsValues.getGroupId());
 	}
@@ -16042,177 +16147,6 @@ public class ObjectEntryResourceTest {
 				"/by-external-reference-code",
 			jsonObject -> jsonObject.getString("externalReferenceCode"),
 			objectDefinition1, objectDefinition2, scopeKey);
-	}
-
-	private void _testPutByExternalReferenceCodeMultipleOneToManyRelationships(
-			boolean removeRelationship)
-		throws Exception {
-
-		_objectRelationship1 = ObjectRelationshipTestUtil.addObjectRelationship(
-			_objectDefinition1, _objectDefinition2, TestPropsValues.getUserId(),
-			ObjectRelationshipConstants.TYPE_ONE_TO_MANY);
-
-		_objectRelationship2 = ObjectRelationshipTestUtil.addObjectRelationship(
-			_objectDefinition2, _objectDefinition3, TestPropsValues.getUserId(),
-			ObjectRelationshipConstants.TYPE_ONE_TO_MANY);
-
-		JSONObject jsonObject = HTTPTestUtil.invokeToJSONObject(
-			JSONUtil.put(
-				_OBJECT_FIELD_NAME_2, RandomTestUtil.randomString()
-			).put(
-				"externalReferenceCode", _ERC_VALUE_2
-			).put(
-				_objectRelationship1.getName(),
-				JSONUtil.put(
-					_OBJECT_FIELD_NAME_1, RandomTestUtil.randomString()
-				).put(
-					"externalReferenceCode", _ERC_VALUE_1
-				)
-			).put(
-				_objectRelationship2.getName(),
-				JSONUtil.putAll(
-					JSONUtil.put(
-						_OBJECT_FIELD_NAME_3, RandomTestUtil.randomString()
-					).put(
-						"externalReferenceCode", _ERC_VALUE_3
-					),
-					JSONUtil.put(
-						_OBJECT_FIELD_NAME_3, RandomTestUtil.randomString()
-					).put(
-						"externalReferenceCode", RandomTestUtil.randomString()
-					))
-			).toString(),
-			_objectDefinition2.getRESTContextPath(), Http.Method.POST);
-
-		Assert.assertEquals(
-			200,
-			HTTPTestUtil.invokeToHttpCode(
-				JSONUtil.put(
-					_OBJECT_FIELD_NAME_2, _NEW_OBJECT_FIELD_VALUE_2
-				).toString(),
-				StringBundler.concat(
-					_objectDefinition2.getRESTContextPath(),
-					"/by-external-reference-code/", _ERC_VALUE_2),
-				Http.Method.PUT));
-
-		String objectEntryId = HTTPTestUtil.invokeToJSONObject(
-			null,
-			StringBundler.concat(
-				_objectDefinition1.getRESTContextPath(),
-				"/by-external-reference-code/", _ERC_VALUE_1),
-			Http.Method.GET
-		).get(
-			"id"
-		).toString();
-
-		JSONAssert.assertEquals(
-			JSONUtil.put(
-				"items",
-				() -> {
-					if (removeRelationship) {
-						return JSONUtil.putAll();
-					}
-
-					return JSONUtil.putAll(
-						JSONUtil.put("externalReferenceCode", _ERC_VALUE_2));
-				}
-			).put(
-				"lastPage", 1
-			).put(
-				"page", 1
-			).put(
-				"pageSize", 20
-			).put(
-				"totalCount", () -> removeRelationship ? 0 : 1
-			).toString(),
-			HTTPTestUtil.invokeToJSONObject(
-				null,
-				StringBundler.concat(
-					_objectDefinition1.getRESTContextPath(), StringPool.SLASH,
-					objectEntryId, StringPool.SLASH,
-					_objectRelationship1.getName()),
-				Http.Method.GET
-			).toString(),
-			JSONCompareMode.LENIENT);
-
-		Assert.assertEquals(
-			200,
-			HTTPTestUtil.invokeToHttpCode(
-				JSONUtil.put(
-					_OBJECT_FIELD_NAME_2, _NEW_OBJECT_FIELD_VALUE_2
-				).put(
-					_objectRelationship1.getName(),
-					JSONUtil.put(
-						_OBJECT_FIELD_NAME_1, _NEW_OBJECT_FIELD_VALUE_1
-					).put(
-						"externalReferenceCode", _ERC_VALUE_1
-					)
-				).put(
-					_objectRelationship2.getName(),
-					_createObjectEntriesJSONArray(
-						new String[] {_ERC_VALUE_3}, _OBJECT_FIELD_NAME_3,
-						new String[] {_NEW_OBJECT_FIELD_VALUE_3})
-				).toString(),
-				StringBundler.concat(
-					_objectDefinition2.getRESTContextPath(),
-					"/by-external-reference-code/", _ERC_VALUE_2),
-				Http.Method.PUT));
-
-		JSONAssert.assertEquals(
-			JSONUtil.put(
-				"items",
-				JSONUtil.putAll(
-					JSONUtil.put(
-						_OBJECT_FIELD_NAME_2, _NEW_OBJECT_FIELD_VALUE_2
-					).put(
-						"externalReferenceCode", _ERC_VALUE_2
-					))
-			).put(
-				"lastPage", 1
-			).put(
-				"page", 1
-			).put(
-				"pageSize", 20
-			).put(
-				"totalCount", 1
-			).toString(),
-			HTTPTestUtil.invokeToJSONObject(
-				null,
-				StringBundler.concat(
-					_objectDefinition1.getRESTContextPath(), StringPool.SLASH,
-					objectEntryId, StringPool.SLASH,
-					_objectRelationship1.getName()),
-				Http.Method.GET
-			).toString(),
-			JSONCompareMode.LENIENT);
-
-		JSONAssert.assertEquals(
-			JSONUtil.put(
-				"items",
-				JSONUtil.putAll(
-					JSONUtil.put(
-						_OBJECT_FIELD_NAME_3, _NEW_OBJECT_FIELD_VALUE_3
-					).put(
-						"externalReferenceCode", _ERC_VALUE_3
-					))
-			).put(
-				"lastPage", 1
-			).put(
-				"page", 1
-			).put(
-				"pageSize", 20
-			).put(
-				"totalCount", 1
-			).toString(),
-			HTTPTestUtil.invokeToJSONObject(
-				null,
-				StringBundler.concat(
-					_objectDefinition2.getRESTContextPath(), StringPool.SLASH,
-					jsonObject.get("id"), StringPool.SLASH,
-					_objectRelationship2.getName()),
-				Http.Method.GET
-			).toString(),
-			JSONCompareMode.LENIENT);
 	}
 
 	private void _testPutCustomObjectEntry(

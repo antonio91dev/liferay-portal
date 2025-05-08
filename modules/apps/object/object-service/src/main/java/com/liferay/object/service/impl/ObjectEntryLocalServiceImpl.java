@@ -4727,13 +4727,6 @@ public class ObjectEntryLocalServiceImpl
 			_objectDefinitionPersistence.findByPrimaryKey(
 				objectEntry.getObjectDefinitionId());
 
-		if (!partialUpdate &&
-			FeatureFlagManagerUtil.isEnabled(
-				objectEntry.getCompanyId(), "LPD-54417")) {
-
-			partialUpdate = true;
-		}
-
 		if (!partialUpdate) {
 			_fillDefaultValue(objectDefinition.getObjectDefinitionId(), values);
 		}
