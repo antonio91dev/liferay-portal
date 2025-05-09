@@ -2907,9 +2907,10 @@ public class ObjectEntryLocalServiceImpl
 	private Object _getLocalizedValue(
 		String languageId, Map<String, Object> localizedValues) {
 
-		if ((localizedValues == null) ||
-			!localizedValues.containsKey(languageId)) {
-
+		if (localizedValues == null) {
+			return null;
+		}
+		else if (!localizedValues.containsKey(languageId)) {
 			return StringPool.BLANK;
 		}
 
@@ -3840,14 +3841,16 @@ public class ObjectEntryLocalServiceImpl
 						(Map<String, Object>)values.get(
 							objectField.getI18nObjectFieldName()));
 
-					if (Validator.isBlank(
-							GetterUtil.getString(localizedValue)) &&
-						partialUpdate) {
+					if (localizedValue == null) {
+						if (partialUpdate) {
+							localizedValue = _getLocalizedValue(
+								languageId,
+								(Map<String, Object>)originalValues.get(
+									objectField.getI18nObjectFieldName()));
+						}
 
-						localizedValue = _getLocalizedValue(
-							languageId,
-							(Map<String, Object>)originalValues.get(
-								objectField.getI18nObjectFieldName()));
+						localizedValue = GetterUtil.getObject(
+							localizedValue, StringPool.BLANK);
 					}
 
 					_setColumn(
