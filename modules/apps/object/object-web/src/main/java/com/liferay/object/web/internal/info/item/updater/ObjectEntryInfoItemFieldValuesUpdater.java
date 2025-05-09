@@ -69,8 +69,6 @@ public class ObjectEntryInfoItemFieldValuesUpdater
 				_objectDefinition.getStorageType());
 
 		int objectEntryStatus = status;
-		Map<String, Object> curProperties = ObjectEntryUtil.toProperties(
-			themeDisplay.getCompanyId(), infoItemFieldValues);
 
 		try {
 			return ObjectEntryUtil.toObjectEntry(
@@ -86,6 +84,7 @@ public class ObjectEntryInfoItemFieldValuesUpdater
 							setKeywords(serviceContext::getAssetTagNames);
 							setProperties(
 								() -> ObjectEntryUtil.toProperties(
+									themeDisplay.getCompanyId(),
 									infoItemFieldValues));
 							setStatus(
 								() -> new Status() {

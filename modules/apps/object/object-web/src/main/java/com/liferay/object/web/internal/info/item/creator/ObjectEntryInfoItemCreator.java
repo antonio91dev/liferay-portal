@@ -62,8 +62,6 @@ public class ObjectEntryInfoItemCreator
 			ThemeDisplay themeDisplay = serviceContext.getThemeDisplay();
 
 			int objectEntryStatus = status;
-			Map<String, Object> curProperties = ObjectEntryUtil.toProperties(
-				themeDisplay.getCompanyId(), infoItemFieldValues);
 
 			com.liferay.object.rest.dto.v1_0.ObjectEntry objectEntry =
 				objectEntryManager.addObjectEntry(
@@ -76,6 +74,7 @@ public class ObjectEntryInfoItemCreator
 							setKeywords(serviceContext::getAssetTagNames);
 							setProperties(
 								() -> ObjectEntryUtil.toProperties(
+									themeDisplay.getCompanyId(),
 									infoItemFieldValues));
 							setStatus(
 								() -> new Status() {

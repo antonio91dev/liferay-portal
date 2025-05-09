@@ -236,10 +236,8 @@ public class ObjectEntryInfoItemFormProviderUtil {
 
 					unsafeConsumer.accept(
 						_getInfoFieldSet(
-							true,
-							FeatureFlagManagerUtil.isEnabled(
-								objectDefinition.getCompanyId(), "LPD-21926"),
-							fieldSetLabelMap, objectRelationship.getName(),
+							true, fieldSetLabelMap,
+							objectRelationship.getName(),
 							ObjectEntryInfoItemUtil.getInfoFieldNamespace(
 								parentObjectDefinition, objectRelationship),
 							parentObjectDefinition,

@@ -157,11 +157,8 @@ public class ObjectEntryInfoItemValuesProviderUtil {
 					dlAppLocalService, dlURLHelper, infoFieldValues,
 					listTypeEntryLocalService, objectEntryLocalService,
 					relatedObjectField, objectFieldInfoFieldConverter,
-					StringBundler.concat(
-						ObjectRelationship.class.getSimpleName(),
-						StringPool.POUND, parentObjectDefinition.getName(),
-						StringPool.POUND, objectRelationship.getName()),
-					objectRelationshipLocalService, themeDisplay, value);
+					namespace, objectRelationshipLocalService, themeDisplay,
+					value);
 			}
 		}
 
