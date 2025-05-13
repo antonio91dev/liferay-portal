@@ -70,12 +70,28 @@ public class FDSAPIURLBuilderImpl implements FDSAPIURLBuilder {
 				_restApplication, "/v1.0", StringPool.BLANK));
 		sb.append(_restEndpoint);
 
-		_appendParameters(sb);
+		_appendParameters(sb, true);
 
 		return _interpolateURL(_resolveParameters(sb.toString()));
 	}
 
-	private void _appendParameters(StringBundler sb) {
+	public String buildQueryString() {
+		StringBundler sb = new StringBundler(_queryStringItems.size() * 2);
+
+		_appendParameters(sb, false);
+
+		String query = sb.toString();
+
+		if (Validator.isNull(query)) {
+			return null;
+		}
+
+		return _interpolate(_resolveParameters(query));
+	}
+
+	private void _appendParameters(
+		StringBundler sb, boolean includeQuestionMark) {
+
 		if (_queryStringItems.isEmpty()) {
 			return;
 		}
