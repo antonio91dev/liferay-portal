@@ -118,6 +118,9 @@ public class CustomFieldsUtil {
 			else if (ExpandoColumnConstants.DATE_ARRAY == attributeType) {
 				map.put(name, _toArray(data, CustomFieldsUtil::_toDateArray));
 			}
+			else if (ExpandoColumnConstants.DOUBLE == attributeType) {
+				map.put(name, GetterUtil.getDouble(data));
+			}
 			else if (ExpandoColumnConstants.DOUBLE_ARRAY == attributeType) {
 				map.put(name, _toArray(data, ArrayUtil::toDoubleArray));
 			}
@@ -171,6 +174,9 @@ public class CustomFieldsUtil {
 						data,
 						(Function<Collection<Number>, Serializable>)
 							ArrayUtil::toShortArray));
+			}
+			else if (ExpandoColumnConstants.STRING == attributeType) {
+				map.put(name, GetterUtil.getString(data));
 			}
 			else if (ExpandoColumnConstants.STRING_ARRAY == attributeType) {
 				map.put(name, _toArray(data, ArrayUtil::toStringArray));
