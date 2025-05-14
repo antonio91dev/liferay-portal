@@ -245,6 +245,8 @@ JournalArticleItemSelectorViewDisplayContext journalArticleItemSelectorViewDispl
 				<c:when test="<%= curFolder != null %>">
 
 					<%
+					row.setPrimaryKey(String.valueOf(curFolder.getPrimaryKey()));
+
 					PortletURL rowURL = PortletURLBuilder.create(
 						journalArticleItemSelectorViewDisplayContext.getPortletURL()
 					).setParameter(
@@ -252,8 +254,6 @@ JournalArticleItemSelectorViewDisplayContext journalArticleItemSelectorViewDispl
 					).setParameter(
 						"groupId", curFolder.getGroupId()
 					).buildPortletURL();
-
-					row.setPrimaryKey(String.valueOf(curFolder.getPrimaryKey()));
 					%>
 
 					<c:choose>
