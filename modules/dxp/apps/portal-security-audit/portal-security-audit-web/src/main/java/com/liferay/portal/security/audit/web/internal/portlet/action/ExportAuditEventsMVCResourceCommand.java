@@ -90,11 +90,12 @@ public class ExportAuditEventsMVCResourceCommand
 	}
 
 	private String _getAuditEventCSV(AuditEvent auditEvent) {
-		List<String> fields = TransformUtil.transform(
-			_functions.values(),
-			function -> CSVUtil.encode(function.apply(auditEvent)));
+		String auditEventsCSV = StringUtil.merge(
+			TransformUtil.transform(
+				_functions.values(),
+				function -> CSVUtil.encode(function.apply(auditEvent))));
 
-		return StringUtil.merge(fields) + StringPool.NEW_LINE;
+		return auditEventsCSV + StringPool.NEW_LINE;
 	}
 
 	private List<AuditEvent> _getAuditEvents(
