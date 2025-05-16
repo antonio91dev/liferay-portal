@@ -96,8 +96,8 @@ export function signInButtonPropsTransformer({
 									'btn disabled btn-primary'
 								)[0];
 
-							signInButton.disabled = false;
 							signInButton.classList.remove('disabled');
+							signInButton.disabled = false;
 						}
 					},
 					size: 'md',
