@@ -20,6 +20,7 @@ import com.liferay.layout.page.template.constants.LayoutPageTemplateEntryTypeCon
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalService;
 import com.liferay.layout.test.util.ContentLayoutTestUtil;
+import com.liferay.layout.test.util.LayoutTestUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.configuration.test.util.CompanyConfigurationTemporarySwapper;
@@ -92,19 +93,19 @@ public class AssetDisplayPageFriendlyURLProviderImplTest {
 				LayoutPageTemplateEntryTypeConstants.DISPLAY_PAGE, 0, true, 0,
 				0, 0, 0, serviceContext);
 
-		AssetDisplayPageEntry assetDisplayPageEntry =
+		_assetDisplayPageEntry =
 			_assetDisplayPageEntryLocalService.addAssetDisplayPageEntry(
 				TestPropsValues.getUserId(), _group.getGroupId(), classNameId,
 				_journalArticle.getResourcePrimKey(),
 				layoutPageTemplateEntry.getLayoutPageTemplateEntryId(),
 				AssetDisplayPageConstants.TYPE_SPECIFIC, serviceContext);
-
-		_setUpThemeDisplay(
-			_layoutLocalService.getLayout(assetDisplayPageEntry.getPlid()));
 	}
 
 	@Test
-	public void testGetFriendlyURL() throws PortalException {
+	public void testGetFriendlyURL() throws Exception {
+		_setUpThemeDisplay(
+			_layoutLocalService.getLayout(_assetDisplayPageEntry.getPlid()));
+
 		_assertGetFriendlyURL(
 			FriendlyURLResolverConstants.URL_SEPARATOR_JOURNAL_ARTICLE);
 	}
@@ -112,6 +113,9 @@ public class AssetDisplayPageFriendlyURLProviderImplTest {
 	@Test
 	public void testGetFriendlyURLWithConfiguredURLSeparator()
 		throws Exception {
+
+		_setUpThemeDisplay(
+			_layoutLocalService.getLayout(_assetDisplayPageEntry.getPlid()));
 
 		String journalArticleFriendlyURLSeparator = "/journal-test1/";
 
@@ -132,6 +136,29 @@ public class AssetDisplayPageFriendlyURLProviderImplTest {
 		}
 	}
 
+	@Test
+	public void testGetFriendlyURLWithLayoutUUIDBasedAssetDisplayPage()
+		throws Exception {
+
+		Layout layout = LayoutTestUtil.addTypePortletLayout(
+			_group.getGroupId());
+
+		_setUpThemeDisplay(layout);
+
+		JournalArticle journalArticle = JournalTestUtil.addArticle(
+			_group.getGroupId(),
+			JournalFolderConstants.DEFAULT_PARENT_FOLDER_ID,
+			JournalArticleConstants.CLASS_NAME_ID_DEFAULT, StringPool.BLANK,
+			true, RandomTestUtil.randomLocaleStringMap(),
+			RandomTestUtil.randomLocaleStringMap(),
+			RandomTestUtil.randomLocaleStringMap(), layout.getUuid(),
+			LocaleUtil.getSiteDefault(), null, false, false,
+			ServiceContextThreadLocal.getServiceContext());
+
+		_assertGetFriendlyURL(
+			JournalArticleConstants.CANONICAL_URL_SEPARATOR, journalArticle);
+	}
+
 	private void _assertGetFriendlyURL(String urlSeparator)
 		throws PortalException {
 
@@ -148,6 +175,23 @@ public class AssetDisplayPageFriendlyURLProviderImplTest {
 				LocaleUtil.getSiteDefault(), _themeDisplay));
 	}
 
+	private void _assertGetFriendlyURL(
+			String urlSeparator, JournalArticle journalArticle)
+		throws PortalException {
+
+		Assert.assertEquals(
+			StringBundler.concat(
+				_portal.getGroupFriendlyURL(
+					_group.getPublicLayoutSet(), _themeDisplay, false, false),
+				urlSeparator,
+				journalArticle.getUrlTitle(LocaleUtil.getSiteDefault())),
+			_assetDisplayPageFriendlyURLProvider.getFriendlyURL(
+				new InfoItemReference(
+					JournalArticle.class.getName(),
+					journalArticle.getResourcePrimKey()),
+				LocaleUtil.getSiteDefault(), _themeDisplay));
+	}
+
 	private void _setUpThemeDisplay(Layout layout) throws Exception {
 		_themeDisplay = ContentLayoutTestUtil.getThemeDisplay(
 			_companyLocalService.getCompany(_group.getCompanyId()), _group,
@@ -157,6 +201,8 @@ public class AssetDisplayPageFriendlyURLProviderImplTest {
 		_themeDisplay.setServerName("localhost");
 		_themeDisplay.setServerPort(8080);
 	}
+
+	private AssetDisplayPageEntry _assetDisplayPageEntry;
 
 	@Inject
 	private AssetDisplayPageEntryLocalService
