@@ -235,6 +235,11 @@ public abstract class BaseUserResourceTestCase {
 	}
 
 	@Test
+	public void testPatchV2User() throws Exception {
+		Assert.assertTrue(false);
+	}
+
+	@Test
 	public void testPutV2User() throws Exception {
 		Assert.assertTrue(false);
 	}
