@@ -60,6 +60,10 @@ public abstract class BaseGroupResourceImpl implements GroupResource {
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
+				name = "excludedAttributes"
+			),
+			@io.swagger.v3.oas.annotations.Parameter(
+				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
 				name = "filter"
 			),
 			@io.swagger.v3.oas.annotations.Parameter(
@@ -79,6 +83,9 @@ public abstract class BaseGroupResourceImpl implements GroupResource {
 			@io.swagger.v3.oas.annotations.Parameter(hidden = true)
 			@javax.ws.rs.QueryParam("count")
 			Integer count,
+			@io.swagger.v3.oas.annotations.Parameter(hidden = true)
+			@javax.ws.rs.QueryParam("excludedAttributes")
+			String excludedAttributes,
 			@io.swagger.v3.oas.annotations.Parameter(hidden = true)
 			@javax.ws.rs.QueryParam("startIndex")
 			Integer startIndex,
@@ -172,6 +179,10 @@ public abstract class BaseGroupResourceImpl implements GroupResource {
 			@io.swagger.v3.oas.annotations.Parameter(
 				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
 				name = "id"
+			),
+			@io.swagger.v3.oas.annotations.Parameter(
+				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
+				name = "excludedAttributes"
 			)
 		}
 	)
@@ -185,7 +196,10 @@ public abstract class BaseGroupResourceImpl implements GroupResource {
 	public Object getV2GroupById(
 			@io.swagger.v3.oas.annotations.Parameter(hidden = true)
 			@javax.validation.constraints.NotNull @javax.ws.rs.PathParam("id")
-			String id)
+			String id,
+			@io.swagger.v3.oas.annotations.Parameter(hidden = true)
+			@javax.ws.rs.QueryParam("excludedAttributes")
+			String excludedAttributes)
 		throws Exception {
 
 		return null;
