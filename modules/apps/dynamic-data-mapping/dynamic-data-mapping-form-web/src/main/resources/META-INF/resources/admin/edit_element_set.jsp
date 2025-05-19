@@ -89,6 +89,8 @@ renderResponse.setTitle((structure == null) ? LanguageUtil.get(request, "new-ele
 					HashMapBuilder.<String, Object>put(
 						"availableLanguageIds", ddmFormAdminDisplayContext.getAvailableLanguageIdsJSONArray()
 					).put(
+						"availableLocales", ddmFormAdminDisplayContext.getAvailableLocalesJSONArray()
+					).put(
 						"context", formBuilderContextJSONObject
 					).put(
 						"dataProviderInstanceParameterSettingsURL", dataProviderInstanceParameterSettingsURL

@@ -26,11 +26,6 @@ public class DDMFormFieldTemplateContextContributorUtil {
 		JSONObject localeJSONObject = _getLocaleJSONObject(defaultLocale);
 
 		return HashMapBuilder.<String, Object>put(
-			"availableLocales",
-			JSONUtil.toJSONArray(
-				LanguageUtil.getAvailableLocales(),
-				locale -> _getLocaleJSONObject(locale), _log)
-		).put(
 			"defaultLocale", localeJSONObject
 		).put(
 			"editingLocale", localeJSONObject
@@ -49,8 +44,5 @@ public class DDMFormFieldTemplateContextContributorUtil {
 			"localeId", languageId
 		);
 	}
-
-	private static final Log _log = LogFactoryUtil.getLog(
-		DDMFormFieldTemplateContextContributorUtil.class);
 
 }
