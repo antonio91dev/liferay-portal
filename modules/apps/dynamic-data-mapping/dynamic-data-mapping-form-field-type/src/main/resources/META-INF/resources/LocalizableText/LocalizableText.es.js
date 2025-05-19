@@ -4,6 +4,7 @@
  */
 
 import {ClayInput} from '@clayui/form';
+import {useFormState} from 'data-engine-js-components-web';
 import React, {useEffect, useState} from 'react';
 
 import FieldBase from '../FieldBase/ReactFieldBase.es';
@@ -195,7 +196,6 @@ const LocalizableText = ({
 };
 
 const Main = ({
-	availableLocales,
 	defaultLocale,
 	displayStyle,
 	editingLocale,
@@ -212,36 +212,40 @@ const Main = ({
 	readOnly,
 	value = {},
 	...otherProps
-}) => (
-	<FieldBase
-		{...otherProps}
-		id={id}
-		label={label}
-		name={name}
-		readOnly={readOnly}
-	>
-		<LocalizableText
-			{...transformAvailableLocalesAndValue({
-				availableLocales,
-				defaultLocale,
-				value,
-			})}
-			displayStyle={displayStyle}
-			editingLocale={editingLocale}
-			fieldName={fieldName}
+}) => {
+	const {availableLocales} = useFormState();
+
+	return (
+		<FieldBase
+			{...otherProps}
 			id={id}
 			label={label}
 			name={name}
-			onFieldBlurred={onBlur}
-			onFieldChanged={({event, value}) => onChange(event, value)}
-			onFieldFocused={onFocus}
-			placeholder={placeholder}
-			placeholdersSubmitLabel={placeholdersSubmitLabel}
-			predefinedValue={predefinedValue}
 			readOnly={readOnly}
-		/>
-	</FieldBase>
-);
+		>
+			<LocalizableText
+				{...transformAvailableLocalesAndValue({
+					availableLocales,
+					defaultLocale,
+					value,
+				})}
+				displayStyle={displayStyle}
+				editingLocale={editingLocale}
+				fieldName={fieldName}
+				id={id}
+				label={label}
+				name={name}
+				onFieldBlurred={onBlur}
+				onFieldChanged={({event, value}) => onChange(event, value)}
+				onFieldFocused={onFocus}
+				placeholder={placeholder}
+				placeholdersSubmitLabel={placeholdersSubmitLabel}
+				predefinedValue={predefinedValue}
+				readOnly={readOnly}
+			/>
+		</FieldBase>
+	);
+};
 
 Main.displayName = 'LocalizableText';
 

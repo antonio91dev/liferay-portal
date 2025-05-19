@@ -4,6 +4,7 @@
  */
 
 import {ClayInput} from '@clayui/form';
+import {useFormState} from 'data-engine-js-components-web';
 import React, {useState} from 'react';
 import {flushSync} from 'react-dom';
 
@@ -16,7 +17,8 @@ import {getEditingLocales, getLocale} from './util/locales';
 import type {FieldChangeEventHandler, LocalizedValue} from '../types';
 
 export default function CheckboxLocalizedObjectField(props: IProps) {
-	const {availableLocales, defaultLocale, fieldName, onChange, value} = props;
+	const {availableLocales} = useFormState();
+	const {defaultLocale, fieldName, onChange, value} = props;
 
 	const initialEditingLocales = getEditingLocales(
 		availableLocales,
@@ -99,7 +101,7 @@ export default function CheckboxLocalizedObjectField(props: IProps) {
 }
 
 export interface IProps extends ICheckboxBaseProps {
-	availableLocales: AvailableLocale[];
+	defaultLocale: EditingLocale;
 	editOnlyInDefaultLanguage: boolean;
 	errorMessage: string;
 	fieldName: string;

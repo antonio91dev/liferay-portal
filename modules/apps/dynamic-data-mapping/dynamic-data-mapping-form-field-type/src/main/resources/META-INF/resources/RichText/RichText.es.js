@@ -4,7 +4,7 @@
  */
 
 import {ClayInput} from '@clayui/form';
-import {useConfig} from 'data-engine-js-components-web';
+import {useConfig, useFormState} from 'data-engine-js-components-web';
 import {ClassicEditor} from 'frontend-editor-ckeditor-web';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 
@@ -46,7 +46,6 @@ const skipsChangeValidation = (fieldName) => {
 };
 
 const RichText = ({
-	availableLocales,
 	defaultLocale = INITIAL_DEFAULT_LOCALE,
 	editable,
 	editingLanguageId,
@@ -69,12 +68,14 @@ const RichText = ({
 	visible,
 	...otherProps
 }) => {
+	const {availableLocales} = useFormState();
+
+	const editorRef = useRef();
+
 	const contents = useMemo(
 		() => (editable ? predefinedValue : value ?? predefinedValue),
 		[editable, predefinedValue, value]
 	);
-
-	const editorRef = useRef();
 
 	const {portletNamespace} = useConfig();
 
@@ -274,25 +275,24 @@ const RichText = ({
 								: ''
 						}
 						editorConfig={
-								readOnly
-									? {
-											...editorConfig,
-											applicationTitle:
-												(label || tip) &&
-												`${label}, ${tip}`,
-											removePlugins:
-												'codemirror, autogrow',
-											resize_enabled: true,
-										}
-									: {
-											...editorConfig,
-											applicationTitle:
-												(label || tip) &&
-												`${label}, ${tip}`,
-											removePlugins: 'autogrow',
-											resize_enabled: true,
-										}
-							}
+							readOnly
+								? {
+										...editorConfig,
+										applicationTitle:
+											(label || tip) &&
+											`${label}, ${tip}`,
+										removePlugins: 'codemirror, autogrow',
+										resize_enabled: true,
+									}
+								: {
+										...editorConfig,
+										applicationTitle:
+											(label || tip) &&
+											`${label}, ${tip}`,
+										removePlugins: 'autogrow',
+										resize_enabled: true,
+									}
+						}
 						name={name}
 						onBlur={onBlur}
 						onChange={(content) => handleContentChange(content)}
@@ -313,7 +313,6 @@ const RichText = ({
 						readOnly={readOnly}
 						ref={editorRef}
 					/>
-
 				</ClayInput.GroupItem>
 
 				<input

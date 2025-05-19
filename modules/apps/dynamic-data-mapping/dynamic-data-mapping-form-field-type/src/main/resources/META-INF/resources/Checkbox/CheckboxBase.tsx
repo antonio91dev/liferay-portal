@@ -170,10 +170,8 @@ interface ISwitcherProps extends ICheckboxBaseProps {
 }
 
 interface IProps extends ICheckboxBaseProps {
-	editOnlyInDefaultLanguage: boolean;
 	errorMessage: string;
 	id?: string;
-	isLocalizationSupported: boolean;
 	predefinedValue?: boolean | String[];
 	readOnly?: boolean;
 	showAsSwitcher?: boolean;
