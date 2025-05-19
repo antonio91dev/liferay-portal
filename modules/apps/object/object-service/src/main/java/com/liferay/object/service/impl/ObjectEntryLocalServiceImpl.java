@@ -1462,8 +1462,8 @@ public class ObjectEntryLocalServiceImpl
 		}
 		else {
 			_insertIntoTable(
-				dynamicObjectDefinitionTable, new HashMap<>(), primaryKey, true,
-				values, WorkflowConstants.ACTION_PUBLISH);
+				dynamicObjectDefinitionTable, new HashMap<>(), primaryKey,
+				false, values, WorkflowConstants.ACTION_PUBLISH);
 		}
 	}
 
