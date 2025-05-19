@@ -404,9 +404,7 @@ public class CustomFieldsUtil {
 			Iterator<T> iterator = (Iterator<T>)collection.iterator();
 
 			while (iterator.hasNext()) {
-				T value = iterator.next();
-
-				Array.set(newArray, i++, function.apply(value));
+				Array.set(newArray, i++, function.apply(iterator.next()));
 			}
 		}
 
