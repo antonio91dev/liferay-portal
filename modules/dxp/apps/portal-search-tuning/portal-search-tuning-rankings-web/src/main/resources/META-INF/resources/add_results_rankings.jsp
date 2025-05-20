@@ -58,7 +58,7 @@ renderResponse.setTitle(LanguageUtil.get(request, "new-ranking"));
 
 <liferay-frontend:edit-form
 	action="<%= addResultsRankingEntryURL %>"
-	fluid='<%= FeatureFlagManagerUtil.isEnabled("LPS-184404") %>'
+	fluid='<%= FeatureFlagManagerUtil.isEnabled(themeDisplay.getCompanyId(), "LPS-184404") %>'
 	name="addResultRankingsFm"
 >
 	<aui:input name="redirect" type="hidden" value="<%= redirect %>" />

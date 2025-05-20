@@ -16,6 +16,7 @@ import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.HttpComponentsUtil;
@@ -24,6 +25,7 @@ import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.taglib.util.TagResourceBundleUtil;
 
 import java.util.HashMap;
@@ -746,7 +748,7 @@ public class ManagementToolbarTag extends BaseContainerTag {
 
 		jspWriter.write("\"><div class=\"container-fluid");
 
-		if (!FeatureFlagManagerUtil.isEnabled("LPS-184404")) {
+		if (!FeatureFlagManagerUtil.isEnabled(_getCompanyId(), "LPS-184404")) {
 			jspWriter.write(" container-fluid-max-xl");
 		}
 
@@ -1038,7 +1040,9 @@ public class ManagementToolbarTag extends BaseContainerTag {
 			jspWriter.write(" navbar-overlay navbar-overlay-sm-down\"><div");
 			jspWriter.write(" class=\"container-fluid");
 
-			if (!FeatureFlagManagerUtil.isEnabled("LPS-184404")) {
+			if (!FeatureFlagManagerUtil.isEnabled(
+					_getCompanyId(), "LPS-184404")) {
+
 				jspWriter.write(" container-fluid-max-xl");
 			}
 
@@ -1215,7 +1219,9 @@ public class ManagementToolbarTag extends BaseContainerTag {
 			jspWriter.write(" tbar tbar-inline-xs-down\"><div class=\"");
 			jspWriter.write("container-fluid");
 
-			if (!FeatureFlagManagerUtil.isEnabled("LPS-184404")) {
+			if (!FeatureFlagManagerUtil.isEnabled(
+					_getCompanyId(), "LPS-184404")) {
+
 				jspWriter.write(" container-fluid-max-xl");
 			}
 
@@ -1278,6 +1284,16 @@ public class ManagementToolbarTag extends BaseContainerTag {
 		}
 
 		return SKIP_BODY;
+	}
+
+	private long _getCompanyId() {
+		HttpServletRequest httpServletRequest = getRequest();
+
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
+
+		return themeDisplay.getCompanyId();
 	}
 
 	private String _getLocalizedItemsType() {

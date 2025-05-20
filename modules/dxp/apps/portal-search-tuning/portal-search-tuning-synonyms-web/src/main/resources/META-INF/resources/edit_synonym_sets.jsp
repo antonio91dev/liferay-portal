@@ -34,7 +34,7 @@ portletDisplay.setURLBackTitle(portletDisplay.getPortletDisplayName());
 
 <liferay-frontend:edit-form
 	action="<%= editSynonymSetURL %>"
-	fluid='<%= FeatureFlagManagerUtil.isEnabled("LPS-184404") %>'
+	fluid='<%= FeatureFlagManagerUtil.isEnabled(themeDisplay.getCompanyId(), "LPS-184404") %>'
 	name="<%= editSynonymSetsDisplayContext.getFormName() %>"
 >
 	<aui:input name="<%= editSynonymSetsDisplayContext.getInputName() %>" type="hidden" value="" />

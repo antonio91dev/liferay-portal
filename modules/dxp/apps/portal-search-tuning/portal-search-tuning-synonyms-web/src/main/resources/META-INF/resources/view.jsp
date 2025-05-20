@@ -44,7 +44,7 @@ SynonymsDisplayContext synonymsDisplayContext = (SynonymsDisplayContext)request.
 </portlet:actionURL>
 
 <clay:container-fluid
-	fullWidth='<%= FeatureFlagManagerUtil.isEnabled("LPS-184404") %>'
+	fullWidth='<%= FeatureFlagManagerUtil.isEnabled(themeDisplay.getCompanyId(), "LPS-184404") %>'
 >
 	<aui:form action="<%= deleteSynonymSetActionURL %>" method="post" name="fm">
 		<aui:input name="deletedSynonymSetsString" type="hidden" value="" />

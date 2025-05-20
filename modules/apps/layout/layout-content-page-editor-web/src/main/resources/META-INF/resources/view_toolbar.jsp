@@ -13,7 +13,7 @@ ContentPageEditorDisplayContext contentPageEditorDisplayContext = (ContentPageEd
 
 <div class="management-bar navbar navbar-expand-md page-editor__toolbar <%= contentPageEditorDisplayContext.isMasterLayout() ? "page-editor__toolbar--master-layout" : StringPool.BLANK %>" id="<%= contentPageEditorDisplayContext.getPortletNamespace() %>pageEditorToolbar">
 	<clay:container-fluid
-		fullWidth='<%= FeatureFlagManagerUtil.isEnabled("LPS-184404") %>'
+		fullWidth='<%= FeatureFlagManagerUtil.isEnabled(themeDisplay.getCompanyId(), "LPS-184404") %>'
 	>
 		<ul class="navbar-nav start">
 			<li class="nav-item">
