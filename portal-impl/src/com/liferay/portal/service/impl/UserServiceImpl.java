@@ -3568,6 +3568,9 @@ public class UserServiceImpl extends UserServiceBaseImpl {
 
 		PermissionChecker permissionChecker = getPermissionChecker();
 
+		boolean strictAssignment = PropsValues.ORGANIZATIONS_ASSIGNMENT_STRICT ||
+								   !permissionChecker.isCompanyAdmin();
+
 		if (userId != CompanyConstants.SYSTEM) {
 
 			// Add back any mandatory organizations or organizations that the
@@ -3616,6 +3619,11 @@ public class UserServiceImpl extends UserServiceBaseImpl {
 
 			OrganizationPermissionUtil.check(
 				permissionChecker, organization, ActionKeys.ASSIGN_MEMBERS);
+
+			if (strictAssignment) {
+				OrganizationPermissionUtil.check(
+					permissionChecker, organization, ActionKeys.MANAGE_USERS);
+			}
 		}
 
 		return organizationIds;
