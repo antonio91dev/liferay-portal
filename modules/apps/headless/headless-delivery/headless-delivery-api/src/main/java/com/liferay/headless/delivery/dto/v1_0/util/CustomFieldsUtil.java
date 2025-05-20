@@ -503,8 +503,7 @@ public class CustomFieldsUtil {
 		}
 
 		throw new IllegalArgumentException(
-			"Unexpected type for the Custom Field: " + customField.getName() +
-				", Array or Collection expected");
+			"Unable to parse field \"" + customField.getName() + "\"");
 	}
 
 	private static void _validateArrayCustomField(
@@ -543,7 +542,7 @@ public class CustomFieldsUtil {
 		}
 
 		throw new IllegalArgumentException(
-			"Unexpected type for the Custom Field: " + customField.getName());
+			"Unable to parse field \"" + customField.getName() + "\"");
 	}
 
 	private static void _validateCustomField(
@@ -554,7 +553,7 @@ public class CustomFieldsUtil {
 		}
 
 		throw new IllegalArgumentException(
-			"Unexpected type for the Custom Field: " + customField.getName());
+			"Unable to parse field \"" + customField.getName() + "\"");
 	}
 
 }
