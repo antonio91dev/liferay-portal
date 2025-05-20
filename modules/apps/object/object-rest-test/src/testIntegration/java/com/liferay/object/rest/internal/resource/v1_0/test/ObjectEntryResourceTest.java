@@ -14208,15 +14208,10 @@ public class ObjectEntryResourceTest {
 
 		_objectEntry2 = ObjectEntryTestUtil.addObjectEntry(
 			objectDefinition2, _OBJECT_FIELD_NAME_2, _OBJECT_FIELD_VALUE_2);
-
 		_objectEntry3 = ObjectEntryTestUtil.addObjectEntry(
 			objectDefinition2, _OBJECT_FIELD_NAME_2, _OBJECT_FIELD_VALUE_2);
 
 		_objectRelationship1 = ObjectRelationshipTestUtil.addObjectRelationship(
-			objectDefinition2, objectDefinition1, TestPropsValues.getUserId(),
-			ObjectRelationshipConstants.TYPE_ONE_TO_MANY);
-
-		_objectRelationship2 = ObjectRelationshipTestUtil.addObjectRelationship(
 			objectDefinition2, objectDefinition1, TestPropsValues.getUserId(),
 			ObjectRelationshipConstants.TYPE_ONE_TO_MANY);
 
@@ -14226,6 +14221,10 @@ public class ObjectEntryResourceTest {
 					NAME_OBJECT_RELATIONSHIP_ERC_OBJECT_FIELD_NAME,
 				_objectFieldLocalService.getObjectField(
 					_objectRelationship1.getObjectFieldId2()));
+
+		_objectRelationship2 = ObjectRelationshipTestUtil.addObjectRelationship(
+			objectDefinition2, objectDefinition1, TestPropsValues.getUserId(),
+			ObjectRelationshipConstants.TYPE_ONE_TO_MANY);
 
 		String objectRelationship2IdObjectFieldName =
 			ObjectFieldSettingUtil.getValue(
@@ -16104,7 +16103,6 @@ public class ObjectEntryResourceTest {
 
 		_objectEntry2 = ObjectEntryTestUtil.addObjectEntry(
 			objectDefinition2, _OBJECT_FIELD_NAME_2, _OBJECT_FIELD_VALUE_2);
-
 		_objectEntry3 = ObjectEntryTestUtil.addObjectEntry(
 			objectDefinition2, _OBJECT_FIELD_NAME_2, _OBJECT_FIELD_VALUE_2);
 
@@ -16116,6 +16114,12 @@ public class ObjectEntryResourceTest {
 			_objectFieldLocalService.getObjectField(
 				_objectRelationship1.getObjectFieldId2());
 
+		String objectRelationship1ERCObjectFieldName =
+			ObjectFieldSettingUtil.getValue(
+				ObjectFieldSettingConstants.
+					NAME_OBJECT_RELATIONSHIP_ERC_OBJECT_FIELD_NAME,
+				objectRelationship1ObjectField);
+
 		_objectRelationship2 = ObjectRelationshipTestUtil.addObjectRelationship(
 			objectDefinition2, objectDefinition1, TestPropsValues.getUserId(),
 			ObjectRelationshipConstants.TYPE_ONE_TO_MANY);
@@ -16123,12 +16127,6 @@ public class ObjectEntryResourceTest {
 		ObjectField objectRelationship2ObjectField =
 			_objectFieldLocalService.getObjectField(
 				_objectRelationship2.getObjectFieldId2());
-
-		String objectRelationship1ERCObjectFieldName =
-			ObjectFieldSettingUtil.getValue(
-				ObjectFieldSettingConstants.
-					NAME_OBJECT_RELATIONSHIP_ERC_OBJECT_FIELD_NAME,
-				objectRelationship1ObjectField);
 
 		String objectRelationship2ERCObjectFieldName =
 			ObjectFieldSettingUtil.getValue(
