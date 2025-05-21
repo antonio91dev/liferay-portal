@@ -17,6 +17,7 @@ import com.liferay.headless.admin.user.dto.v1_0.EmailAddress;
 import com.liferay.headless.admin.user.dto.v1_0.Phone;
 import com.liferay.headless.admin.user.dto.v1_0.PostalAddress;
 import com.liferay.headless.admin.user.dto.v1_0.WebUrl;
+import com.liferay.headless.admin.user.internal.dto.v1_0.converter.constants.DTOConverterConstants;
 import com.liferay.headless.admin.user.internal.dto.v1_0.util.CustomFieldsUtil;
 import com.liferay.headless.admin.user.internal.dto.v1_0.util.EmailAddressUtil;
 import com.liferay.headless.admin.user.internal.dto.v1_0.util.PhoneUtil;
@@ -40,6 +41,8 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.webserver.WebServerServletToken;
 import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterContext;
+import com.liferay.portal.vulcan.dto.converter.DTOConverterRegistry;
+import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -245,10 +248,14 @@ public class AccountResourceDTOConverter
 								getAccountEntryContactAddressListTypeIds(
 									accountEntry.getCompanyId(),
 									_listTypeLocalService)),
-						address -> PostalAddressUtil.toPostalAddress(
-							dtoConverterContext.isAcceptAllLanguages(), address,
-							accountEntry.getCompanyId(),
-							dtoConverterContext.getLocale()),
+						address -> _postalAddressDTOConverter.toDTO(
+							new DefaultDTOConverterContext(
+								dtoConverterContext.isAcceptAllLanguages(),
+								null, _dtoConverterRegistry,
+								address.getAddressId(),
+								dtoConverterContext.getLocale(),
+								dtoConverterContext.getUriInfo(),
+								dtoConverterContext.getUser())),
 						PostalAddress.class));
 				setSkype(
 					() -> {
@@ -306,10 +313,16 @@ public class AccountResourceDTOConverter
 	private AddressLocalService _addressLocalService;
 
 	@Reference
+	private DTOConverterRegistry _dtoConverterRegistry;
+
+	@Reference
 	private ListTypeLocalService _listTypeLocalService;
 
 	@Reference
 	private OrganizationLocalService _organizationLocalService;
+
+	@Reference(target = DTOConverterConstants.POSTAL_ADDRESS_DTO_CONVERTER)
+	private DTOConverter<Address, PostalAddress> _postalAddressDTOConverter;
 
 	@Reference
 	private ResourcePermissionLocalService _resourcePermissionLocalService;

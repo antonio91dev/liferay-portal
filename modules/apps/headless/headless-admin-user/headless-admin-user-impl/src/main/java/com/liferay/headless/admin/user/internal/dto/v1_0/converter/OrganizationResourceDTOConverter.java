@@ -17,13 +17,14 @@ import com.liferay.headless.admin.user.dto.v1_0.Phone;
 import com.liferay.headless.admin.user.dto.v1_0.PostalAddress;
 import com.liferay.headless.admin.user.dto.v1_0.Service;
 import com.liferay.headless.admin.user.dto.v1_0.WebUrl;
+import com.liferay.headless.admin.user.internal.dto.v1_0.converter.constants.DTOConverterConstants;
 import com.liferay.headless.admin.user.internal.dto.v1_0.util.CustomFieldsUtil;
 import com.liferay.headless.admin.user.internal.dto.v1_0.util.EmailAddressUtil;
 import com.liferay.headless.admin.user.internal.dto.v1_0.util.PhoneUtil;
-import com.liferay.headless.admin.user.internal.dto.v1_0.util.PostalAddressUtil;
 import com.liferay.headless.admin.user.internal.dto.v1_0.util.WebUrlUtil;
 import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.portal.kernel.language.Language;
+import com.liferay.portal.kernel.model.Address;
 import com.liferay.portal.kernel.model.Country;
 import com.liferay.portal.kernel.model.ListType;
 import com.liferay.portal.kernel.model.OrgLabor;
@@ -43,6 +44,8 @@ import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterContext;
+import com.liferay.portal.vulcan.dto.converter.DTOConverterRegistry;
+import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
 import com.liferay.portal.vulcan.util.LocalizedMapUtil;
 
 import java.text.DecimalFormat;
@@ -214,13 +217,15 @@ public class OrganizationResourceDTOConverter
 							setPostalAddresses(
 								() -> TransformUtil.transformToArray(
 									organization.getAddresses(),
-									address ->
-										PostalAddressUtil.toPostalAddress(
+									address -> _postalAddressDTOConverter.toDTO(
+										new DefaultDTOConverterContext(
 											dtoConverterContext.
 												isAcceptAllLanguages(),
-											address,
-											organization.getCompanyId(),
-											dtoConverterContext.getLocale()),
+											null, _dtoConverterRegistry,
+											address.getAddressId(),
+											dtoConverterContext.getLocale(),
+											dtoConverterContext.getUriInfo(),
+											dtoConverterContext.getUser())),
 									PostalAddress.class));
 							setTelephones(
 								() -> TransformUtil.transformToArray(
@@ -328,6 +333,9 @@ public class OrganizationResourceDTOConverter
 	private CountryService _countryService;
 
 	@Reference
+	private DTOConverterRegistry _dtoConverterRegistry;
+
+	@Reference
 	private EmailAddressService _emailAddressService;
 
 	@Reference
@@ -344,6 +352,9 @@ public class OrganizationResourceDTOConverter
 
 	@Reference
 	private PhoneService _phoneService;
+
+	@Reference(target = DTOConverterConstants.POSTAL_ADDRESS_DTO_CONVERTER)
+	private DTOConverter<Address, PostalAddress> _postalAddressDTOConverter;
 
 	@Reference
 	private RegionService _regionService;

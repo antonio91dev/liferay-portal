@@ -26,14 +26,15 @@ import com.liferay.headless.admin.user.dto.v1_0.UserAccount;
 import com.liferay.headless.admin.user.dto.v1_0.UserAccountContactInformation;
 import com.liferay.headless.admin.user.dto.v1_0.UserGroupBrief;
 import com.liferay.headless.admin.user.dto.v1_0.WebUrl;
+import com.liferay.headless.admin.user.internal.dto.v1_0.converter.constants.DTOConverterConstants;
 import com.liferay.headless.admin.user.internal.dto.v1_0.util.CustomFieldsUtil;
 import com.liferay.headless.admin.user.internal.dto.v1_0.util.EmailAddressUtil;
 import com.liferay.headless.admin.user.internal.dto.v1_0.util.PhoneUtil;
-import com.liferay.headless.admin.user.internal.dto.v1_0.util.PostalAddressUtil;
 import com.liferay.headless.admin.user.internal.dto.v1_0.util.ServiceBuilderListTypeUtil;
 import com.liferay.headless.admin.user.internal.dto.v1_0.util.WebUrlUtil;
 import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.model.Address;
 import com.liferay.portal.kernel.model.Contact;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Organization;
@@ -61,6 +62,8 @@ import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.security.permission.UserBagFactoryUtil;
 import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterContext;
+import com.liferay.portal.vulcan.dto.converter.DTOConverterRegistry;
+import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
 import com.liferay.portal.vulcan.util.LocalizedMapUtil;
 
 import java.util.Collection;
@@ -311,12 +314,15 @@ public class UserResourceDTOConverter
 							setPostalAddresses(
 								() -> TransformUtil.transformToArray(
 									user.getAddresses(),
-									address ->
-										PostalAddressUtil.toPostalAddress(
+									address -> _postalAddressDTOConverter.toDTO(
+										new DefaultDTOConverterContext(
 											dtoConverterContext.
 												isAcceptAllLanguages(),
-											address, user.getCompanyId(),
-											dtoConverterContext.getLocale()),
+											null, _dtoConverterRegistry,
+											address.getAddressId(),
+											dtoConverterContext.getLocale(),
+											dtoConverterContext.getUriInfo(),
+											dtoConverterContext.getUser())),
 									PostalAddress.class));
 							setSkype(
 								() -> {
@@ -529,10 +535,16 @@ public class UserResourceDTOConverter
 	private AssetTagLocalService _assetTagLocalService;
 
 	@Reference
+	private DTOConverterRegistry _dtoConverterRegistry;
+
+	@Reference
 	private GroupLocalService _groupLocalService;
 
 	@Reference
 	private Portal _portal;
+
+	@Reference(target = DTOConverterConstants.POSTAL_ADDRESS_DTO_CONVERTER)
+	private DTOConverter<Address, PostalAddress> _postalAddressDTOConverter;
 
 	@Reference
 	private RoleLocalService _roleLocalService;
