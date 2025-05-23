@@ -184,7 +184,7 @@ public class GroupSelectorTag extends IncludeTag {
 	}
 
 	private List<Group> _getScopeGroupTypeAndSiteGroupTypeGroups(Group group) {
-		ArrayList<Group> groups = new ArrayList<>();
+		List<Group> groups = new ArrayList<>();
 
 		if (group == null) {
 			return groups;
