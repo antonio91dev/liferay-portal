@@ -103,15 +103,15 @@ public class GroupSelectorTagTest {
 		Group group = Mockito.mock(Group.class);
 
 		Mockito.when(
-			group.getCompanyId()
-		).thenReturn(
-			_COMPANY_ID
-		);
-
-		Mockito.when(
 			group.getGroupId()
 		).thenReturn(
 			_GROUP_ID
+		);
+
+		Mockito.when(
+			group.getCompanyId()
+		).thenReturn(
+			_COMPANY_ID
 		);
 
 		Mockito.when(
