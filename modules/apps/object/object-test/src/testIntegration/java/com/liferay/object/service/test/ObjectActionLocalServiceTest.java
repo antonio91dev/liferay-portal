@@ -17,7 +17,10 @@ import com.liferay.commerce.model.CommerceOrder;
 import com.liferay.commerce.model.CommerceSubscriptionEntry;
 import com.liferay.commerce.order.engine.CommerceOrderEngine;
 import com.liferay.commerce.payment.engine.CommerceSubscriptionEngine;
+import com.liferay.commerce.product.model.CPDefinition;
 import com.liferay.commerce.product.model.CommerceChannel;
+import com.liferay.commerce.product.service.CPDefinitionLocalService;
+import com.liferay.commerce.product.test.util.CPTestUtil;
 import com.liferay.commerce.service.CommerceOrderLocalService;
 import com.liferay.commerce.service.CommerceSubscriptionEntryLocalService;
 import com.liferay.commerce.test.util.CommerceTestUtil;
@@ -152,6 +155,7 @@ import java.lang.reflect.Method;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -1243,6 +1247,64 @@ public class ObjectActionLocalServiceTest {
 			CommerceOrderConstants.ORDER_STATUS_OPEN,
 			commerceOrder2.getOrderStatus());
 
+		// Commerce product system object definition
+
+		ObjectDefinition commerceProductObjectDefinition =
+			_objectDefinitionLocalService.fetchObjectDefinitionByClassName(
+				TestPropsValues.getCompanyId(), CPDefinition.class.getName());
+
+		_publishCustomObjectDefinition();
+
+		ObjectAction objectAction3 = _addObjectAction(
+			commerceProductObjectDefinition.getObjectDefinitionId(),
+			ObjectActionExecutorConstants.KEY_ADD_OBJECT_ENTRY,
+			ObjectActionTriggerConstants.KEY_ON_AFTER_UPDATE,
+			UnicodePropertiesBuilder.put(
+				"objectDefinitionId", _objectDefinition.getObjectDefinitionId()
+			).put(
+				"predefinedValues",
+				JSONUtil.putAll(
+					JSONUtil.put(
+						"inputAsValue", true
+					).put(
+						"name", "firstName"
+					).put(
+						"value", RandomTestUtil.randomString()
+					)
+				).toString()
+			).build());
+
+		CPDefinition cpDefinition = CPTestUtil.addCPDefinition(
+			_group.getGroupId());
+
+		Date displayDate = cpDefinition.getDisplayDate();
+		Date expirationDate = cpDefinition.getExpirationDate();
+
+		_cpDefinitionLocalService.updateCPDefinition(
+			cpDefinition.getCPDefinitionId(), cpDefinition.getNameMap(),
+			cpDefinition.getShortDescriptionMap(),
+			cpDefinition.getDescriptionMap(), cpDefinition.getUrlTitleMap(),
+			cpDefinition.getMetaTitleMap(),
+			cpDefinition.getMetaDescriptionMap(),
+			cpDefinition.getMetaKeywordsMap(),
+			cpDefinition.isIgnoreSKUCombinations(), true, true, true,
+			cpDefinition.getShippingExtraPrice(), cpDefinition.getWidth(),
+			cpDefinition.getHeight(), cpDefinition.getDepth(),
+			cpDefinition.getWeight(), cpDefinition.getCPTaxCategoryId(),
+			cpDefinition.isTaxExempt(), cpDefinition.isTelcoOrElectronics(),
+			cpDefinition.getDDMStructureKey(), cpDefinition.isPublished(),
+			displayDate.getMonth(), displayDate.getDate(),
+			displayDate.getYear(), displayDate.getHours(),
+			displayDate.getMinutes(), expirationDate.getMonth(),
+			expirationDate.getDate(), expirationDate.getYear(),
+			expirationDate.getHours(), expirationDate.getMinutes(), true,
+			ServiceContextTestUtil.getServiceContext());
+
+		Assert.assertEquals(
+			1,
+			_objectEntryLocalService.getObjectEntriesCount(
+				0, _objectDefinition.getObjectDefinitionId()));
+
 		// Organization system object definition
 
 		ObjectDefinition organizationObjectDefinition =
@@ -1265,7 +1327,7 @@ public class ObjectActionLocalServiceTest {
 				organizationObjectDefinition.getObjectDefinitionId()
 			).build());
 
-		ObjectAction objectAction3 = _addObjectAction(
+		ObjectAction objectAction4 = _addObjectAction(
 			organizationObjectDefinition.getObjectDefinitionId(),
 			ObjectActionExecutorConstants.KEY_ADD_OBJECT_ENTRY,
 			ObjectActionTriggerConstants.KEY_ON_AFTER_ADD,
@@ -1299,7 +1361,7 @@ public class ObjectActionLocalServiceTest {
 				).toString()
 			).build());
 
-		ObjectAction objectAction4 = _addObjectAction(
+		ObjectAction objectAction5 = _addObjectAction(
 			RandomTestUtil.randomString(),
 			ObjectActionExecutorConstants.KEY_ADD_OBJECT_ENTRY,
 			ObjectActionTriggerConstants.KEY_ON_AFTER_ADD,
@@ -1333,8 +1395,6 @@ public class ObjectActionLocalServiceTest {
 				).toString()
 			).build(),
 			false);
-
-		_publishCustomObjectDefinition();
 
 		OrganizationTestUtil.addOrganization(
 			OrganizationConstants.DEFAULT_PARENT_ORGANIZATION_ID,
@@ -1398,7 +1458,7 @@ public class ObjectActionLocalServiceTest {
 
 		// Add object action to create user after adding an object entry
 
-		ObjectAction objectAction5 = _addObjectAction(
+		ObjectAction objectAction6 = _addObjectAction(
 			RandomTestUtil.randomString(),
 			ObjectActionExecutorConstants.KEY_ADD_OBJECT_ENTRY,
 			ObjectActionTriggerConstants.KEY_ON_AFTER_ADD,
@@ -1449,7 +1509,7 @@ public class ObjectActionLocalServiceTest {
 
 		// Add object action to update user after adding a user
 
-		ObjectAction objectAction6 = _addObjectAction(
+		ObjectAction objectAction7 = _addObjectAction(
 			userObjectDefinition.getObjectDefinitionId(),
 			ObjectActionExecutorConstants.KEY_UPDATE_OBJECT_ENTRY,
 			ObjectActionTriggerConstants.KEY_ON_AFTER_ADD,
@@ -1502,14 +1562,14 @@ public class ObjectActionLocalServiceTest {
 
 		_userLocalService.deleteUser(user);
 
-		_objectActionLocalService.deleteObjectAction(objectAction3);
 		_objectActionLocalService.deleteObjectAction(objectAction4);
 		_objectActionLocalService.deleteObjectAction(objectAction5);
 		_objectActionLocalService.deleteObjectAction(objectAction6);
+		_objectActionLocalService.deleteObjectAction(objectAction7);
 
 		// Add object action to execute Groovy after adding a user
 
-		objectAction3 = _addObjectAction(
+		objectAction4 = _addObjectAction(
 			userObjectDefinition.getObjectDefinitionId(),
 			ObjectActionExecutorConstants.KEY_GROOVY,
 			ObjectActionTriggerConstants.KEY_ON_AFTER_ADD,
@@ -1519,7 +1579,7 @@ public class ObjectActionLocalServiceTest {
 
 		// Add object action to execute Groovy after updating a user
 
-		objectAction4 = _addObjectAction(
+		objectAction5 = _addObjectAction(
 			userObjectDefinition.getObjectDefinitionId(),
 			ObjectActionExecutorConstants.KEY_GROOVY,
 			ObjectActionTriggerConstants.KEY_ON_AFTER_UPDATE,
@@ -1548,6 +1608,7 @@ public class ObjectActionLocalServiceTest {
 		_objectActionLocalService.deleteObjectAction(objectAction2);
 		_objectActionLocalService.deleteObjectAction(objectAction3);
 		_objectActionLocalService.deleteObjectAction(objectAction4);
+		_objectActionLocalService.deleteObjectAction(objectAction5);
 		_objectFieldLocalService.deleteObjectField(objectField1);
 		_objectFieldLocalService.deleteObjectField(objectField2);
 		_objectFieldLocalService.deleteObjectField(objectField3);
@@ -3542,6 +3603,9 @@ public class ObjectActionLocalServiceTest {
 
 	@Inject
 	private CompanyLocalService _companyLocalService;
+
+	@Inject
+	private CPDefinitionLocalService _cpDefinitionLocalService;
 
 	private Group _group;
 
