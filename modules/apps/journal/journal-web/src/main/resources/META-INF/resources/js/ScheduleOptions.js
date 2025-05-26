@@ -30,17 +30,6 @@ export default function ScheduleOptions({
 
 				return;
 			}
-
-			const date = new Date(displayDate);
-
-			if (
-				date <=
-				new Date(new Date().toLocaleString('en-US', timeZone.id))
-			) {
-				setError(
-					Liferay.Language.get('the-date-entered-is-in-the-past')
-				);
-			}
 			else {
 				setError('');
 			}
