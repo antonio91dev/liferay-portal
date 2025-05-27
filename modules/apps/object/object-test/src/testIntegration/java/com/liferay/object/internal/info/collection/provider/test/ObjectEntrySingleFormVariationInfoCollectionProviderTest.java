@@ -21,7 +21,7 @@ import com.liferay.layout.util.structure.LayoutStructure;
 import com.liferay.object.constants.ObjectDefinitionConstants;
 import com.liferay.object.field.builder.TextObjectFieldBuilder;
 import com.liferay.object.model.ObjectDefinition;
-import com.liferay.object.rest.dto.v1_0.ObjectEntry;
+import com.liferay.object.model.ObjectEntry;
 import com.liferay.object.service.ObjectDefinitionLocalService;
 import com.liferay.object.service.ObjectEntryLocalService;
 import com.liferay.object.test.util.ObjectDefinitionTestUtil;
@@ -50,6 +50,7 @@ import com.liferay.segments.service.SegmentsExperienceLocalService;
 
 import java.io.Serializable;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -220,16 +221,17 @@ public class ObjectEntrySingleFormVariationInfoCollectionProviderTest {
 				objectDefinition.getObjectDefinitionId());
 
 		try {
-			int expectedObjectEntriesSize = RandomTestUtil.randomInt(1, 10);
+			List<ObjectEntry> expectedObjectEntries = new ArrayList<>();
 
-			for (int i = 0; i < expectedObjectEntriesSize; i++) {
-				_objectEntryLocalService.addObjectEntry(
-					TestPropsValues.getUserId(), 0,
-					objectDefinition.getObjectDefinitionId(),
-					HashMapBuilder.<String, Serializable>put(
-						"textObjectFieldName", RandomTestUtil.randomString()
-					).build(),
-					ServiceContextTestUtil.getServiceContext());
+			for (int i = 0; i < RandomTestUtil.randomInt(1, 10); i++) {
+				expectedObjectEntries.add(
+					_objectEntryLocalService.addObjectEntry(
+						TestPropsValues.getUserId(), 0,
+						objectDefinition.getObjectDefinitionId(),
+						HashMapBuilder.<String, Serializable>put(
+							"textObjectFieldName", RandomTestUtil.randomString()
+						).build(),
+						ServiceContextTestUtil.getServiceContext()));
 			}
 
 			InfoCollectionProvider<ObjectEntry> infoCollectionProvider =
@@ -249,14 +251,23 @@ public class ObjectEntrySingleFormVariationInfoCollectionProviderTest {
 				infoCollectionProvider.getCollectionInfoPage(collectionQuery);
 
 			Assert.assertEquals(
-				expectedObjectEntriesSize, infoPage.getTotalCount());
+				expectedObjectEntries.size(), infoPage.getTotalCount());
 
-			List<ObjectEntry> objectEntries =
+			List<ObjectEntry> actualObjectEntries =
 				(List<ObjectEntry>)infoPage.getPageItems();
 
 			Assert.assertEquals(
-				objectEntries.toString(), expectedObjectEntriesSize,
-				objectEntries.size());
+				actualObjectEntries.toString(), expectedObjectEntries.size(),
+				actualObjectEntries.size());
+
+			for (int i = 0; i < expectedObjectEntries.size(); i++) {
+				ObjectEntry actualObjectEntry = actualObjectEntries.get(i);
+				ObjectEntry expectedObjectEntry = expectedObjectEntries.get(i);
+
+				Assert.assertEquals(
+					expectedObjectEntry.getObjectEntryId(),
+					actualObjectEntry.getObjectEntryId());
+			}
 		}
 		finally {
 			_objectDefinitionLocalService.deleteObjectDefinition(

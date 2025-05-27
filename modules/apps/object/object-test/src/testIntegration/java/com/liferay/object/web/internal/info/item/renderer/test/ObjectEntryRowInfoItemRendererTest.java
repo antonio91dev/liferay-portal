@@ -39,7 +39,6 @@ import com.liferay.portal.vulcan.util.LocalizedMapUtil;
 import java.io.Serializable;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Map;
 
 import javax.servlet.ServletRequest;
@@ -78,8 +77,7 @@ public class ObjectEntryRowInfoItemRendererTest {
 				LocalizedMapUtil.getLocalizedMap(RandomTestUtil.randomString()),
 				ObjectDefinitionTestUtil.getRandomName(), null, null,
 				LocalizedMapUtil.getLocalizedMap(RandomTestUtil.randomString()),
-				true,
-				ObjectDefinitionConstants.SCOPE_SITE,
+				true, ObjectDefinitionConstants.SCOPE_SITE,
 				ObjectDefinitionConstants.STORAGE_TYPE_DEFAULT,
 				Arrays.asList(
 					ObjectFieldUtil.createObjectField(
