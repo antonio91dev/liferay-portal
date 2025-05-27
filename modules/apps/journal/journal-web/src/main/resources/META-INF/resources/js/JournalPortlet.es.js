@@ -60,6 +60,7 @@ export default function _JournalPortlet({
 	let articleId = initialArticleId;
 	let defaultLanguageId = initialDefaultLanguageId;
 	let selectedLanguageId = initialDefaultLanguageId;
+	let formSubmitted = false;
 
 	const lockHolder = {};
 
@@ -183,7 +184,9 @@ export default function _JournalPortlet({
 					submitAsyncForm(form, {redirectOnSave});
 				}
 			}
-			else {
+			else if (!formSubmitted) {
+				formSubmitted = true;
+
 				form.submit();
 			}
 		}
