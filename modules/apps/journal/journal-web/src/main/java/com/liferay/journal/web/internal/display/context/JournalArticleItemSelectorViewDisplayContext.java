@@ -363,7 +363,7 @@ public class JournalArticleItemSelectorViewDisplayContext {
 			}
 
 			SearchResponse searchResponse =
-				JournalSearcherUtil.searchJournalArticleAndFolders(
+				JournalSearcherUtil.searchJournalArticlesAndJournalFolders(
 					searchContext -> {
 						try {
 							_populateSearchContext(

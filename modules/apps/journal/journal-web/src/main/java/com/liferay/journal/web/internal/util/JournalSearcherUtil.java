@@ -27,7 +27,7 @@ import java.util.function.Consumer;
  */
 public class JournalSearcherUtil {
 
-	public static SearchResponse searchJournalArticleAndFolders(
+	public static SearchResponse searchJournalArticlesAndJournalFolders(
 		Consumer<SearchContext> searchContextConsumer) {
 
 		return _search(
