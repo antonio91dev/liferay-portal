@@ -1542,11 +1542,11 @@ public class JournalDisplayContext {
 		int foldersCount = journalFolderSearchResponse.getTotalHits();
 
 		if (start < foldersCount) {
+			List<Document> folderDocuments =
+				journalFolderSearchResponse.getDocuments71();
+
 			documents.addAll(
-				journalFolderSearchResponse.getDocuments71(
-				).subList(
-					start, Math.min(end, foldersCount)
-				));
+				folderDocuments.subList(start, Math.min(end, foldersCount)));
 
 			SearchResponse articleSearchResponse =
 				_getJournalArticleSearchResponse(0, delta - documents.size());
