@@ -37,9 +37,9 @@ public class IsURLFunctionTest {
 	public void testValidURL() {
 		IsURLFunction isURLFunction = new IsURLFunction();
 
-		Assert.assertTrue(isURLFunction.apply(null));
 		Assert.assertTrue(isURLFunction.apply(""));
 		Assert.assertTrue(isURLFunction.apply("http://www.liferay.com"));
+		Assert.assertTrue(isURLFunction.apply(null));
 	}
 
 }
