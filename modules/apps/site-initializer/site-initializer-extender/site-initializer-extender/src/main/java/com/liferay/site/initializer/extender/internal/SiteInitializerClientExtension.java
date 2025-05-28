@@ -201,7 +201,7 @@ public class SiteInitializerClientExtension
 			}
 		}
 
-		String webId = GetterUtil.get(
+		String webId = GetterUtil.getString(
 			headers.get("Liferay-Virtual-Instance-Id"), "default");
 
 		if (Objects.equals(webId, "default")) {
