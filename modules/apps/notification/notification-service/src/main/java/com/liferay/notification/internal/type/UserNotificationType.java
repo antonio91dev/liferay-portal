@@ -111,6 +111,7 @@ public class UserNotificationType extends BaseNotificationType {
 	public void sendNotification(NotificationContext notificationContext)
 		throws PortalException {
 
+		boolean enqueue = false;
 		List<Map<String, String>> notificationRecipientSettings =
 			new ArrayList<>();
 
@@ -119,8 +120,6 @@ public class UserNotificationType extends BaseNotificationType {
 
 		UsersProvider usersProvider = _usersProviders.get(
 			notificationTemplate.getRecipientType());
-
-		boolean enqueue = false;
 
 		for (User user : usersProvider.provide(notificationContext)) {
 			boolean deliver = UserNotificationManagerUtil.isDeliver(
@@ -138,7 +137,6 @@ public class UserNotificationType extends BaseNotificationType {
 			}
 
 			enqueue = true;
-
 			siteDefaultLocale = portal.getSiteDefaultLocale(user.getGroupId());
 			userLocale = user.getLocale();
 
