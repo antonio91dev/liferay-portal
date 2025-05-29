@@ -860,13 +860,11 @@ public class SitePageResourceImpl extends BaseSitePageResourceImpl {
 			String friendlyUrlPath, long groupId, String segmentsExperienceKey)
 		throws Exception {
 
-		Group group = _groupLocalService.fetchGroup(groupId);
+		Layout layout = _getLayout(groupId, friendlyUrlPath);
 
 		try (AutoCloseable autoCloseable =
 				_layoutServiceContextHelper.getServiceContextAutoCloseable(
-					_companyLocalService.getCompany(group.getCompanyId()))) {
-
-			Layout layout = _getLayout(groupId, friendlyUrlPath);
+					layout)) {
 
 			contextHttpServletRequest = DynamicServletRequest.addQueryString(
 				contextHttpServletRequest, "p_l_id=" + layout.getPlid(), false);
