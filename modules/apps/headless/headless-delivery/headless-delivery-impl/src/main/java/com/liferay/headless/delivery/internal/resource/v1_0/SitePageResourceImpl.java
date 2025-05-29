@@ -876,7 +876,7 @@ public class SitePageResourceImpl extends BaseSitePageResourceImpl {
 
 		try (AutoCloseable autoCloseable =
 				_layoutServiceContextHelper.getServiceContextAutoCloseable(
-					layout)) {
+					layout, contextUser)) {
 
 			layout.includeLayoutContent(
 				contextHttpServletRequest, contextHttpServletResponse);
