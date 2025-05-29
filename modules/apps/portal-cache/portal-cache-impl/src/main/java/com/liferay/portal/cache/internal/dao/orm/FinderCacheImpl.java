@@ -725,12 +725,12 @@ public class FinderCacheImpl
 					Class<?> modelImplClass = classLoader.loadClass(
 						argumentsResolver.getClassName());
 
+					ctAware = CTModel.class.isAssignableFrom(modelImplClass);
+
 					if (DBPartition.isPartitionEnabled()) {
 						sharded = DBPartition.isPartitionedModel(
 							modelImplClass);
 					}
-
-					ctAware = CTModel.class.isAssignableFrom(modelImplClass);
 
 					if (ctAware) {
 						break;
