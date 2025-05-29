@@ -145,7 +145,7 @@ public class DLPortletInstanceSettingsHelper {
 	}
 
 	private String[] _getAllEntryColumns() {
-		String allEntryColumns = "name,description,size,status";
+		String allEntryColumns = "name,description,document-type,size,status";
 
 		if (ViewCountManagerUtil.isViewCountEnabled(
 				ClassNameLocalServiceUtil.getClassNameId(
