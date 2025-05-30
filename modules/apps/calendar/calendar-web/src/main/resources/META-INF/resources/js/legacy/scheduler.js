@@ -18,6 +18,8 @@ AUI.add(
 		const isObject = Lang.isObject;
 		const isValue = Lang.isValue;
 
+		const timeZone = Liferay.ThemeDisplay.getTimeZone();
+
 		const CONTROLS_NODE = 'controlsNode';
 
 		const DAYS_OF_WEEK = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'];
@@ -788,6 +790,9 @@ AUI.add(
 
 		const SchedulerDayView = A.Component.create({
 			ATTRS: {
+				initialScroll: {
+					value: CalendarUtil.getInitialScroll(new Date(), timeZone),
+				},
 				navigationDateFormatter: {
 					validator: isFunction,
 					value(date) {
@@ -835,7 +840,9 @@ AUI.add(
 						});
 					},
 				},
-
+				initialScroll: {
+					value: CalendarUtil.getInitialScroll(new Date(), timeZone),
+				},
 				navigationDateFormatter: {
 					validator: isFunction,
 					value(date) {
