@@ -1524,15 +1524,13 @@ public class JournalDisplayContext {
 			return _articleSearchContainer;
 		}
 
+		List<Document> documents = new ArrayList<>();
+
 		SearchContainer<Object> articleAndFolderSearchContainer =
 			_getArticleAndFolderSearchContainer();
 
 		int end = articleAndFolderSearchContainer.getEnd();
 		int start = articleAndFolderSearchContainer.getStart();
-
-		int delta = end - start;
-
-		List<Document> documents = new ArrayList<>();
 
 		SearchResponse journalFolderSearchResponse =
 			JournalSearcherUtil.searchJournalFolders(
@@ -1542,6 +1540,8 @@ public class JournalDisplayContext {
 		int foldersCount = journalFolderSearchResponse.getTotalHits();
 
 		int journalArticlesStart = start - foldersCount;
+
+		int delta = end - start;
 
 		int journalArticlesEnd = delta + journalArticlesStart;
 
