@@ -40,6 +40,7 @@ import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 
 import java.io.Writer;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.portlet.MutableRenderParameters;
@@ -107,7 +108,7 @@ public class DLAdminDisplayContextTest {
 	}
 
 	@Test
-	public void testSearchContainerContainsFolderWithMineFilter()
+	public void testSearchContainerContainsFolderWithNavigationMine()
 		throws Exception {
 
 		DLAppTestUtil.addFolder(_group.getGroupId());
@@ -120,10 +121,9 @@ public class DLAdminDisplayContextTest {
 		SearchContainer<Object> searchContainer = _getSearchContainer(
 			mockLiferayPortletActionRequest);
 
-		Assert.assertEquals(
-			1,
-			searchContainer.getResults(
-			).size());
+		List<Object> results = searchContainer.getResults();
+
+		Assert.assertEquals(results.toString(), 1, results.size());
 	}
 
 	private FileEntry _addDLFileEntry(String fileName, String content)
