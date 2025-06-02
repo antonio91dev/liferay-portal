@@ -975,12 +975,12 @@ public class DLAdminDisplayContext {
 			SearchContext searchContext, String className, int start, int end)
 		throws SearchException {
 
-		Indexer<?> dlFolderIndexer = IndexerRegistryUtil.getIndexer(className);
+		Indexer<?> indexer = IndexerRegistryUtil.getIndexer(className);
 
 		searchContext.setEnd(end);
 		searchContext.setStart(start);
 
-		return dlFolderIndexer.search(searchContext);
+		return indexer.search(searchContext);
 	}
 
 	private String _getKeywords() {
