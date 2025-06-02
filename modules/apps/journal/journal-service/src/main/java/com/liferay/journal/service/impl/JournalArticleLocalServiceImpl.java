@@ -6088,13 +6088,7 @@ public class JournalArticleLocalServiceImpl
 						folder.getGroupId(), folder.getFolderId(),
 						tempFileEntry.getFileName(), false);
 
-					// The UUID of the temporary file is stored on the field
-					// once saved as temp. However, when the system auto saves,
-					// this temporary file will be deleted and it's published
-					// with a different UUID, so it doesn't match. To be able to
-					// use the file, we'll use the temporary file's UUID as
-					// published file entry ERC so we could fetch it using this
-					// field. See LPD-52357.
+					// See LPD-52357
 
 					fileEntry = _portletFileRepository.addPortletFileEntry(
 						tempFileEntry.getUuid(), folder.getGroupId(),
