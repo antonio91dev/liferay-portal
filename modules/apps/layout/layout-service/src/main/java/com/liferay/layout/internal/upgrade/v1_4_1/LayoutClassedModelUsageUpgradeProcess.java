@@ -136,7 +136,6 @@ public class LayoutClassedModelUsageUpgradeProcess extends UpgradeProcess {
 						String externalReferenceCode =
 							editableJSONObject.getString(
 								"externalReferenceCode");
-
 						long ctCollectionId = (Long)values[0];
 
 						_addLayoutClassedModelUsage(

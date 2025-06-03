@@ -101,9 +101,9 @@ public class LayoutClassedModelUsageCTUpgradeProcessTest
 
 		_deleteLayoutClassedModelUsage(_journalArticle.getResourcePrimKey());
 
-		_updateFragmentInNewCTCollection(fragmentEntryLink, _journalArticle);
+		_updateFragmentEntryLinkInNewCTCollection(fragmentEntryLink, _journalArticle);
 
-		_updateFragmentInNewCTCollection(fragmentEntryLink, _journalArticle);
+		_updateFragmentEntryLinkInNewCTCollection(fragmentEntryLink, _journalArticle);
 
 		runUpgrade();
 	}
@@ -300,7 +300,7 @@ public class LayoutClassedModelUsageCTUpgradeProcessTest
 		}
 	}
 
-	private void _updateFragmentInNewCTCollection(
+	private void _updateFragmentEntryLinkInNewCTCollection(
 			FragmentEntryLink fragmentEntryLink, JournalArticle journalArticle)
 		throws Exception {
 
