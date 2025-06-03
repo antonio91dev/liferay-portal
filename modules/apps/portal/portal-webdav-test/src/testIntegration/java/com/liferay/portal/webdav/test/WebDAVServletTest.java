@@ -54,7 +54,7 @@ public class WebDAVServletTest {
 	}
 
 	@Test
-	public void testHttpSessionContainsAuthenticatedUser() throws Exception {
+	public void testGetSession() throws Exception {
 		ProtectedServletRequest protectedServletRequest =
 			_createProtectedServletRequest("guest");
 		MockHttpServletResponse mockHttpServletResponse =
@@ -77,7 +77,7 @@ public class WebDAVServletTest {
 	}
 
 	@Test
-	public void testSiteDefaultLocaleIsSet() throws Exception {
+	public void testGetSiteDefaultLocale() throws Exception {
 		_group = GroupTestUtil.updateDisplaySettings(
 			_group.getGroupId(), ListUtil.fromArray(LocaleUtil.HUNGARY),
 			LocaleUtil.HUNGARY);
