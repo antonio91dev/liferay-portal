@@ -29,7 +29,7 @@ public class CETFactoryImplTest {
 		LiferayUnitTestRule.INSTANCE;
 
 	@Test
-	public void testTransformURLsWithAmpersand() {
+	public void testTransformURLsWithAmpersands() {
 		CETFactoryImpl cetFactoryImpl = new CETFactoryImpl();
 
 		CETImplFactory<?> cetImplFactory = Mockito.mock(CETImplFactory.class);
@@ -66,21 +66,21 @@ public class CETFactoryImplTest {
 		UnicodeProperties unicodeProperties = cetFactoryImpl.transformURLs(
 			StringPool.BLANK, cetImplFactory,
 			UnicodePropertiesBuilder.put(
-				"url", "http://example.com\" onmouseover=\"alert(1)"
-			).build());
-
-		Assert.assertEquals(
-			"http://example.com&#34; onmouseover=&#34;alert(1)",
-			unicodeProperties.get("url"));
-
-		unicodeProperties = cetFactoryImpl.transformURLs(
-			StringPool.BLANK, cetImplFactory,
-			UnicodePropertiesBuilder.put(
 				"url", "http://example.com' onmouseover='alert(1)"
 			).build());
 
 		Assert.assertEquals(
 			"http://example.com&#39; onmouseover=&#39;alert(1)",
+			unicodeProperties.get("url"));
+
+		unicodeProperties = cetFactoryImpl.transformURLs(
+			StringPool.BLANK, cetImplFactory,
+			UnicodePropertiesBuilder.put(
+				"url", "http://example.com\" onmouseover=\"alert(1)"
+			).build());
+
+		Assert.assertEquals(
+			"http://example.com&#34; onmouseover=&#34;alert(1)",
 			unicodeProperties.get("url"));
 	}
 
