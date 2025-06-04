@@ -114,6 +114,24 @@ public class JournalDisplayContextTest {
 	}
 
 	@Test
+	public void testGetSearchContainerWithJournalFolderFixture()
+		throws Exception {
+
+		JournalFolderFixture journalFolderFixture = new JournalFolderFixture(
+			_journalFolderLocalService);
+
+		for (int i = 1; i <= 21; i++) {
+			journalFolderFixture.addFolder(_group.getGroupId(), "Folder " + i);
+		}
+
+		SearchContainer<Object> searchContainer = _getSearchContainer();
+
+		List<Object> results = searchContainer.getResults();
+
+		Assert.assertEquals(results.toString(), 20, results.size());
+	}
+
+	@Test
 	public void testGetSearchContainerWithKeywordsAndDelta() throws Exception {
 		int count = 5;
 
@@ -148,24 +166,6 @@ public class JournalDisplayContextTest {
 				"test",
 				journalFolderFixture.addFolder(
 					_group.getGroupId(), RandomTestUtil.randomString())));
-	}
-
-	@Test
-	public void testSearchContainerPaginationWithApprovedFilter()
-		throws Exception {
-
-		JournalFolderFixture journalFolderFixture = new JournalFolderFixture(
-			_journalFolderLocalService);
-
-		for (int i = 1; i <= 21; i++) {
-			journalFolderFixture.addFolder(_group.getGroupId(), "Folder " + i);
-		}
-
-		SearchContainer<Object> searchContainer = _getSearchContainer();
-
-		List<Object> results = searchContainer.getResults();
-
-		Assert.assertEquals(results.toString(), 20, results.size());
 	}
 
 	private void _addJournalArticle(String title) throws Exception {
