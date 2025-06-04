@@ -926,15 +926,15 @@ public class OrganizationResourceTest extends BaseOrganizationResourceTestCase {
 		throws Exception {
 
 		String externalReferenceCode = RandomTestUtil.randomString();
-		Organization organization = new Organization() {
-			{
-				setName(RandomTestUtil.randomString());
-			}
-		};
 
 		Organization putOrganization =
 			organizationResource.putOrganizationByExternalReferenceCode(
-				externalReferenceCode, organization);
+				externalReferenceCode,
+				new Organization() {
+					{
+						setName(RandomTestUtil.randomString());
+					}
+				});
 
 		Assert.assertEquals(
 			externalReferenceCode, putOrganization.getExternalReferenceCode());
