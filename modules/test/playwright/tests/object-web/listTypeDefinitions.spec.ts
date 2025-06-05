@@ -357,7 +357,6 @@ test.describe('ensure picklist translation', () => {
 		formBuilderSidePanelPage,
 		formSettingsModalPage,
 		listTypeDefinitionPage,
-		modelBuilderDiagramPage,
 		objectFieldsPage,
 		page,
 		viewObjectDefinitionsPage,
@@ -416,8 +415,6 @@ test.describe('ensure picklist translation', () => {
 
 		await objectFieldsPage.addObjectField({
 			listTypeDefinitionName: listTypeDefinition.name,
-			objectDefinitionNodes:
-				modelBuilderDiagramPage.objectDefinitionNodes,
 			objectFieldBusinessType: 'Picklist',
 			objectFieldLabel: fieldLabel,
 		});

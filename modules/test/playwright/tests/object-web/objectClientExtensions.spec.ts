@@ -89,7 +89,6 @@ test.beforeEach(async ({apiHelpers}) => {
 test('Can create, read, update, and delete object entries that use the client extension as a storage type', async ({
 	apiHelpers,
 	editObjectDetailsPage,
-	modelBuilderDiagramPage,
 	objectFieldsPage,
 	page,
 	viewObjectEntriesPage,
@@ -133,7 +132,6 @@ test('Can create, read, update, and delete object entries that use the client ex
 	const [{businessType, label, name}] = objectFields;
 
 	await objectFieldsPage.addObjectField({
-		objectDefinitionNodes: modelBuilderDiagramPage.objectDefinitionNodes,
 		objectFieldBusinessType: String(businessType),
 		objectFieldLabel: label['en_US'],
 	});

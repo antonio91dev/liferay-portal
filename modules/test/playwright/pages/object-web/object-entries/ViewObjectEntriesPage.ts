@@ -194,8 +194,17 @@ export class ViewObjectEntriesPage {
 		await fileChooser.setFiles(
 			path.join(dirName, 'dependencies', fileName)
 		);
+	}
 
-		await this.page.getByText(fileName).waitFor({state: 'visible'});
+	getMaximumFileSizeErrorMessage({
+		maximumFileSizeAllowed,
+	}: {
+		maximumFileSizeAllowed: string;
+	}) {
+		return this.page.getByText(
+			`An unexpected error occurred while uploading your file.`,
+			{exact: true}
+		);
 	}
 
 	async goto(

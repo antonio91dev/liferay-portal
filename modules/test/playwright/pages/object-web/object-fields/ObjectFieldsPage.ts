@@ -5,13 +5,14 @@
 
 import {Locator, Page} from '@playwright/test';
 
-import {CreateObjectField} from '../../../helpers/ObjectAdminApiHelper';
 import {ViewObjectDefinitionsPage} from '../ViewObjectDefinitionsPage';
 
 export class ObjectFieldsPage {
 	readonly addObjectFieldButton: Locator;
 	readonly deleteObjectFieldOption: Locator;
+	readonly editFieldSaveButton: Locator;
 	readonly fieldsTabItem: Locator;
+	readonly maximumFileSize: Locator;
 	readonly page: Page;
 	readonly viewObjectDefinitionsPage: ViewObjectDefinitionsPage;
 	readonly saveButton: Locator;
@@ -26,6 +27,12 @@ export class ObjectFieldsPage {
 		this.fieldsTabItem = page.locator('.nav-item .nav-link').filter({
 			hasText: 'Fields',
 		});
+		this.maximumFileSize = page
+			.frameLocator('iframe')
+			.getByRole('spinbutton');
+		this.editFieldSaveButton = page
+			.frameLocator('iframe')
+			.getByRole('button', {name: 'Save'});
 		this.page = page;
 		this.objectFieldLabelInput = page.locator('input[name="label"]');
 		this.objectFieldOptionsDropdown = page.getByText('Select an Option');
@@ -83,6 +90,19 @@ export class ObjectFieldsPage {
 		await this.deleteObjectFieldOption.click();
 	}
 
+	getMaximumFileSizeErrorMessage({
+		maximumFileSizeAllowed,
+	}: {
+		maximumFileSizeAllowed: string;
+	}) {
+		return this.page
+			.frameLocator('iframe')
+			.getByText(
+				`File size is larger than the allowed overall maximum upload request size ${maximumFileSizeAllowed} MB.`,
+				{exact: true}
+			);
+	}
+
 	async goto(objectDefinitionLabel: string) {
 		await this.viewObjectDefinitionsPage.goto();
 
@@ -91,5 +111,13 @@ export class ObjectFieldsPage {
 		);
 
 		await this.fieldsTabItem.click();
+	}
+
+	async openObjectField(fieldLabel: string) {
+		await this.page
+			.getByRole('cell')
+			.getByRole('link')
+			.filter({hasText: fieldLabel})
+			.click();
 	}
 }

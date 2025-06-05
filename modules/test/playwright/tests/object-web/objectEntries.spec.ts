@@ -32,6 +32,8 @@ import {mockedObjectFields} from './dependencies/objectMockedFields';
 import {getFDSDateFormat, getPageEditorDateFormat} from './utils/dateFormat';
 import evaluateKeepCheckingAfterFound from './utils/keepCheckingAfterFound';
 import {mockObjectFields} from './utils/mockObjectFields';
+import { createFile, deleteFile } from './utils/fileHelpers';
+import { waitForAlert } from '../../utils/waitForAlert';
 
 export const test = mergeTests(
 	accountSettingsPagesTest,
@@ -652,6 +654,158 @@ test.describe('Manage object entries through View Object Entries', () => {
 			).toBeVisible();
 		}
 	});
+
+	test(
+		'can attach files after changing the overall maximum upload request size setting',
+		{tag: ['@LPD-56964']},
+		async ({
+			apiHelpers,
+			objectFieldsPage,
+			page,
+			systemSettingsPage,
+			viewObjectDefinitionsPage,
+			viewObjectEntriesPage,
+		}) => {
+			try {
+				await test.step('set overall maximum upload request size to 2MB in system settings', async () => {
+					await systemSettingsPage.goToSystemSetting(
+						'Infrastructure',
+						'Upload Servlet Request'
+					);
+
+					await page
+						.getByLabel('Overall Maximum Upload Request Size')
+						.fill('2097152');
+
+					await page
+						.getByRole('button', {name: 'Save'})
+						.or(page.getByRole('button', {name: 'Update'}))
+						.click();
+				});
+
+				const objectDefinition =
+					await apiHelpers.objectAdmin.postRandomObjectDefinition({
+						status: {code: 0},
+					});
+
+				await test.step('create attachment object field', async () => {
+					apiHelpers.data.push({
+						id: objectDefinition.id,
+						type: 'objectDefinition',
+					});
+
+					await viewObjectDefinitionsPage.goto();
+
+					await objectFieldsPage.goto(
+						objectDefinition.label['en_US']
+					);
+
+					await objectFieldsPage.addObjectField({
+						attachmentSource: 'Upload Directly from the User',
+						objectFieldBusinessType: 'Attachment',
+						objectFieldLabel: 'Attachment',
+					});
+				});
+
+				await test.step('Verify attachment field maximum file size validation', async () => {
+					// await objectFieldsPage.openObjectField();
+
+					await page
+						.getByRole('link', { name: 'Attachment' })
+						.click();
+
+					await expect(objectFieldsPage.maximumFileSize).toHaveValue(
+						'0'
+					);
+
+					await objectFieldsPage.maximumFileSize.fill('3');
+
+					await objectFieldsPage.editFieldSaveButton.click();
+
+					await expect(
+						objectFieldsPage.getMaximumFileSizeErrorMessage({
+							maximumFileSizeAllowed: '2',
+						})
+					).toBeVisible();
+				});
+
+				const FILE_NAME_3MB = '3MB.txt';
+				const FILE_SIZE_3MB = 3;
+
+				createFile(FILE_NAME_3MB, FILE_SIZE_3MB);
+
+				await test.step('attempt upload with file exceeding attachment maximum allowed size', async () => {
+					await viewObjectEntriesPage.goto(
+						objectDefinition.className
+					);
+
+					await viewObjectEntriesPage.clickAddObjectEntry(
+						objectDefinition.label['en_US']
+					);
+
+					await expect(
+						page.getByText(
+							'Upload a jpeg, jpg, pdf, png no larger than 2 MB.',
+							{exact: true}
+						)
+					).toBeVisible();
+
+					await viewObjectEntriesPage.selectFileFromUserComputer(
+						__dirname,
+						FILE_NAME_3MB
+					);
+
+					await expect(
+						viewObjectEntriesPage.getMaximumFileSizeErrorMessage({
+							maximumFileSizeAllowed: '2',
+						})
+					).toBeVisible();
+				});
+
+				const FILE_NAME_2MB = '2MB.png';
+				const FILE_SIZE_2MB = 2;
+
+				createFile(FILE_NAME_2MB, FILE_SIZE_2MB);
+
+				await test.step('successfully upload file at maximum allowed size', async () => {
+					await viewObjectEntriesPage.selectFileFromUserComputer(
+						__dirname,
+						FILE_NAME_2MB
+					);
+
+					await expect(
+						viewObjectEntriesPage.getMaximumFileSizeErrorMessage({
+							maximumFileSizeAllowed: '2',
+						})
+					).toBeHidden();
+
+					await viewObjectEntriesPage.saveObjectEntryButton.click();
+
+					await waitForAlert(
+						page,
+						'Success:Your request completed successfully.'
+					);
+				});
+
+				deleteFile(FILE_NAME_3MB);
+				deleteFile(FILE_NAME_2MB);
+			}
+			finally {
+				await test.step('set overall maximum upload request size to 10MB in system settings', async () => {
+					await systemSettingsPage.goToSystemSetting(
+						'Infrastructure',
+						'Upload Servlet Request'
+					);
+
+					await page
+						.getByLabel('Overall Maximum Upload Request Size')
+						.fill('104857600');
+
+					await page.getByRole('button', {name: 'Update'}).click();
+				});
+			}
+		}
+	);
 
 	test('can deselect the last selected option in multiple select picklist and the field is not removed from the DOM when doing so', async ({
 		apiHelpers,
