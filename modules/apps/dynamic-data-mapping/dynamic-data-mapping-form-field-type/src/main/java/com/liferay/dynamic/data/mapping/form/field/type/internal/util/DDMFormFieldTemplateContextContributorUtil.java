@@ -5,11 +5,13 @@
 
 package com.liferay.dynamic.data.mapping.form.field.type.internal.util;
 
+import com.liferay.dynamic.data.mapping.model.DDMFormField;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -21,6 +23,38 @@ import java.util.Map;
  * @author Pedro Leite
  */
 public class DDMFormFieldTemplateContextContributorUtil {
+
+	public static Map<String, Object> getLocalizationParameters(
+		DDMFormField ddmFormField, Locale defaultLocale) {
+
+		JSONObject localeJSONObject = _getLocaleJSONObject(defaultLocale);
+
+		return HashMapBuilder.<String, Object>put(
+			"defaultLocale", localeJSONObject
+		).put(
+			"editingLocale", localeJSONObject
+		).put(
+			"editOnlyInDefaultLanguage",
+			() -> {
+				if (!ddmFormField.hasProperty("editOnlyInDefaultLanguage")) {
+					return null;
+				}
+
+				return GetterUtil.getBoolean(
+					ddmFormField.getProperty("editOnlyInDefaultLanguage"));
+			}
+		).put(
+			"isLocalizationSupported",
+			() -> {
+				if (!ddmFormField.hasProperty("isLocalizationSupported")) {
+					return null;
+				}
+
+				return GetterUtil.getBoolean(
+					ddmFormField.getProperty("isLocalizationSupported"));
+			}
+		).build();
+	}
 
 	public static Map<String, Object> getLocaleMap(Locale defaultLocale) {
 		JSONObject localeJSONObject = _getLocaleJSONObject(defaultLocale);
