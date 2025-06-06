@@ -41,5 +41,5 @@ export async function setItemsPerPage(page, limit: number | string) {
 		intervals: [timeout * 2, timeout * 3, timeout * 4],
 	});
 
-	await option.click();
+	await option.press('Enter');
 }
