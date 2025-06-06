@@ -244,7 +244,7 @@ public class ModulesStructureTest {
 						Path appBndPath = dirPath.resolve("app.bnd");
 
 						if (Files.exists(appBndPath)) {
-							_testAppsWithOnlyTests(
+							_testDirWithOnlyTests(
 								appBndPath, buildGradlePath, dirPath);
 
 							_testEquals(buildGradlePath, _APP_BUILD_GRADLE);
@@ -1130,7 +1130,7 @@ public class ModulesStructureTest {
 		}
 	}
 
-	private void _testAppsWithOnlyTests(
+	private void _testDirWithOnlyTests(
 		Path appBndPath, Path buildGradlePath, Path dirPath) {
 
 		File dirPathFile = dirPath.toFile();
