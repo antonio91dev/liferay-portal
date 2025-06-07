@@ -36,10 +36,12 @@ export const searchTableRowByValue = async function (
 
 export class UserGroupsPage {
 	readonly applicationsMenuPage: ApplicationsMenuPage;
+	readonly creationMenuNewButton: Locator;
 	readonly customField: (fieldName: string) => Promise<Locator>;
 	readonly editUserGroupMenuItem: Locator;
 	readonly page: Page;
 	readonly userGroupsTable: Locator;
+	readonly userGroupsTableLink: (name: string, exact?: boolean) => Locator;
 	readonly userGroupsTableRow: (
 		colPosition: number,
 		value: string,
@@ -51,6 +53,9 @@ export class UserGroupsPage {
 
 	constructor(page: Page) {
 		this.applicationsMenuPage = new ApplicationsMenuPage(page);
+		this.creationMenuNewButton = page
+			.getByTestId('creationMenuNewButton')
+			.getByText('New');
 		this.customField = async (fieldName: string) => {
 			await page.getByText('Custom Fields').waitFor({timeout: 15 * 1000});
 
@@ -71,7 +76,13 @@ export class UserGroupsPage {
 		this.userGroupsTable = page.locator(
 			'#_com_liferay_user_groups_admin_web_portlet_UserGroupsAdminPortlet_userGroupsSearchContainer'
 		);
-
+		this.userGroupsTableLink = (name, exact = true) =>
+			this.page
+				.getByRole('link', {
+					exact,
+					name,
+				})
+				.first();
 		this.userGroupsTableRow = async (
 			colPosition: number,
 			value: string,
