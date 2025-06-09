@@ -381,6 +381,12 @@ public class JournalArticleLocalServiceImpl
 			displayDateMonth, displayDateDay, displayDateYear, displayDateHour,
 			displayDateMinute, user.getTimeZone(), null);
 
+		Date date = new Date();
+
+		if (displayDate == null) {
+			displayDate = date;
+		}
+
 		Date expirationDate = null;
 		Date reviewDate = null;
 
@@ -517,8 +523,6 @@ public class JournalArticleLocalServiceImpl
 		article.setSmallImageSource(smallImageSource);
 
 		article.setSmallImageURL(smallImageURL);
-
-		Date date = new Date();
 
 		if ((expirationDate == null) || expirationDate.after(date)) {
 			article.setStatus(WorkflowConstants.STATUS_DRAFT);
@@ -4882,6 +4886,19 @@ public class JournalArticleLocalServiceImpl
 			displayDateMonth, displayDateDay, displayDateYear, displayDateHour,
 			displayDateMinute, user.getTimeZone(), null);
 
+		Date date = new Date();
+
+		if (displayDate == null) {
+			displayDate = article.getDisplayDate();
+
+			if ((displayDate != null) && displayDate.before(new Date())) {
+				displayDate = article.getDisplayDate();
+			}
+			else {
+				displayDate = date;
+			}
+		}
+
 		Date expirationDate = null;
 		Date reviewDate = null;
 
@@ -4898,8 +4915,6 @@ public class JournalArticleLocalServiceImpl
 				reviewDateMinute, user.getTimeZone(),
 				ArticleReviewDateException.class);
 		}
-
-		Date date = new Date();
 
 		boolean expired = false;
 
