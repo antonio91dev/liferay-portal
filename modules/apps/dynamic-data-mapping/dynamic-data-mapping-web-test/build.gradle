@@ -4,7 +4,7 @@ dependencies {
 	testImplementation group: "com.liferay.jakarta.portlet", name: "com.liferay.jakarta.portlet-api", version: "4.0.0"
 	testImplementation group: "com.liferay.portal", name: "com.liferay.portal.impl", version: "default"
 	testImplementation group: "com.liferay.portal", name: "com.liferay.portal.kernel", version: "default"
-	testImplementation group: "jakarta.servlet", name: "jakarta.servlet-api", version: "6.0.0"
+	testImplementation group: "javax.servlet", name: "servlet-api", version: "2.5"
 	testImplementation project(":apps:dynamic-data-mapping:dynamic-data-mapping-api")
 	testImplementation project(":apps:dynamic-data-mapping:dynamic-data-mapping-web")
 	testIntegrationImplementation group: "org.osgi", name: "org.osgi.service.cm", version: "1.6.0"
