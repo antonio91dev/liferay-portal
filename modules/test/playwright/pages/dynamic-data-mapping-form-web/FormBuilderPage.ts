@@ -115,6 +115,20 @@ export class FormBuilderPage {
 			.click({force: true});
 	}
 
+	async openPreviewForm() {
+		const newTabPagePromise = new Promise<Page>((resolve) =>
+			this.page.once('popup', resolve)
+		);
+
+		await this.clickPreviewButton();
+
+		const newTabPage = await newTabPagePromise;
+
+		await newTabPage.waitForLoadState('domcontentloaded');
+
+		return newTabPage;
+	}
+
 	async openFormSubmission() {
 		await this.publishButton.click();
 
