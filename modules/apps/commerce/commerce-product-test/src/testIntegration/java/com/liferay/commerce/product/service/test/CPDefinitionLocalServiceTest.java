@@ -26,6 +26,7 @@ import com.liferay.commerce.product.service.CPOptionLocalService;
 import com.liferay.commerce.product.service.CommerceCatalogLocalServiceUtil;
 import com.liferay.commerce.product.test.util.CPTestUtil;
 import com.liferay.commerce.product.type.simple.constants.SimpleCPTypeConstants;
+import com.liferay.commerce.service.CPDefinitionInventoryLocalService;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -547,8 +548,6 @@ public class CPDefinitionLocalServiceTest {
 		CPDefinition cpDefinition2 = _cpDefinitionLocalService.copyCPDefinition(
 			cpDefinition1.getCPDefinitionId());
 
-		Assert.assertNotNull(cpDefinition2);
-
 		CPDefinitionSpecificationOptionValue
 			cpDefinitionSpecificationOptionValue2 =
 				cpDefinition2.getCPDefinitionSpecificationOptionValues(
@@ -559,6 +558,11 @@ public class CPDefinitionLocalServiceTest {
 		Assert.assertNotEquals(
 			cpDefinitionSpecificationOptionValue1.getExternalReferenceCode(),
 			cpDefinitionSpecificationOptionValue2.getExternalReferenceCode());
+
+		Assert.assertNotNull(
+			_cpDefinitionInventoryLocalService.
+				fetchCPDefinitionInventoryByCPDefinitionId(
+					cpDefinition2.getCPDefinitionId()));
 	}
 
 	@Test
@@ -763,6 +767,10 @@ public class CPDefinitionLocalServiceTest {
 
 	@Inject
 	private CommercePriceListLocalService _commercePriceListLocalService;
+
+	@Inject
+	private CPDefinitionInventoryLocalService
+		_cpDefinitionInventoryLocalService;
 
 	@Inject
 	private CPDefinitionLocalService _cpDefinitionLocalService;
