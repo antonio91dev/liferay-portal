@@ -604,8 +604,16 @@ public class ObjectDefinitionDeployerImpl implements ObjectDefinitionDeployer {
 				PanelApp.class,
 				new ObjectEntriesPanelApp(
 					objectDefinition,
-					() -> _portletLocalService.getPortletById(
-						objectDefinition.getPortletId())),
+					() -> {
+						com.liferay.portal.kernel.model.Portlet portlet =
+							_portletLocalService.getPortletById(
+								objectDefinition.getPortletId());
+
+						portlet.setControlPanelEntryCategory(
+							objectDefinition.getPanelCategoryKey());
+
+						return portlet;
+					}),
 				HashMapDictionaryBuilder.<String, Object>put(
 					"panel.app.order:Integer",
 					objectDefinition.getPanelAppOrder()
