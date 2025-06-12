@@ -78,6 +78,8 @@ export default function DiagramBuilder() {
 	const [reactFlowInstance, setReactFlowInstance] = useState(null);
 	const [selectedItem, setSelectedItem] = useState(null);
 	const [selectedItemNewId, setSelectedItemNewId] = useState(null);
+	const [selectedTransitionNewName, setSelectedTransitionNewName] =
+		useState(null);
 	const [defaultPosition, setDefaultPosition] = useState(null);
 	const [scriptedReassignmentTimerIndex, setScriptedReassignmentTimerIndex] =
 		useState(null);
@@ -453,11 +455,13 @@ export default function DiagramBuilder() {
 		scriptedReassignmentTimerIndex,
 		selectedItem,
 		selectedItemNewId,
+		selectedTransitionNewName,
 		setCollidingElements,
 		setElementRectangle,
 		setScriptedReassignmentTimerIndex,
 		setSelectedItem,
 		setSelectedItemNewId,
+		setSelectedTransitionNewName,
 		statuses,
 	};
 
