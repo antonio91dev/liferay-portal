@@ -213,7 +213,13 @@ AUI.add(
 							const inputNodeName = item.attr('nodeName');
 							const inputType = item.attr('type');
 
-							let oldName = item.attr('id') || item.attr('name');
+							let oldId = item.attr('id');
+							let oldName = item.attr('name') || oldId;
+
+							const newId = oldId.replace(
+								/([0-9]+)([_A-Za-z]*)$/,
+								guid + '$2'
+							);
 
 							const newName = oldName.replace(
 								/([0-9]+)([_A-Za-z]*)$/,
@@ -225,7 +231,7 @@ AUI.add(
 
 								item.attr('checked', '');
 								item.attr('name', newName);
-								item.attr('id', newName);
+								item.attr('id', newId);
 							}
 							else if (
 								inputNodeName === 'button' ||
@@ -233,12 +239,12 @@ AUI.add(
 								inputNodeName === 'span'
 							) {
 								if (oldName) {
-									item.attr('id', newName);
+									item.attr('id', newId);
 								}
 							}
 							else {
 								item.attr('name', newName);
-								item.attr('id', newName);
+								item.attr('id', newId);
 							}
 
 							if (fieldStrings && fieldStrings[oldName]) {
@@ -256,9 +262,9 @@ AUI.add(
 								);
 							}
 
-							node.all('label[for=' + oldName + ']').attr(
+							node.all('label[for=' + oldId + ']').attr(
 								'for',
-								newName
+								newId
 							);
 						}
 					);
