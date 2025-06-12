@@ -164,7 +164,7 @@ public class UserServiceTest {
 			PermissionThreadLocal.setPermissionChecker(adminPermissionChecker);
 
 			_workflowDefinitionLinkLocalService.addWorkflowDefinitionLink(
-				null, TestPropsValues.getUserId(),
+				TestPropsValues.getUserId(),
 				TestPropsValues.getCompanyId(),
 				WorkflowConstants.DEFAULT_GROUP_ID, User.class.getName(), 0, 0,
 				"Single Approver", 1);
