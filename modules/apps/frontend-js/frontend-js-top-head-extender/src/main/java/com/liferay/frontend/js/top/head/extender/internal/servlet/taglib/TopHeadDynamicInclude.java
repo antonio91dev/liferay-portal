@@ -16,7 +16,9 @@ import com.liferay.portal.kernel.servlet.PortalWebResourcesUtil;
 import com.liferay.portal.kernel.servlet.taglib.DynamicInclude;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.url.builder.AbsolutePortalURLBuilder;
 import com.liferay.portal.url.builder.AbsolutePortalURLBuilderFactory;
@@ -163,6 +165,23 @@ public class TopHeadDynamicInclude implements DynamicInclude {
 		}
 	}
 
+	private String _getCrossOriginAttribute(
+		HttpServletRequest httpServletRequest) {
+
+		try {
+			if (Validator.isNotNull(
+					PortalUtil.getCDNHost(httpServletRequest))) {
+
+				return " crossorigin=\"\"";
+			}
+		}
+		catch (Exception exception) {
+			_log.error(exception);
+		}
+
+		return StringPool.BLANK;
+	}
+
 	private ResourceURLsHolder _rebuild() {
 		PortalWebResources portalWebResources =
 			PortalWebResourcesUtil.getPortalWebResources(
@@ -285,6 +304,7 @@ public class TopHeadDynamicInclude implements DynamicInclude {
 				httpServletRequest));
 		printWriter.print(" data-senna-track=\"permanent\" src=\"");
 		printWriter.print(url);
+		printWriter.print(_getCrossOriginAttribute(httpServletRequest));
 		printWriter.println("\" type=\"text/javascript\"></script>");
 	}
 
