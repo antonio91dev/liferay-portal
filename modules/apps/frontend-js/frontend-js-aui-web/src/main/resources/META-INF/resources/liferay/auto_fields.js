@@ -238,7 +238,7 @@ AUI.add(
 								inputNodeName === 'div' ||
 								inputNodeName === 'span'
 							) {
-								if (oldName) {
+								if (oldId) {
 									item.attr('id', newId);
 								}
 							}
