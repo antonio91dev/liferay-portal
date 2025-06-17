@@ -90,23 +90,6 @@ public class LiferayGlobalObjectPostAUIDynamicInclude
 		_bundle = null;
 	}
 
-	private String _getCrossOriginAttribute(
-		HttpServletRequest httpServletRequest) {
-
-		try {
-			if (Validator.isNotNull(
-					PortalUtil.getCDNHost(httpServletRequest))) {
-
-				return " crossorigin=\"\"";
-			}
-		}
-		catch (Exception exception) {
-			_log.error(exception);
-		}
-
-		return StringPool.BLANK;
-	}
-
 	private void _renderScript(
 		HttpServletRequest httpServletRequest, PrintWriter printWriter,
 		String src, String type) {
@@ -115,7 +98,18 @@ public class LiferayGlobalObjectPostAUIDynamicInclude
 		printWriter.print(
 			ContentSecurityPolicyNonceProviderUtil.getNonceAttribute(
 				httpServletRequest));
-		printWriter.print(_getCrossOriginAttribute(httpServletRequest));
+
+		try {
+			if (Validator.isNotNull(
+					PortalUtil.getCDNHost(httpServletRequest))) {
+
+				printWriter.print(" crossorigin=\"\"");
+			}
+		}
+		catch (Exception exception) {
+			_log.error(exception);
+		}
+
 		printWriter.print(" data-senna-track=\"permanent\" src=\"");
 		printWriter.print(src);
 		printWriter.print("\" type=\"");
