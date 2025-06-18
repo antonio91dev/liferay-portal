@@ -506,4 +506,5 @@ test('event ending at midnight does not render on the next day', async ({
 	await calendarWidgetPage.monthViewTab.click();
 
 	await expect(page.getByTitle(title)).toHaveCount(1);
+	await expect(page.locator('.lfr-busy-day')).toHaveCount(1);
 });
