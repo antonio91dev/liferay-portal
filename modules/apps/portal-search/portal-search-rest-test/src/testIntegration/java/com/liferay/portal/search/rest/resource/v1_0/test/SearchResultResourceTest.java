@@ -43,6 +43,7 @@ import com.liferay.portal.kernel.search.SearchEngine;
 import com.liferay.portal.kernel.search.SearchEngineHelper;
 import com.liferay.portal.kernel.search.highlight.HighlightUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.test.TestInfo;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.HTTPTestUtil;
@@ -358,6 +359,7 @@ public class SearchResultResourceTest extends BaseSearchResultResourceTestCase {
 
 	@Override
 	@Test
+	@TestInfo("LPD-57341")
 	public void testPostSearchPage() throws Exception {
 		_testPostSearchPageAggregationNameAsFacetName();
 		_testPostSearchPageWithCategoryTreeFacetConfiguration();
