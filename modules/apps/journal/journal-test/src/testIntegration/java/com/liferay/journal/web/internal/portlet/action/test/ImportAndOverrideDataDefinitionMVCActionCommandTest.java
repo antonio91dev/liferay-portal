@@ -1,5 +1,5 @@
 /**
- * SPDX-FileCopyrightText: (c) 2000 Liferay, Inc. https://liferay.com
+ * SPDX-FileCopyrightText: (c) 2025 Liferay, Inc. https://liferay.com
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
@@ -7,8 +7,9 @@ package com.liferay.journal.web.internal.portlet.action.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.data.engine.rest.dto.v2_0.DataDefinition;
-import com.liferay.data.engine.rest.dto.v2_0.DataDefinitionField;
+import com.liferay.data.engine.rest.dto.v2_0.DataLayout;
 import com.liferay.data.engine.rest.resource.v2_0.DataDefinitionResource;
+import com.liferay.data.engine.rest.test.util.DataDefinitionTestUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.Group;
@@ -27,6 +28,7 @@ import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.File;
+import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.ProxyUtil;
@@ -34,7 +36,6 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.model.impl.LayoutImpl;
 import com.liferay.portal.test.log.LogCapture;
-import com.liferay.portal.test.log.LogEntry;
 import com.liferay.portal.test.log.LoggerTestUtil;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
@@ -57,10 +58,10 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.mock.web.MockMultipartHttpServletRequest;
 
 /**
- * @author Rodrigo Paulino
+ * @author Mariano Álvaro Sáiz
  */
 @RunWith(Arquillian.class)
-public class ImportDataDefinitionMVCActionCommandTest {
+public class ImportAndOverrideDataDefinitionMVCActionCommandTest {
 
 	@ClassRule
 	@Rule
@@ -73,13 +74,17 @@ public class ImportDataDefinitionMVCActionCommandTest {
 	}
 
 	@Test
-	public void testProcessActionWithDataDefinitionFromPreviousVersion()
-		throws Exception {
+	public void testProcessAction() throws Exception {
+		DataDefinition dataDefinition =
+			DataDefinitionTestUtil.addDataDefinition(
+				"journal", _dataDefinitionResourceFactory, _group.getGroupId(),
+				_read("previous_version_valid_data_definition.json"),
+				TestPropsValues.getUser());
 
 		MockLiferayPortletActionRequest mockLiferayPortletActionRequest =
 			_createMockLiferayPortletActionRequest(
 				"previous_version_valid_data_definition.json",
-				"Imported Structure");
+				"Imported Structure", dataDefinition.getId());
 
 		_setUpUploadPortletRequest(mockLiferayPortletActionRequest);
 
@@ -87,178 +92,37 @@ public class ImportDataDefinitionMVCActionCommandTest {
 			mockLiferayPortletActionRequest,
 			new MockLiferayPortletActionResponse());
 
-		Assert.assertNull(
-			SessionMessages.get(
-				mockLiferayPortletActionRequest,
-				_portal.getPortletId(mockLiferayPortletActionRequest) +
-					SessionMessages.KEY_SUFFIX_HIDE_DEFAULT_ERROR_MESSAGE));
-		Assert.assertNull(
-			SessionErrors.get(
-				mockLiferayPortletActionRequest,
-				"importDataDefinitionErrorMessage"));
-
-		DataDefinition dataDefinition = _getImportedDataDefinition();
-
-		DataDefinitionField[] dataDefinitionFields =
-			dataDefinition.getDataDefinitionFields();
-
-		String previousTextFieldName = "Text1";
-
-		Assert.assertNotEquals(
-			previousTextFieldName, dataDefinitionFields[0].getName());
-	}
-
-	@Test
-	public void testProcessActionWithFieldNamesWithoutRandomDigits()
-		throws Exception {
-
-		MockLiferayPortletActionRequest mockLiferayPortletActionRequest =
-			_createMockLiferayPortletActionRequest(
-				"valid_data_definition_with_field_names_without_random_" +
-					"digits.json",
-				"Imported Structure");
-
-		_setUpUploadPortletRequest(mockLiferayPortletActionRequest);
-
-		_mvcActionCommand.processAction(
-			mockLiferayPortletActionRequest,
-			new MockLiferayPortletActionResponse());
-
-		Assert.assertNotNull(
-			SessionMessages.get(
-				mockLiferayPortletActionRequest,
-				_portal.getPortletId(mockLiferayPortletActionRequest) +
-					SessionMessages.KEY_SUFFIX_HIDE_DEFAULT_SUCCESS_MESSAGE));
-		Assert.assertNotNull(
-			SessionMessages.get(
-				mockLiferayPortletActionRequest,
-				"importDataDefinitionSuccessMessage"));
-	}
-
-	@Test
-	public void testProcessActionWithInvalidDataDefinition() throws Exception {
-		MockLiferayPortletActionRequest mockLiferayPortletActionRequest =
-			_createMockLiferayPortletActionRequest(
-				"invalid_data_definition.json", "Imported Structure");
+		dataDefinition = _getImportedDataDefinition();
 
 		try (LogCapture logCapture = LoggerTestUtil.configureLog4JLogger(
-				"com.liferay.journal.web.internal.portlet.action." +
-					"ImportDataDefinitionMVCActionCommand",
-				LoggerTestUtil.ERROR)) {
+				_CLASS_NAME, LoggerTestUtil.OFF)) {
 
-			_setUpUploadPortletRequest(mockLiferayPortletActionRequest);
-
-			_mvcActionCommand.processAction(
-				mockLiferayPortletActionRequest,
-				new MockLiferayPortletActionResponse());
-
-			_assertFailure(mockLiferayPortletActionRequest);
-
-			List<LogEntry> logEntries = logCapture.getLogEntries();
-
-			Assert.assertEquals(logEntries.toString(), 1, logEntries.size());
-
-			LogEntry logEntry = logEntries.get(0);
-
-			Assert.assertEquals(LoggerTestUtil.ERROR, logEntry.getPriority());
-
-			Throwable throwable = logEntry.getThrowable();
-
-			Assert.assertEquals(
-				"The sum of all column sizes of a row must be less than the " +
-					"maximum row size of 12",
-				throwable.getMessage());
+			_processAction(
+				dataDefinition.getId(), "valid_data_definition.json",
+				"Imported Structure");
 		}
-	}
 
-	@Test
-	public void testProcessActionWithoutName() throws Exception {
-		try (LogCapture logCapture = LoggerTestUtil.configureLog4JLogger(
-				"com.liferay.journal.web.internal.portlet.action." +
-					"ImportDataDefinitionMVCActionCommand",
-				LoggerTestUtil.ERROR)) {
+		DataLayout previousDataLayout = dataDefinition.getDefaultDataLayout();
 
-			MockLiferayPortletActionRequest mockLiferayPortletActionRequest =
-				_createMockLiferayPortletActionRequest(
-					"valid_data_definition.json", null);
+		dataDefinition = _getImportedDataDefinition();
 
-			_setUpUploadPortletRequest(mockLiferayPortletActionRequest);
-
-			_mvcActionCommand.processAction(
-				mockLiferayPortletActionRequest,
-				new MockLiferayPortletActionResponse());
-
-			_assertFailure(mockLiferayPortletActionRequest);
-
-			List<LogEntry> logEntries = logCapture.getLogEntries();
-
-			Assert.assertEquals(logEntries.toString(), 1, logEntries.size());
-
-			LogEntry logEntry = logEntries.get(0);
-
-			Assert.assertEquals(LoggerTestUtil.ERROR, logEntry.getPriority());
-
-			Throwable throwable = logEntry.getThrowable();
-
-			Assert.assertTrue(
-				StringUtil.startsWith(
-					throwable.getMessage(), "Name is null for locale"));
-		}
-	}
-
-	@Test
-	public void testProcessActionWithValidDataDefinitionAndName()
-		throws Exception {
-
-		MockLiferayPortletActionRequest mockLiferayPortletActionRequest =
-			_createMockLiferayPortletActionRequest(
-				"valid_data_definition.json", "Imported Structure");
-
-		_setUpUploadPortletRequest(mockLiferayPortletActionRequest);
-
-		_mvcActionCommand.processAction(
-			mockLiferayPortletActionRequest,
-			new MockLiferayPortletActionResponse());
-
-		Assert.assertNotNull(
-			SessionMessages.get(
-				mockLiferayPortletActionRequest,
-				_portal.getPortletId(mockLiferayPortletActionRequest) +
-					SessionMessages.KEY_SUFFIX_HIDE_DEFAULT_SUCCESS_MESSAGE));
-		Assert.assertNotNull(
-			SessionMessages.get(
-				mockLiferayPortletActionRequest,
-				"importDataDefinitionSuccessMessage"));
-
-		DataDefinition dataDefinition = _getImportedDataDefinition();
-
-		DataDefinitionField[] dataDefinitionFields =
-			dataDefinition.getDataDefinitionFields();
-
-		Assert.assertEquals("Text32861154", dataDefinitionFields[0].getName());
-	}
-
-	private void _assertFailure(
-		MockLiferayPortletActionRequest mockLiferayPortletActionRequest) {
-
-		Assert.assertNotNull(
-			SessionMessages.get(
-				mockLiferayPortletActionRequest,
-				_portal.getPortletId(mockLiferayPortletActionRequest) +
-					SessionMessages.KEY_SUFFIX_HIDE_DEFAULT_ERROR_MESSAGE));
-		Assert.assertNotNull(
-			SessionErrors.get(
-				mockLiferayPortletActionRequest,
-				"importDataDefinitionErrorMessage"));
+		Assert.assertEquals(
+			dataDefinition.getDefaultDataLayout(), previousDataLayout);
 	}
 
 	private MockLiferayPortletActionRequest
-			_createMockLiferayPortletActionRequest(String fileName, String name)
+			_createMockLiferayPortletActionRequest(
+				String fileName, String name, Long dataDefinitionId)
 		throws Exception {
 
 		MockLiferayPortletActionRequest mockLiferayPortletActionRequest =
 			new MockLiferayPortletActionRequest(
 				_createMockMultipartHttpServletRequest(fileName));
+
+		if (dataDefinitionId != null) {
+			mockLiferayPortletActionRequest.addParameter(
+				"dataDefinitionId", String.valueOf(dataDefinitionId));
+		}
 
 		mockLiferayPortletActionRequest.addParameter("name", name);
 		mockLiferayPortletActionRequest.addParameter("redirect", "fakeURL");
@@ -342,13 +206,44 @@ public class ImportDataDefinitionMVCActionCommandTest {
 		return themeDisplay;
 	}
 
+	private void _processAction(
+			Long dataDefinitionId, String fileName, String name)
+		throws Exception {
+
+		MockLiferayPortletActionRequest mockLiferayPortletActionRequest =
+			_createMockLiferayPortletActionRequest(
+				fileName, name, dataDefinitionId);
+
+		_setUpUploadPortletRequest(mockLiferayPortletActionRequest);
+
+		_mvcActionCommand.processAction(
+			mockLiferayPortletActionRequest,
+			new MockLiferayPortletActionResponse());
+
+		Assert.assertNotNull(
+			SessionMessages.get(
+				mockLiferayPortletActionRequest,
+				_portal.getPortletId(mockLiferayPortletActionRequest) +
+					SessionMessages.KEY_SUFFIX_HIDE_DEFAULT_ERROR_MESSAGE));
+		Assert.assertNotNull(
+			SessionErrors.get(
+				mockLiferayPortletActionRequest,
+				"importDataDefinitionErrorMessage"));
+	}
+
+	private String _read(String fileName) throws Exception {
+		return new String(
+			FileUtil.getBytes(getClass(), "dependencies/" + fileName));
+	}
+
 	private void _setUpUploadPortletRequest(
 		MockLiferayPortletActionRequest mockLiferayPortletActionRequest) {
 
 		ReflectionTestUtil.setFieldValue(
 			_mvcActionCommand, "_portal",
 			ProxyUtil.newProxyInstance(
-				ImportDataDefinitionMVCActionCommandTest.class.getClassLoader(),
+				ImportAndOverrideDataDefinitionMVCActionCommandTest.class.
+					getClassLoader(),
 				new Class<?>[] {Portal.class},
 				(proxy, method, args) -> {
 					if (Objects.equals(
@@ -370,6 +265,10 @@ public class ImportDataDefinitionMVCActionCommandTest {
 				}));
 	}
 
+	private static final String _CLASS_NAME =
+		"com.liferay.journal.web.internal.portlet.action." +
+			"ImportAndOverrideDataDefinitionMVCActionCommand";
+
 	@Inject
 	private DataDefinitionResource.Factory _dataDefinitionResourceFactory;
 
@@ -379,7 +278,9 @@ public class ImportDataDefinitionMVCActionCommandTest {
 	@DeleteAfterTestRun
 	private Group _group;
 
-	@Inject(filter = "mvc.command.name=/journal/import_data_definition")
+	@Inject(
+		filter = "mvc.command.name=/journal/import_and_override_data_definition"
+	)
 	private MVCActionCommand _mvcActionCommand;
 
 	@Inject
