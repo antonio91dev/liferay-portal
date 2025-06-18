@@ -32,7 +32,7 @@ public class DBPartitionMySQLDB implements DBPartitionDB {
 
 		return StringBundler.concat(
 			"create schema if not exists ", partitionName, " character set ",
-			_getSessionCharsetEncoding(connection));
+			_getDatabaseCharsetEncoding(connection));
 	}
 
 	@Override
@@ -74,20 +74,18 @@ public class DBPartitionMySQLDB implements DBPartitionDB {
 		connection.setCatalog(partitionName);
 	}
 
-	private String _getSessionCharsetEncoding(Connection connection)
+	private String _getDatabaseCharsetEncoding(Connection connection)
 		throws SQLException {
 
 		try (PreparedStatement preparedStatement = connection.prepareStatement(
-				"select variable_value from " +
-					"performance_schema.session_variables where " +
-						"variable_name = 'character_set_client'");
+				"select @@character_set_database");
 			ResultSet resultSet = preparedStatement.executeQuery()) {
 
 			if (resultSet.next()) {
-				return resultSet.getString("variable_value");
+				return resultSet.getString(1);
 			}
 
-			return "utf8";
+			return StringPool.BLANK;
 		}
 	}
 
