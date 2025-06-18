@@ -66,6 +66,7 @@ import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.change.tracking.CTCollectionThreadLocal;
 import com.liferay.portal.kernel.exception.PortletIdException;
+import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
@@ -123,16 +124,22 @@ import com.liferay.segments.service.SegmentsExperienceLocalService;
 import com.liferay.style.book.model.StyleBookEntry;
 import com.liferay.style.book.service.StyleBookEntryLocalService;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 
 import java.net.URL;
+
+import java.nio.charset.StandardCharsets;
 
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -1547,6 +1554,83 @@ public class LayoutsImporterTest {
 			styleBookEntryKey, StringPool.BLANK, serviceContext);
 	}
 
+	private void _assertExportedFileItemSelector(
+			File file, FragmentEntryLink fragmentEntryLink,
+			LayoutPageTemplateEntry layoutPageTemplateEntry)
+		throws Exception {
+
+		Assert.assertTrue(
+			"Exported file should exist " + file.getName(), file.exists());
+		Assert.assertTrue(
+			"Exported object should be a file " + file.getName(),
+			file.isFile());
+		Assert.assertTrue(
+			"Exported object should be a zip file." + file.getName(),
+			file.getName(
+			).toLowerCase(
+			).endsWith(
+				".zip"
+			));
+
+		String exportedPageDefinition = _getFileContentFromZipFile(
+			layoutPageTemplateEntry.getLayoutPageTemplateEntryKey() +
+				"/page-definition.json",
+			file);
+
+		JSONObject itemSelectorJSONObject = null;
+
+		try {
+			JSONObject exportedPageDefinitionJSONObject =
+				JSONFactoryUtil.createJSONObject(exportedPageDefinition);
+
+			JSONObject pageElementJSONObject =
+				exportedPageDefinitionJSONObject.getJSONObject("pageElement");
+
+			JSONArray pageElementsJSONArray =
+				pageElementJSONObject.getJSONArray("pageElements");
+
+			if ((pageElementsJSONArray != null) &&
+				(pageElementsJSONArray.length() > 0)) {
+
+				JSONObject firstPageElementJSONObject =
+					pageElementsJSONArray.getJSONObject(0);
+
+				JSONObject definitionJSONObject =
+					firstPageElementJSONObject.getJSONObject("definition");
+
+				JSONObject fragmentConfigJSONObject =
+					definitionJSONObject.getJSONObject("fragmentConfig");
+
+				itemSelectorJSONObject = fragmentConfigJSONObject.getJSONObject(
+					"itemSelector");
+			}
+		}
+		catch (Exception exception) {
+			throw new RuntimeException(exception);
+		}
+
+		JSONObject editablesValuesJSONObject = JSONFactoryUtil.createJSONObject(
+			fragmentEntryLink.getEditableValues());
+
+		JSONObject itemSelectorFragmentEntryJSONObject =
+			editablesValuesJSONObject.getJSONObject(
+				"com.liferay.fragment.entry.processor.freemarker." +
+					"FreeMarkerFragmentEntryProcessor"
+			).getJSONObject(
+				"itemSelector"
+			);
+
+		Assert.assertNotNull(
+			"Exported page definition itemSelector should not be null.",
+			itemSelectorJSONObject);
+
+		Assert.assertEquals(
+			"Exported page definition itemSelector should match with " +
+				"fragment entry itemSelector from editable values.",
+			itemSelectorJSONObject.toString(),
+			itemSelectorFragmentEntryJSONObject.toString());
+	}
+
 	private void _assertFragmentEntryLink(
 			FragmentEntry fragmentEntry,
 			LayoutPageTemplateEntry layoutPageTemplateEntry)
@@ -1889,6 +1973,49 @@ public class LayoutsImporterTest {
 		return zipWriter.getFile();
 	}
 
+	private String _getFileContentFromZipFile(String fileName, File zipFile)
+		throws Exception {
+
+		String extractedContent = StringPool.BLANK;
+
+		try (FileInputStream fileInputStream = new FileInputStream(zipFile);
+			ZipInputStream zipInputStream = new ZipInputStream(
+				fileInputStream)) {
+
+			ZipEntry entry;
+
+			while ((entry = zipInputStream.getNextEntry()) != null) {
+				String entryName = entry.getName();
+
+				if (entry.isDirectory() &&
+					!entryName.endsWith("/" + fileName)) {
+
+					continue;
+				}
+
+				try (ByteArrayOutputStream byteArrayOutputStream =
+						new ByteArrayOutputStream()) {
+
+					byte[] buffer = new byte[_BUFFER_SIZE];
+					int count;
+
+					while ((count = zipInputStream.read(buffer)) != -1) {
+						byteArrayOutputStream.write(buffer, 0, count);
+					}
+
+					extractedContent = new String(
+						byteArrayOutputStream.toByteArray(),
+						StandardCharsets.UTF_8);
+				}
+				finally {
+					zipInputStream.closeEntry();
+				}
+			}
+		}
+
+		return extractedContent;
+	}
+
 	private String _getLayoutPageTemplateEntryKey(
 		List<LayoutsImporterResultEntry> layoutsImporterResultEntries) {
 
@@ -1993,6 +2120,9 @@ public class LayoutsImporterTest {
 		File file = _layoutsExporter.exportLayoutPageTemplateEntries(
 			new long[] {layoutPageTemplateEntry.getLayoutPageTemplateEntryId()},
 			LayoutPageTemplateEntryTypeConstants.BASIC);
+
+		_assertExportedFileItemSelector(
+			file, fragmentEntryLink, layoutPageTemplateEntry);
 
 		FragmentEntry curFragmentEntry = _addFragmentEntry(
 			fragmentEntry, _serviceContext2);
@@ -2215,6 +2345,8 @@ public class LayoutsImporterTest {
 			expectedRowStyledLayoutStructureItem.getNumberOfColumns(),
 			actualRowStyledLayoutStructureItem.getNumberOfColumns());
 	}
+
+	private static final int _BUFFER_SIZE = 4096;
 
 	private static final String _RESOURCES_PATH_DISPLAY_PAGE_TEMPLATES =
 		"com/liferay/layout/page/template/admin/web/internal/importer/test" +
