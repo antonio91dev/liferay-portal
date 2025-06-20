@@ -46,7 +46,8 @@ export default function propsTransformer({
 									managementBarSelection &&
 									managementBarSelection.includes(
 										allSelectedLocalizedMessage
-									)
+									) &&
+									!otherProps.searchValue
 								) {
 									postForm(form, {
 										data: {
