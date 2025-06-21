@@ -122,14 +122,14 @@ public class ObjectSQLProvider implements SQLProvider {
 	}
 
 	private void _appendSQL() throws Exception {
-		List<ObjectDefinition> objectDefinitions =
-			ObjectDefinitionLocalServiceUtil.getObjectDefinitions(
-				_companyId, WorkflowConstants.STATUS_APPROVED);
-
 		DataSource dataSource = InfrastructureUtil.getDataSource();
 
 		try (Connection connection = dataSource.getConnection()) {
 			DBInspector dbInspector = new DBInspector(connection);
+
+			List<ObjectDefinition> objectDefinitions =
+				ObjectDefinitionLocalServiceUtil.getObjectDefinitions(
+					_companyId, WorkflowConstants.STATUS_APPROVED);
 
 			for (ObjectDefinition objectDefinition : objectDefinitions) {
 				_appendTablesSQL(dbInspector, objectDefinition);
