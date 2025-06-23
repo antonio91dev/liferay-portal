@@ -1596,8 +1596,6 @@ public class LayoutsImporterTest {
 				"itemSelector");
 
 		Assert.assertEquals(
-			"Exported page definition itemSelector should match with " +
-				"fragment entry itemSelector from editable values.",
 			itemSelectorJSONObject.toString(),
 			itemSelectorFragmentEntryJSONObject.toString());
 	}
