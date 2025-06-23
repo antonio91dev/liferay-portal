@@ -11,6 +11,7 @@ import com.liferay.account.model.AccountEntryModel;
 import com.liferay.account.model.AccountGroup;
 import com.liferay.account.service.AccountEntryLocalService;
 import com.liferay.account.service.AccountEntryOrganizationRelLocalService;
+import com.liferay.account.service.AccountEntryUserRelLocalService;
 import com.liferay.account.service.AccountGroupLocalService;
 import com.liferay.account.service.AccountGroupRelLocalService;
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
@@ -33,6 +34,7 @@ import com.liferay.headless.admin.user.client.dto.v1_0.WebUrl;
 import com.liferay.headless.admin.user.client.pagination.Page;
 import com.liferay.headless.admin.user.client.pagination.Pagination;
 import com.liferay.headless.admin.user.client.problem.Problem;
+import com.liferay.headless.admin.user.client.resource.v1_0.AccountResource;
 import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.io.unsync.UnsyncByteArrayInputStream;
 import com.liferay.petra.string.StringBundler;
@@ -40,6 +42,7 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.Address;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Organization;
+import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.repository.LocalRepository;
 import com.liferay.portal.kernel.repository.RepositoryProviderUtil;
 import com.liferay.portal.kernel.repository.model.FileEntry;
@@ -53,15 +56,19 @@ import com.liferay.portal.kernel.test.util.OrganizationTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.test.util.UserTestUtil;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
+import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.test.rule.Inject;
+import com.liferay.portal.util.PropsValues;
 
 import java.io.InputStream;
 
@@ -303,6 +310,7 @@ public class AccountResourceTest extends BaseAccountResourceTestCase {
 			Collections.singletonList(accountEntry1),
 			organization.getOrganizationId());
 		_testGetAccountsPageWithCustomFields();
+		_testGetAccountsPageWithNestedFields();
 	}
 
 	@Override
@@ -1318,6 +1326,41 @@ public class AccountResourceTest extends BaseAccountResourceTestCase {
 					actualAccount, stringArrayExpandoColumn2.getName())));
 	}
 
+	private void _testGetAccountsPageWithNestedFields() throws Exception {
+		Account postAccount = _postAccount(randomAccount());
+
+		User user = UserTestUtil.addUser();
+
+		_accountEntryUserRelLocalService.addAccountEntryUserRel(
+			postAccount.getId(), user.getUserId());
+
+		AccountResource accountResource = AccountResource.builder(
+		).authentication(
+			"test@liferay.com", PropsValues.DEFAULT_ADMIN_PASSWORD
+		).locale(
+			LocaleUtil.getDefault()
+		).parameters(
+			"nestedFields", "accountUserAccounts"
+		).build();
+
+		Page<Account> accountsPage = accountResource.getAccountsPage(
+			null, String.format("contains(name, '%s')", postAccount.getName()),
+			null, null);
+
+		Assert.assertEquals(1, accountsPage.getTotalCount());
+
+		List<Account> accounts = (List<Account>)accountsPage.getItems();
+
+		assertEquals(Collections.singletonList(postAccount), accounts);
+
+		Account account = accounts.get(0);
+
+		Assert.assertTrue(
+			ArrayUtil.exists(
+				account.getAccountUserAccounts(),
+				userAccount -> userAccount.getId() == user.getUserId()));
+	}
+
 	private void _testPatchAccountByExternalReferenceCodeWithMoreExternalReferenceCodes()
 		throws Exception {
 
@@ -2089,6 +2132,9 @@ public class AccountResourceTest extends BaseAccountResourceTestCase {
 	@Inject
 	private AccountEntryOrganizationRelLocalService
 		_accountEntryOrganizationRelLocalService;
+
+	@Inject
+	private AccountEntryUserRelLocalService _accountEntryUserRelLocalService;
 
 	private AccountGroup _accountGroup;
 
