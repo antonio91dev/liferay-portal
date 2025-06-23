@@ -1566,11 +1566,8 @@ public class LayoutsImporterTest {
 			file.isFile());
 		Assert.assertTrue(
 			"Exported object should be a zip file." + file.getName(),
-			file.getName(
-			).toLowerCase(
-			).endsWith(
-				".zip"
-			));
+			StringUtil.endsWith(
+				StringUtil.toLowerCase(file.getName()), ".zip"));
 
 		String exportedPageDefinition = _getFileContentFromZipFile(
 			layoutPageTemplateEntry.getLayoutPageTemplateEntryKey() +
@@ -1612,13 +1609,14 @@ public class LayoutsImporterTest {
 		JSONObject editablesValuesJSONObject = JSONFactoryUtil.createJSONObject(
 			fragmentEntryLink.getEditableValues());
 
-		JSONObject itemSelectorFragmentEntryJSONObject =
+		JSONObject freeMarkerFragmentEntryProcessorJSONObject =
 			editablesValuesJSONObject.getJSONObject(
 				"com.liferay.fragment.entry.processor.freemarker." +
-					"FreeMarkerFragmentEntryProcessor"
-			).getJSONObject(
-				"itemSelector"
-			);
+					"FreeMarkerFragmentEntryProcessor");
+
+		JSONObject itemSelectorFragmentEntryJSONObject =
+			freeMarkerFragmentEntryProcessorJSONObject.getJSONObject(
+				"itemSelector");
 
 		Assert.assertNotNull(
 			"Exported page definition itemSelector should not be null.",
