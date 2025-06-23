@@ -1557,12 +1557,11 @@ public class LayoutsImporterTest {
 
 		JSONObject itemSelectorJSONObject = null;
 
-		JSONObject exportedPageDefinitionJSONObject =
-			_getPageDefinitionJSONObject(
-				layoutPageTemplateEntry.getLayoutPageTemplateEntryKey(), file);
+		JSONObject pageDefinitionJSONObject = _getPageDefinitionJSONObject(
+			layoutPageTemplateEntry.getLayoutPageTemplateEntryKey(), file);
 
 		JSONObject pageElementJSONObject =
-			exportedPageDefinitionJSONObject.getJSONObject("pageElement");
+			pageDefinitionJSONObject.getJSONObject("pageElement");
 
 		JSONArray pageElementsJSONArray = pageElementJSONObject.getJSONArray(
 			"pageElements");
@@ -1570,11 +1569,10 @@ public class LayoutsImporterTest {
 		if ((pageElementsJSONArray != null) &&
 			(pageElementsJSONArray.length() > 0)) {
 
-			JSONObject firstPageElementJSONObject =
-				pageElementsJSONArray.getJSONObject(0);
+			JSONObject jsonObject = pageElementsJSONArray.getJSONObject(0);
 
-			JSONObject definitionJSONObject =
-				firstPageElementJSONObject.getJSONObject("definition");
+			JSONObject definitionJSONObject = jsonObject.getJSONObject(
+				"definition");
 
 			JSONObject fragmentConfigJSONObject =
 				definitionJSONObject.getJSONObject("fragmentConfig");
