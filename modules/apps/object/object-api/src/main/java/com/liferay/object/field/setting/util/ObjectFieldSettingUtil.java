@@ -12,7 +12,9 @@ import com.liferay.dynamic.data.mapping.expression.DDMExpressionFactory;
 import com.liferay.object.constants.ObjectFieldSettingConstants;
 import com.liferay.object.model.ObjectField;
 import com.liferay.object.model.ObjectFieldSetting;
+import com.liferay.object.service.ObjectFieldLocalServiceUtil;
 import com.liferay.object.service.ObjectFieldSettingLocalService;
+import com.liferay.object.service.ObjectFieldSettingLocalServiceUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -21,6 +23,7 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -82,6 +85,25 @@ public class ObjectFieldSettingUtil {
 
 			return StringPool.BLANK;
 		}
+	}
+
+	public static Map<String, Object> getDefaultValues(
+		long objectDefinitionId) {
+
+		Map<String, Object> defaultValues = new HashMap<>();
+
+		for (ObjectField objectField :
+				ObjectFieldLocalServiceUtil.getObjectFields(
+					objectDefinitionId)) {
+
+			defaultValues.put(
+				objectField.getName(),
+				getDefaultValueAsString(
+					null, objectField,
+					ObjectFieldSettingLocalServiceUtil.getService(), null));
+		}
+
+		return defaultValues;
 	}
 
 	public static String getTimeZoneId(

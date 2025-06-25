@@ -16,8 +16,10 @@ import com.liferay.object.dynamic.data.mapping.expression.ObjectEntryDDMExpressi
 import com.liferay.object.entry.util.ObjectEntryThreadLocal;
 import com.liferay.object.exception.ObjectFieldReadOnlyException;
 import com.liferay.object.field.setting.util.ObjectFieldSettingUtil;
+import com.liferay.object.model.ObjectEntry;
 import com.liferay.object.model.ObjectField;
 import com.liferay.object.model.ObjectFieldSetting;
+import com.liferay.object.service.ObjectEntryLocalServiceUtil;
 import com.liferay.object.service.ObjectFieldLocalServiceUtil;
 import com.liferay.object.service.ObjectFieldSettingLocalServiceUtil;
 import com.liferay.petra.string.StringBundler;
@@ -28,6 +30,7 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
 import com.liferay.portal.kernel.util.DateUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.vulcan.util.LocalizedMapUtil;
@@ -222,6 +225,76 @@ public class ObjectFieldUtil {
 		return _metadataObjectFieldNames.contains(objectFieldName);
 	}
 
+	public static boolean isReadOnly(
+		DDMExpressionFactory ddmExpressionFactory, ObjectField objectField,
+		Map<String, Object> values) {
+
+		if (Objects.equals(
+				objectField.getReadOnly(),
+				ObjectFieldConstants.READ_ONLY_CONDITIONAL)) {
+
+			try {
+				DDMExpression<Boolean> ddmExpression =
+					ddmExpressionFactory.createExpression(
+						CreateExpressionRequest.Builder.newBuilder(
+							objectField.getReadOnlyConditionExpression()
+						).withDDMExpressionFieldAccessor(
+							new ObjectEntryDDMExpressionFieldAccessor(values)
+						).build());
+
+				ddmExpression.setVariables(values);
+
+				return ddmExpression.evaluate();
+			}
+			catch (DDMExpressionException ddmExpressionException) {
+				_log.error(ddmExpressionException);
+			}
+		}
+		else if (Objects.equals(
+					objectField.getReadOnly(),
+					ObjectFieldConstants.READ_ONLY_TRUE)) {
+
+			return true;
+		}
+
+		return false;
+	}
+
+	public static boolean isReadOnly(
+			DDMExpressionFactory ddmExpressionFactory,
+			String objectEntryExternalReferenceCode, ObjectField objectField,
+			long userId)
+		throws PortalException {
+
+		if (!Objects.equals(
+				objectField.getReadOnly(),
+				ObjectFieldConstants.READ_ONLY_CONDITIONAL)) {
+
+			return isReadOnly(null, objectField, null);
+		}
+
+		if (objectEntryExternalReferenceCode == null) {
+			return isReadOnly(
+				ddmExpressionFactory, objectField,
+				ObjectFieldSettingUtil.getDefaultValues(
+					objectField.getObjectDefinitionId()));
+		}
+
+		ObjectEntry objectEntry = ObjectEntryLocalServiceUtil.getObjectEntry(
+			objectEntryExternalReferenceCode,
+			objectField.getObjectDefinitionId());
+
+		return isReadOnly(
+			ddmExpressionFactory, objectField,
+			HashMapBuilder.<String, Object>putAll(
+				ObjectEntryLocalServiceUtil.getSystemValues(objectEntry)
+			).putAll(
+				ObjectEntryLocalServiceUtil.getValues(objectEntry)
+			).put(
+				"currentUserId", userId
+			).build());
+	}
+
 	public static Map<String, ObjectField> toObjectFieldsMap(
 		List<ObjectField> objectFields) {
 
@@ -362,7 +435,6 @@ public class ObjectFieldUtil {
 					 ObjectFieldConstants.DB_TYPE_STRING)) {
 
 			if (Objects.equals(existingValue, value)) {
-
 				return;
 			}
 		}
