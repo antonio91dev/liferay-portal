@@ -5,8 +5,7 @@
 
 import {isNullOrUndefined} from '@liferay/layout-js-components-web';
 
-import {openSelectionModal} from 'frontend-js-components-web';
-import {debounce, loadEditorClientExtensions} from 'frontend-js-web';
+import {debounce, loadEditorClientExtensions, openSelectionModal} from 'frontend-js-web';
 
 import {SPACE_KEY_CODE} from '../config/constants/keyboardCodes';
 import {config} from '../config/index';
