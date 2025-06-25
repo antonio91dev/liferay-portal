@@ -17,8 +17,6 @@ import com.liferay.portal.vulcan.graphql.annotation.GraphQLField;
 import com.liferay.portal.vulcan.graphql.annotation.GraphQLName;
 import com.liferay.portal.vulcan.util.ObjectMapperUtil;
 
-import io.swagger.v3.oas.annotations.media.Schema;
-
 import java.io.Serializable;
 
 import java.text.DateFormat;
@@ -55,7 +53,9 @@ public class SearchResult implements Serializable {
 		return ObjectMapperUtil.unsafeReadValue(SearchResult.class, json);
 	}
 
-	@Schema(description = "The time the item was created.")
+	@io.swagger.v3.oas.annotations.media.Schema(
+		description = "The time the item was created."
+	)
 	public Date getDateCreated() {
 		if (_dateCreatedSupplier != null) {
 			dateCreated = _dateCreatedSupplier.get();
@@ -96,7 +96,9 @@ public class SearchResult implements Serializable {
 	@JsonIgnore
 	private Supplier<Date> _dateCreatedSupplier;
 
-	@Schema(description = "The last time the item was changed.")
+	@io.swagger.v3.oas.annotations.media.Schema(
+		description = "The last time the item was changed."
+	)
 	public Date getDateModified() {
 		if (_dateModifiedSupplier != null) {
 			dateModified = _dateModifiedSupplier.get();
@@ -137,7 +139,9 @@ public class SearchResult implements Serializable {
 	@JsonIgnore
 	private Supplier<Date> _dateModifiedSupplier;
 
-	@Schema(description = "The item's description.")
+	@io.swagger.v3.oas.annotations.media.Schema(
+		description = "The item's description."
+	)
 	public String getDescription() {
 		if (_descriptionSupplier != null) {
 			description = _descriptionSupplier.get();
@@ -178,7 +182,7 @@ public class SearchResult implements Serializable {
 	@JsonIgnore
 	private Supplier<String> _descriptionSupplier;
 
-	@Schema
+	@io.swagger.v3.oas.annotations.media.Schema
 	@Valid
 	public Object getEmbedded() {
 		if (_embeddedSupplier != null) {
@@ -220,7 +224,9 @@ public class SearchResult implements Serializable {
 	@JsonIgnore
 	private Supplier<Object> _embeddedSupplier;
 
-	@Schema(description = "The link to the embedded item.")
+	@io.swagger.v3.oas.annotations.media.Schema(
+		description = "The link to the embedded item."
+	)
 	public String getItemURL() {
 		if (_itemURLSupplier != null) {
 			itemURL = _itemURLSupplier.get();
@@ -261,7 +267,9 @@ public class SearchResult implements Serializable {
 	@JsonIgnore
 	private Supplier<String> _itemURLSupplier;
 
-	@Schema(description = "The item's score.")
+	@io.swagger.v3.oas.annotations.media.Schema(
+		description = "The item's score."
+	)
 	@Valid
 	public Float getScore() {
 		if (_scoreSupplier != null) {
@@ -301,7 +309,9 @@ public class SearchResult implements Serializable {
 	@JsonIgnore
 	private Supplier<Float> _scoreSupplier;
 
-	@Schema(description = "The item's title.")
+	@io.swagger.v3.oas.annotations.media.Schema(
+		description = "The item's title."
+	)
 	public String getTitle() {
 		if (_titleSupplier != null) {
 			title = _titleSupplier.get();
@@ -492,8 +502,8 @@ public class SearchResult implements Serializable {
 		return sb.toString();
 	}
 
-	@Schema(
-		accessMode = Schema.AccessMode.READ_ONLY,
+	@io.swagger.v3.oas.annotations.media.Schema(
+		accessMode = io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY,
 		defaultValue = "com.liferay.portal.search.rest.dto.v1_0.SearchResult",
 		name = "x-class-name"
 	)

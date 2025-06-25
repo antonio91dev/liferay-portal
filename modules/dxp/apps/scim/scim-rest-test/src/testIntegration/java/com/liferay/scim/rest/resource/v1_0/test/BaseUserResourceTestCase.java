@@ -200,6 +200,21 @@ public abstract class BaseUserResourceTestCase {
 	}
 
 	@Test
+	public void testGetV2Users() throws Exception {
+		Assert.assertTrue(false);
+	}
+
+	@Test
+	public void testPostV2User() throws Exception {
+		Assert.assertTrue(false);
+	}
+
+	@Test
+	public void testPostV2UserSearch() throws Exception {
+		Assert.assertTrue(false);
+	}
+
+	@Test
 	public void testDeleteV2User() throws Exception {
 		@SuppressWarnings("PMD.UnusedLocalVariable")
 		User user = testDeleteV2User_addUser();
@@ -219,22 +234,7 @@ public abstract class BaseUserResourceTestCase {
 	}
 
 	@Test
-	public void testGetV2Users() throws Exception {
-		Assert.assertTrue(false);
-	}
-
-	@Test
 	public void testPatchV2User() throws Exception {
-		Assert.assertTrue(false);
-	}
-
-	@Test
-	public void testPostV2User() throws Exception {
-		Assert.assertTrue(false);
-	}
-
-	@Test
-	public void testPostV2UserSearch() throws Exception {
 		Assert.assertTrue(false);
 	}
 
