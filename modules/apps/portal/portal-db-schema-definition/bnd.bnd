@@ -1,4 +1,0 @@
-Bundle-Name: Liferay Portal DB Schema Definition
-Bundle-SymbolicName: com.liferay.portal.db.schema.definition
-Bundle-Version: 1.0.9
--dsannotations-options: inherit
