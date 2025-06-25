@@ -18,6 +18,7 @@ import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.document.library.kernel.service.DLAppLocalService;
 import com.liferay.document.library.kernel.service.DLFileEntryLocalService;
 import com.liferay.document.library.util.DLURLHelper;
+import com.liferay.dynamic.data.mapping.expression.DDMExpressionFactory;
 import com.liferay.frontend.data.set.view.FDSView;
 import com.liferay.frontend.data.set.view.table.FDSTableSchemaBuilderFactory;
 import com.liferay.info.collection.provider.InfoCollectionProvider;
@@ -194,9 +195,9 @@ public class ObjectDefinitionDeployerImpl implements ObjectDefinitionDeployer {
 
 		ObjectFieldInfoFieldConverter objectFieldInfoFieldConverter =
 			new ObjectFieldInfoFieldConverter(
-				_listTypeEntryLocalService, _objectConfiguration,
-				_objectDefinitionLocalService, _objectFieldLocalService,
-				_objectFieldSettingLocalService,
+				_ddmExpressionFactory, _listTypeEntryLocalService,
+				_objectConfiguration, _objectDefinitionLocalService,
+				_objectFieldLocalService, _objectFieldSettingLocalService,
 				_objectRelationshipLocalService, _objectScopeProviderRegistry,
 				_objectStateFlowLocalService, _objectStateLocalService, _portal,
 				_restContextPathResolverRegistry, _userLocalService);
@@ -694,6 +695,9 @@ public class ObjectDefinitionDeployerImpl implements ObjectDefinitionDeployer {
 		_attachmentUploadResponseHandler =
 			new AttachmentUploadResponseHandler();
 	private BundleContext _bundleContext;
+
+	@Reference
+	private DDMExpressionFactory _ddmExpressionFactory;
 
 	@Reference(target = "(upload.response.handler.system.default=true)")
 	private UploadResponseHandler _defaultUploadResponseHandler;

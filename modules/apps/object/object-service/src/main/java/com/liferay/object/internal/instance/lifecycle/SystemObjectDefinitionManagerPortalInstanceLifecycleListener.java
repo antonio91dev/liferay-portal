@@ -7,6 +7,7 @@ package com.liferay.object.internal.instance.lifecycle;
 
 import com.liferay.document.library.kernel.service.DLAppLocalService;
 import com.liferay.document.library.util.DLURLHelper;
+import com.liferay.dynamic.data.mapping.expression.DDMExpressionFactory;
 import com.liferay.info.collection.provider.InfoCollectionProvider;
 import com.liferay.info.item.field.reader.InfoItemFieldReaderFieldSetProvider;
 import com.liferay.info.item.provider.InfoItemDetailsProvider;
@@ -252,9 +253,9 @@ public class SystemObjectDefinitionManagerPortalInstanceLifecycleListener
 
 			ObjectFieldInfoFieldConverter objectFieldInfoFieldConverter =
 				new ObjectFieldInfoFieldConverter(
-					_listTypeEntryLocalService, _objectConfiguration,
-					_objectDefinitionLocalService, _objectFieldLocalService,
-					_objectFieldSettingLocalService,
+					_ddmExpressionFactory, _listTypeEntryLocalService,
+					_objectConfiguration, _objectDefinitionLocalService,
+					_objectFieldLocalService, _objectFieldSettingLocalService,
 					_objectRelationshipLocalService,
 					_objectScopeProviderRegistry, _objectStateFlowLocalService,
 					_objectStateLocalService, _portal,
@@ -390,6 +391,9 @@ public class SystemObjectDefinitionManagerPortalInstanceLifecycleListener
 
 	@Reference
 	private CompanyLocalService _companyLocalService;
+
+	@Reference
+	private DDMExpressionFactory _ddmExpressionFactory;
 
 	@Reference
 	private DisplayPageInfoItemFieldSetProvider

@@ -5,6 +5,7 @@
 
 package com.liferay.object.info.field.converter;
 
+import com.liferay.dynamic.data.mapping.expression.DDMExpressionFactory;
 import com.liferay.info.field.InfoField;
 import com.liferay.info.field.type.FileInfoFieldType;
 import com.liferay.info.field.type.LongTextInfoFieldType;
@@ -24,7 +25,9 @@ import com.liferay.object.configuration.ObjectConfiguration;
 import com.liferay.object.constants.ObjectFieldConstants;
 import com.liferay.object.constants.ObjectFieldValidationConstants;
 import com.liferay.object.field.setting.util.ObjectFieldSettingUtil;
+import com.liferay.object.field.util.ObjectFieldUtil;
 import com.liferay.object.info.field.type.util.ObjectFieldInfoFieldTypeUtil;
+import com.liferay.object.info.item.util.ObjectEntryInfoItemUtil;
 import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.model.ObjectEntry;
 import com.liferay.object.model.ObjectField;
@@ -48,6 +51,7 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.service.UserLocalService;
@@ -69,6 +73,35 @@ import javax.servlet.http.HttpServletRequest;
  * @author Lourdes Fernández Besada
  */
 public class ObjectFieldInfoFieldConverter {
+
+	public ObjectFieldInfoFieldConverter(
+		DDMExpressionFactory ddmExpressionFactory,
+		ListTypeEntryLocalService listTypeEntryLocalService,
+		ObjectConfiguration objectConfiguration,
+		ObjectDefinitionLocalService objectDefinitionLocalService,
+		ObjectFieldLocalService objectFieldLocalService,
+		ObjectFieldSettingLocalService objectFieldSettingLocalService,
+		ObjectRelationshipLocalService objectRelationshipLocalService,
+		ObjectScopeProviderRegistry objectScopeProviderRegistry,
+		ObjectStateFlowLocalService objectStateFlowLocalService,
+		ObjectStateLocalService objectStateLocalService, Portal portal,
+		RESTContextPathResolverRegistry restContextPathResolverRegistry,
+		UserLocalService userLocalService) {
+
+		_ddmExpressionFactory = ddmExpressionFactory;
+		_listTypeEntryLocalService = listTypeEntryLocalService;
+		_objectConfiguration = objectConfiguration;
+		_objectDefinitionLocalService = objectDefinitionLocalService;
+		_objectFieldLocalService = objectFieldLocalService;
+		_objectFieldSettingLocalService = objectFieldSettingLocalService;
+		_objectRelationshipLocalService = objectRelationshipLocalService;
+		_objectScopeProviderRegistry = objectScopeProviderRegistry;
+		_objectStateFlowLocalService = objectStateFlowLocalService;
+		_objectStateLocalService = objectStateLocalService;
+		_portal = portal;
+		_restContextPathResolverRegistry = restContextPathResolverRegistry;
+		_userLocalService = userLocalService;
+	}
 
 	public ObjectFieldInfoFieldConverter(
 		ListTypeEntryLocalService listTypeEntryLocalService,
@@ -121,9 +154,7 @@ public class ObjectFieldInfoFieldConverter {
 			).localizable(
 				objectField.isLocalized()
 			).readOnly(
-				Objects.equals(
-					objectField.getReadOnly(),
-					ObjectFieldConstants.READ_ONLY_TRUE)
+				_isReadOnly(objectField)
 			).required(
 				objectField.isRequired()
 			),
@@ -323,36 +354,6 @@ public class ObjectFieldInfoFieldConverter {
 		}
 	}
 
-	private LayoutDisplayPageObjectProvider
-		_getLayoutDisplayPageObjectProvider() {
-
-		ServiceContext serviceContext =
-			ServiceContextThreadLocal.getServiceContext();
-
-		if (serviceContext == null) {
-			return null;
-		}
-
-		HttpServletRequest httpServletRequest = serviceContext.getRequest();
-
-		if (httpServletRequest == null) {
-			return null;
-		}
-
-		LayoutDisplayPageObjectProvider<?> layoutDisplayPageObjectProvider =
-			(LayoutDisplayPageObjectProvider<?>)httpServletRequest.getAttribute(
-				LayoutDisplayPageWebKeys.LAYOUT_DISPLAY_PAGE_OBJECT_PROVIDER);
-
-		if ((layoutDisplayPageObjectProvider == null) ||
-			!(layoutDisplayPageObjectProvider.getDisplayObject() instanceof
-				ObjectEntry)) {
-
-			return null;
-		}
-
-		return layoutDisplayPageObjectProvider;
-	}
-
 	private long _getMaximumFileSize(ObjectField objectField) {
 		ObjectFieldSetting objectFieldSetting =
 			_objectFieldSettingLocalService.fetchObjectFieldSetting(
@@ -390,6 +391,34 @@ public class ObjectFieldInfoFieldConverter {
 			objectFieldSetting.getValue(), defaultMaxLength);
 	}
 
+	private ObjectEntry _getObjectEntry() {
+		ServiceContext serviceContext =
+			ServiceContextThreadLocal.getServiceContext();
+
+		if (serviceContext == null) {
+			return null;
+		}
+
+		HttpServletRequest httpServletRequest = serviceContext.getRequest();
+
+		if (httpServletRequest == null) {
+			return null;
+		}
+
+		LayoutDisplayPageObjectProvider<?> layoutDisplayPageObjectProvider =
+			(LayoutDisplayPageObjectProvider<?>)httpServletRequest.getAttribute(
+				LayoutDisplayPageWebKeys.LAYOUT_DISPLAY_PAGE_OBJECT_PROVIDER);
+
+		if ((layoutDisplayPageObjectProvider == null) ||
+			!(layoutDisplayPageObjectProvider.getDisplayObject() instanceof
+				ObjectEntry)) {
+
+			return null;
+		}
+
+		return (ObjectEntry)layoutDisplayPageObjectProvider.getDisplayObject();
+	}
+
 	private List<OptionInfoFieldType> _getOptionInfoFieldTypes(
 		ObjectField objectField) {
 
@@ -405,18 +434,12 @@ public class ObjectFieldInfoFieldConverter {
 
 		String listTypeEntryKey = defaultValue;
 
-		LayoutDisplayPageObjectProvider<?> layoutDisplayPageObjectProvider =
-			_getLayoutDisplayPageObjectProvider();
+		ObjectEntry objectEntry = _getObjectEntry();
 
-		if (layoutDisplayPageObjectProvider != null) {
-			ObjectEntry objectEntry =
-				(ObjectEntry)layoutDisplayPageObjectProvider.getDisplayObject();
-
-			if (objectEntry != null) {
-				listTypeEntryKey = MapUtil.getString(
-					objectEntry.getValues(), objectField.getName(),
-					listTypeEntryKey);
-			}
+		if (objectEntry != null) {
+			listTypeEntryKey = MapUtil.getString(
+				objectEntry.getValues(), objectField.getName(),
+				listTypeEntryKey);
 		}
 
 		ListTypeEntry listTypeEntry =
@@ -539,9 +562,37 @@ public class ObjectFieldInfoFieldConverter {
 		return false;
 	}
 
+	private boolean _isReadOnly(ObjectField objectField) {
+		ObjectEntry objectEntry = _getObjectEntry();
+		User user = ObjectEntryInfoItemUtil.getUser();
+
+		try {
+			if (ObjectFieldUtil.isReadOnly(
+					_ddmExpressionFactory,
+					(objectEntry != null) ?
+						objectEntry.getExternalReferenceCode() : null,
+					objectField,
+					(user != null) ? user.getUserId() :
+						PrincipalThreadLocal.getUserId())) {
+
+				return true;
+			}
+
+			return false;
+		}
+		catch (PortalException portalException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(portalException);
+			}
+
+			return false;
+		}
+	}
+
 	private static final Log _log = LogFactoryUtil.getLog(
 		ObjectFieldInfoFieldConverter.class);
 
+	private DDMExpressionFactory _ddmExpressionFactory;
 	private final ListTypeEntryLocalService _listTypeEntryLocalService;
 	private final ObjectConfiguration _objectConfiguration;
 	private final ObjectDefinitionLocalService _objectDefinitionLocalService;
