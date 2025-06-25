@@ -2169,53 +2169,9 @@ public class OpenGraphTopHeadDynamicIncludeTest {
 					).namespace(
 						StringPool.BLANK
 					).name(
-						"title"
-					).build(),
-					"defaultMappedTitle")
-			).infoFieldValue(
-				new InfoFieldValue<>(
-					InfoField.builder(
-					).infoFieldType(
-						TextInfoFieldType.INSTANCE
-					).namespace(
-						StringPool.BLANK
-					).name(
 						"mappedDescriptionFieldName"
 					).build(),
 					"<p>mappedDescription</p>")
-			).infoFieldValue(
-				new InfoFieldValue<>(
-					InfoField.builder(
-					).infoFieldType(
-						TextInfoFieldType.INSTANCE
-					).namespace(
-						StringPool.BLANK
-					).name(
-						"mappedTitleFieldName"
-					).build(),
-					"mappedTitle")
-			).infoFieldValue(
-				new InfoFieldValue<>(
-					InfoField.builder(
-					).infoFieldType(
-						TextInfoFieldType.INSTANCE
-					).namespace(
-						StringPool.BLANK
-					).name(
-						"mappedTitleFieldName"
-					).build(),
-					"mappedTitle")
-			).infoFieldValue(
-				new InfoFieldValue<>(
-					InfoField.builder(
-					).infoFieldType(
-						ImageInfoFieldType.INSTANCE
-					).namespace(
-						StringPool.BLANK
-					).name(
-						"mappedImageFieldName"
-					).build(),
-					new WebImage("/imageURL"))
 			).infoFieldValue(
 				new InfoFieldValue<>(
 					InfoField.builder(
@@ -2235,9 +2191,42 @@ public class OpenGraphTopHeadDynamicIncludeTest {
 					).namespace(
 						StringPool.BLANK
 					).name(
+						"mappedImageFieldName"
+					).build(),
+					new WebImage("/imageURL"))
+			).infoFieldValue(
+				new InfoFieldValue<>(
+					InfoField.builder(
+					).infoFieldType(
+						ImageInfoFieldType.INSTANCE
+					).namespace(
+						StringPool.BLANK
+					).name(
 						"mappedImageFileFieldName"
 					).build(),
 					"/imageFileURL")
+			).infoFieldValue(
+				new InfoFieldValue<>(
+					InfoField.builder(
+					).infoFieldType(
+						TextInfoFieldType.INSTANCE
+					).namespace(
+						StringPool.BLANK
+					).name(
+						"mappedTitleFieldName"
+					).build(),
+					"mappedTitle")
+			).infoFieldValue(
+				new InfoFieldValue<>(
+					InfoField.builder(
+					).infoFieldType(
+						TextInfoFieldType.INSTANCE
+					).namespace(
+						StringPool.BLANK
+					).name(
+						"title"
+					).build(),
+					"defaultMappedTitle")
 			).build();
 		}
 
