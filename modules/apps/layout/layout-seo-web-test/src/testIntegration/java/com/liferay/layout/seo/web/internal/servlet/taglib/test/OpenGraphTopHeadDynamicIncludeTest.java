@@ -1266,9 +1266,6 @@ public class OpenGraphTopHeadDynamicIncludeTest {
 
 	@Test
 	public void testIncludeMappedImageFile() throws Exception {
-		MockHttpServletResponse mockHttpServletResponse =
-			new MockHttpServletResponse();
-
 		_layout.setType(LayoutConstants.TYPE_ASSET_DISPLAY);
 
 		UnicodeProperties typeSettingsUnicodeProperties =
@@ -1282,6 +1279,8 @@ public class OpenGraphTopHeadDynamicIncludeTest {
 		_layout = _layoutLocalService.updateLayout(_layout);
 
 		HttpServletRequest httpServletRequest = _getHttpServletRequest();
+		MockHttpServletResponse mockHttpServletResponse =
+			new MockHttpServletResponse();
 
 		_testWithMockInfoItem(
 			httpServletRequest,
