@@ -72,9 +72,7 @@ public class ObjectDefinitionUpgradeProcess extends UpgradeProcess {
 			String newPKObjectFieldDBColumnName)
 		throws Exception {
 
-		if (!hasTable(dbTableName) ||
-			!hasColumn(dbTableName, oldPKObjectFieldDBColumnName)) {
-
+		if (!hasColumn(dbTableName, oldPKObjectFieldDBColumnName)) {
 			return;
 		}
 
