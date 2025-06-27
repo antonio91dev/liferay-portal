@@ -12,6 +12,7 @@ export class FormBuilderSidePanelPage {
 	readonly addSelectFromListButton: Locator;
 	readonly addSelectOptionButton: Locator;
 	readonly addSingleSelectionButton: Locator;
+	readonly addTextButton: Locator;
 	readonly advancedTab: Locator;
 	readonly backButton: Locator;
 	readonly helpText: Locator;
@@ -37,6 +38,9 @@ export class FormBuilderSidePanelPage {
 		});
 		this.addSingleSelectionButton = page.getByRole('button', {
 			name: 'Press enter to add Single',
+		});
+		this.addTextButton = page.getByRole('button', {
+			name: 'Press enter to add Text field',
 		});
 		this.advancedTab = page.getByRole('tab', {
 			name: 'Advanced',
