@@ -124,11 +124,10 @@ public class AttachmentManagerImpl implements AttachmentManager {
 			return maximumFileSize;
 		}
 
-		long maximumFileSizeForGuestUsers =
-			_objectConfiguration.maximumFileSizeForGuestUsers();
-
 		return Math.min(
-			maximumFileSize, maximumFileSizeForGuestUsers * _FILE_LENGTH_MB);
+			maximumFileSize,
+			_objectConfiguration.maximumFileSizeForGuestUsers() *
+				_FILE_LENGTH_MB);
 	}
 
 	@Override
