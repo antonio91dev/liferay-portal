@@ -219,7 +219,7 @@ public class PageFragmentInstanceDefinitionMapper {
 	private Map<String, Object> _getFragmentConfig(
 		FragmentEntryLink fragmentEntryLink) {
 
-		JSONObject configJSONObject;
+		JSONObject configJSONObject = null;
 
 		try {
 			JSONObject editableValuesJSONObject = _jsonFactory.createJSONObject(
