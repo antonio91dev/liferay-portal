@@ -1390,11 +1390,6 @@ public class UIItemsBuilder {
 		DDMFormValuesValidator ddmFormValuesValidator =
 			_ddmFormValuesValidatorSnapshot.get();
 
-		if (ddmFormValuesValidator == null) {
-			throw new IllegalStateException(
-				"DDMFormValuesValidator service is not available");
-		}
-
 		ddmFormValuesValidator.validate(ddmFormValues);
 	}
 
