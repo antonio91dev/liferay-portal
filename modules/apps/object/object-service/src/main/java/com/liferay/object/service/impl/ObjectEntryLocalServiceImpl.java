@@ -1286,12 +1286,15 @@ public class ObjectEntryLocalServiceImpl
 	public Map<String, Serializable> getValues(ObjectEntry objectEntry)
 		throws PortalException {
 
+		ObjectDefinition objectDefinition =
+			_objectDefinitionPersistence.findByPrimaryKey(
+				objectEntry.getObjectDefinitionId());
+
 		DynamicObjectDefinitionLocalizationTable
 			dynamicObjectDefinitionLocalizationTable =
 				DynamicObjectDefinitionLocalizationTableFactory.create(
-					_objectDefinitionPersistence.findByPrimaryKey(
-						objectEntry.getObjectDefinitionId()),
-					_objectFieldLocalService);
+					objectDefinition, _objectFieldLocalService);
+
 		DynamicObjectDefinitionTable dynamicObjectDefinitionTable =
 			_getDynamicObjectDefinitionTable(
 				objectEntry.getObjectDefinitionId());
@@ -1343,7 +1346,8 @@ public class ObjectEntryLocalServiceImpl
 			selectExpressions);
 
 		_addLocalizedObjectFieldValues(
-			dynamicObjectDefinitionLocalizationTable, objectEntry, values);
+			dynamicObjectDefinitionLocalizationTable, objectDefinition,
+			objectEntry, values);
 		_addObjectRelationshipERCFieldValue(
 			objectEntry.getObjectDefinitionId(), values);
 
@@ -1882,7 +1886,8 @@ public class ObjectEntryLocalServiceImpl
 	private void _addLocalizedObjectFieldValues(
 			DynamicObjectDefinitionLocalizationTable
 				dynamicObjectDefinitionLocalizationTable,
-			ObjectEntry objectEntry, Map<String, Serializable> values)
+			ObjectDefinition objectDefinition, ObjectEntry objectEntry,
+			Map<String, Serializable> values)
 		throws PortalException {
 
 		if (dynamicObjectDefinitionLocalizationTable == null) {
@@ -1937,8 +1942,9 @@ public class ObjectEntryLocalServiceImpl
 			}
 
 			_putLocalizedValues(
-				objectFieldColumn.getName(), objectEntry.getDefaultLanguageId(),
-				localizedValues, values);
+				objectFieldColumn.getName(),
+				objectDefinition.getDefaultLanguageId(), localizedValues,
+				values);
 		}
 	}
 
