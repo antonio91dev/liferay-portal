@@ -10,12 +10,11 @@ import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.service.permission.PortletPermissionUtil;
-import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.test.rule.LiferayUnitTestRule;
 
-import jakarta.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequest;
 
 import org.junit.Assert;
 import org.junit.ClassRule;
@@ -45,21 +44,15 @@ public class ControlPanelLayoutTypeAccessPolicyTest {
 		Group group = Mockito.mock(Group.class);
 
 		Mockito.when(
-			group.isDepot()
-		).thenReturn(
-			false
-		);
-
-		Mockito.when(
 			group.isSite()
 		).thenReturn(
 			false
 		);
 
 		Mockito.when(
-			group.isControlPanel()
+			group.isOrganization()
 		).thenReturn(
-			false
+			true
 		);
 
 		Mockito.when(
@@ -76,8 +69,6 @@ public class ControlPanelLayoutTypeAccessPolicyTest {
 
 		Portlet portlet = Mockito.mock(Portlet.class);
 
-		portlet.setPortletId(RandomTestUtil.randomString());
-
 		ControlPanelLayoutTypeAccessPolicy controlPanelLayoutTypeAccessPolicy =
 			new ControlPanelLayoutTypeAccessPolicy();
 
@@ -89,42 +80,18 @@ public class ControlPanelLayoutTypeAccessPolicyTest {
 		}
 		catch (PortalException portalException) {
 			Assert.assertEquals(
-				"User does not have permission to access Control Panel " +
-					"portlet " + portlet.getPortletId(),
+				"Unable to access an organization's site that is not enabled",
 				portalException.getMessage());
 		}
 
 		Mockito.when(
-			group.isControlPanel()
+			group.isSite()
 		).thenReturn(
 			true
 		);
 
 		MockedStatic<PortletPermissionUtil> portletPermissionUtilMockedStatic =
 			Mockito.mockStatic(PortletPermissionUtil.class);
-
-		portletPermissionUtilMockedStatic.when(
-			() -> PortletPermissionUtil.hasControlPanelAccessPermission(
-				PermissionThreadLocal.getPermissionChecker(),
-				themeDisplay.getScopeGroupId(), portlet)
-		).thenReturn(
-			true
-		);
-
-		controlPanelLayoutTypeAccessPolicy.checkAccessAllowedToPortlet(
-			httpServletRequest, null, portlet);
-
-		Mockito.when(
-			group.isControlPanel()
-		).thenReturn(
-			false
-		);
-
-		Mockito.when(
-			group.isDepot()
-		).thenReturn(
-			true
-		);
 
 		portletPermissionUtilMockedStatic.when(
 			() -> PortletPermissionUtil.hasControlPanelAccessPermission(
