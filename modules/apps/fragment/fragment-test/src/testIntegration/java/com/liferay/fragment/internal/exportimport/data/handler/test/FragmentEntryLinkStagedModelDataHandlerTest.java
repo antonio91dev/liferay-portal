@@ -238,7 +238,7 @@ public class FragmentEntryLinkStagedModelDataHandlerTest
 		LayoutPageTemplateEntry layoutPageTemplateEntry =
 			_layoutPageTemplateEntryLocalService.addLayoutPageTemplateEntry(
 				externalReferenceCode, TestPropsValues.getUserId(),
-				stagingGroup.getGroupId(), 0, null, 0, 0,
+				stagingGroup.getGroupId(), 0, 0, 0,
 				RandomTestUtil.randomString(),
 				LayoutPageTemplateEntryTypeConstants.DISPLAY_PAGE, 0, true, 0,
 				0, 0, WorkflowConstants.STATUS_APPROVED, serviceContext);
