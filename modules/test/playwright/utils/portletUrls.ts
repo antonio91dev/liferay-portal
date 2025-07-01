@@ -19,6 +19,7 @@ export const PORTLET_URLS = {
 		'/~/control_panel/manage?p_p_id=com_liferay_layout_page_template_admin_web_portlet_LayoutPageTemplatesPortlet&_com_liferay_layout_page_template_admin_web_portlet_LayoutPageTemplatesPortlet_tabs1=display-page-templates',
 	documentLibrary:
 		'/~/control_panel/manage?p_p_id=com_liferay_document_library_web_portlet_DLAdminPortlet',
+	export: '/~/control_panel/manage?p_p_id=com_liferay_exportimport_web_portlet_ExportPortlet',
 	forms: '/~/control_panel/manage?p_p_id=com_liferay_dynamic_data_mapping_form_web_portlet_DDMFormAdminPortlet',
 	fragments: '/~/control_panel/manage/-/fragments/fragment_collections',
 	journal:
