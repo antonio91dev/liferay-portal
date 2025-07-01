@@ -1010,6 +1010,17 @@ public class PortletExportControllerImpl implements PortletExportController {
 			try {
 				portletDataContext.clearScopedPrimaryKeys();
 
+				Set<String> scopedLayoutPrimaryKeys = new HashSet<>();
+
+				for (String oldScopedPrimaryKey : oldScopedPrimaryKeys) {
+					if (oldScopedPrimaryKey.contains(Layout.class.getName())) {
+						scopedLayoutPrimaryKeys.add(oldScopedPrimaryKey);
+					}
+				}
+
+				portletDataContext.addScopedPrimaryKeys(
+					scopedLayoutPrimaryKeys);
+
 				Element preferenceDataElement =
 					portletPreferencesElement.addElement("preference-data");
 
