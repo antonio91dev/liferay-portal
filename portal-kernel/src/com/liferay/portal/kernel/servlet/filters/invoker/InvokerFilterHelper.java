@@ -82,9 +82,9 @@ public class InvokerFilterHelper {
 			}
 		}
 
+		_dynamicPositionFilters.clear();
 		_filterMappingsMap.clear();
 		_filterNames.clear();
-		_dynamicPositionFilters.clear();
 	}
 
 	public void init(FilterConfig filterConfig) throws ServletException {
