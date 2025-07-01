@@ -37,6 +37,8 @@ import com.liferay.portal.vulcan.util.LocalizedMapUtil;
 
 import java.util.Collections;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -103,7 +105,7 @@ public class ObjectFieldInfoFieldConverterTest {
 			ServiceContext serviceContext =
 				ServiceContextTestUtil.getServiceContext();
 
-			MockHttpServletRequest mockHttpServletRequest =
+			HttpServletRequest httpServletRequest =
 				new MockHttpServletRequest();
 
 			LayoutDisplayPageProvider<?> layoutDisplayPageProvider =
@@ -116,14 +118,14 @@ public class ObjectFieldInfoFieldConverterTest {
 				Collections.singletonMap(
 					"integerObjectField", RandomTestUtil.randomInt()));
 
-			mockHttpServletRequest.setAttribute(
+			httpServletRequest.setAttribute(
 				LayoutDisplayPageWebKeys.LAYOUT_DISPLAY_PAGE_OBJECT_PROVIDER,
 				layoutDisplayPageProvider.getLayoutDisplayPageObjectProvider(
 					new InfoItemReference(
 						_objectDefinition.getClassName(),
 						objectEntry.getObjectEntryId())));
 
-			serviceContext.setRequest(mockHttpServletRequest);
+			serviceContext.setRequest(httpServletRequest);
 
 			ServiceContextThreadLocal.pushServiceContext(serviceContext);
 
