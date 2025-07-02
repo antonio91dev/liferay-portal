@@ -71,30 +71,15 @@ public class ManyToManyObjectRelationshipInfoCollectionProviderTest {
 	public void testManyToManyObjectRelationshipRelatedInfoCollectionProvider()
 		throws Exception {
 
-		// Company scoped object definition 1 and
-		// Company scoped object definition 2
-
 		_testManyToManyObjectRelationshipRelatedInfoCollectionProvider(
 			ObjectDefinitionConstants.SCOPE_COMPANY,
 			ObjectDefinitionConstants.SCOPE_COMPANY);
-
-		// Company scoped object definition 1 and
-		// Site scoped object definition 2
-
 		_testManyToManyObjectRelationshipRelatedInfoCollectionProvider(
 			ObjectDefinitionConstants.SCOPE_COMPANY,
 			ObjectDefinitionConstants.SCOPE_SITE);
-
-		// Site scoped object definition 1 and
-		// Company scoped object definition 2
-
 		_testManyToManyObjectRelationshipRelatedInfoCollectionProvider(
 			ObjectDefinitionConstants.SCOPE_SITE,
 			ObjectDefinitionConstants.SCOPE_COMPANY);
-
-		// Site scoped object definition 1 and
-		// Site scoped object definition 2
-
 		_testManyToManyObjectRelationshipRelatedInfoCollectionProvider(
 			ObjectDefinitionConstants.SCOPE_SITE,
 			ObjectDefinitionConstants.SCOPE_SITE);
