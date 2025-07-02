@@ -173,7 +173,7 @@ public class InvokerFilterHelper {
 		while (updated) {
 			updated = false;
 
-			List<String> snapshot = new ArrayList<>(filterNames);
+			List<String> currentFilterNames = new ArrayList<>(filterNames);
 
 			for (String filterName : dynamicFilterNames) {
 				if (filterNames.contains(filterName)) {
@@ -187,7 +187,7 @@ public class InvokerFilterHelper {
 				String beforeFilterName = position.getValue();
 
 				if (Validator.isNotNull(afterFilterName) &&
-					snapshot.contains(afterFilterName)) {
+					currentFilterNames.contains(afterFilterName)) {
 
 					filterNames.add(
 						filterNames.indexOf(afterFilterName) + 1, filterName);
@@ -195,7 +195,7 @@ public class InvokerFilterHelper {
 					updated = true;
 				}
 				else if (Validator.isNotNull(beforeFilterName) &&
-						 snapshot.contains(beforeFilterName)) {
+						 currentFilterNames.contains(beforeFilterName)) {
 
 					filterNames.add(
 						filterNames.indexOf(beforeFilterName), filterName);
