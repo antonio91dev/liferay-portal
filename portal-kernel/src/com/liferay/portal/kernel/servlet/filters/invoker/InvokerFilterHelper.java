@@ -416,8 +416,8 @@ public class InvokerFilterHelper {
 			}
 		}
 
-		_filterNames.remove(filterName);
 		_dynamicPositionFilters.remove(filterName);
+		_filterNames.remove(filterName);
 
 		clearFilterChainsCache();
 	}

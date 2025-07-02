@@ -56,21 +56,15 @@ public class InvokerFilterHelperTest {
 
 	@Before
 	public void setUp() throws Exception {
-		_invokerFilterHelper = new InvokerFilterHelper();
+		Bundle bundle = FrameworkUtil.getBundle(InvokerFilterTest.class);
 
-		_servletContextName = RandomTestUtil.randomString();
+		_bundleContext = bundle.getBundleContext();
 
 		MockServletContext mockServletContext = new MockServletContext();
 
 		mockServletContext.setServletContextName(_servletContextName);
 
 		_invokerFilterHelper.init(new MockFilterConfig(mockServletContext));
-
-		Bundle bundle = FrameworkUtil.getBundle(InvokerFilterTest.class);
-
-		_bundleContext = bundle.getBundleContext();
-
-		_serviceRegistrations = new HashMap<>();
 
 		_registerFilter(
 			new String[] {_TEST_FILTER_1, _TEST_FILTER_2, _TEST_FILTER_3}, null,
@@ -338,9 +332,11 @@ public class InvokerFilterHelperTest {
 	private static final String _TEST_FILTER_DYNAMIC = "_TEST_FILTER_DYNAMIC";
 
 	private BundleContext _bundleContext;
-	private InvokerFilterHelper _invokerFilterHelper;
-	private Map<String, ServiceRegistration<?>> _serviceRegistrations;
-	private String _servletContextName;
+	private InvokerFilterHelper _invokerFilterHelper =
+		new InvokerFilterHelper();
+	private Map<String, ServiceRegistration<?>> _serviceRegistrations =
+		new HashMap<>();
+	private String _servletContextName = RandomTestUtil.randomString();
 
 	private static class TestFilter extends BasePortalFilter {
 
