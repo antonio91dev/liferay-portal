@@ -907,7 +907,7 @@ public class JournalArticleStagedModelDataHandlerTest
 	}
 
 	@Test
-	public void testStatusByUserIdAndUserName() throws Exception {
+	public void testStatusByUserIdAndStatusByUserName() throws Exception {
 		initExport();
 
 		JournalArticle journalArticle = JournalTestUtil.addArticle(
