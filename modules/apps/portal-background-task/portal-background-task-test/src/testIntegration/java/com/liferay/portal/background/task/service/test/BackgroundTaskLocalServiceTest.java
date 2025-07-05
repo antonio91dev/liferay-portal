@@ -46,7 +46,7 @@ public class BackgroundTaskLocalServiceTest {
 		new LiferayIntegrationTestRule();
 
 	@Test
-	public void testAddBackgroundTaskWithSystemDefaults() throws Exception {
+	public void testAddBackgroundTask() throws Exception {
 		BackgroundTaskExecutor backgroundTaskExecutor =
 			(BackgroundTaskExecutor)ProxyUtil.newProxyInstance(
 				BackgroundTaskExecutor.class.getClassLoader(),
