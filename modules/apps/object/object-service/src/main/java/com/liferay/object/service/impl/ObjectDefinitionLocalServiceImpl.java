@@ -1449,7 +1449,7 @@ public class ObjectDefinitionLocalServiceImpl
 		objectDefinition.setActive(
 			_isUnmodifiableSystemObject(modifiable, system));
 		objectDefinition.setClassName(
-			_getClassName(user.getCompanyId(), className, modifiable, system));
+			_getClassName(className, modifiable, system));
 		objectDefinition.setDBTableName(dbTableName);
 		objectDefinition.setEnableCategorization(
 			!objectDefinition.isUnmodifiableSystemObject() &&
@@ -1739,9 +1739,13 @@ public class ObjectDefinitionLocalServiceImpl
 	}
 
 	private String _getClassName(
-		long companyId, String className, boolean modifiable, boolean system) {
+		String className, boolean modifiable, boolean system) {
 
-		if (Validator.isNotNull(className) ||
+		ObjectDefinition existingObjectDefinition =
+			objectDefinitionPersistence.fetchByClassName(className);
+
+		if ((Validator.isNotNull(className) &&
+			 (existingObjectDefinition == null)) ||
 			_isUnmodifiableSystemObject(modifiable, system)) {
 
 			return className;
@@ -1758,9 +1762,8 @@ public class ObjectDefinitionLocalServiceImpl
 			sb.append(StringUtil.toUpperCase(StringUtil.randomId(1)));
 			sb.append(RandomUtil.nextInt(10));
 
-			ObjectDefinition existingObjectDefinition =
-				objectDefinitionPersistence.fetchByC_C(
-					companyId, sb.toString());
+			existingObjectDefinition =
+				objectDefinitionPersistence.fetchByClassName(sb.toString());
 
 			if (existingObjectDefinition == null) {
 				className = sb.toString();
@@ -2238,8 +2241,7 @@ public class ObjectDefinitionLocalServiceImpl
 		if (Validator.isNull(oldClassName)) {
 			objectDefinition.setClassName(
 				_getClassName(
-					objectDefinition.getCompanyId(), className,
-					objectDefinition.isModifiable(),
+					className, objectDefinition.isModifiable(),
 					objectDefinition.isSystem()));
 		}
 
