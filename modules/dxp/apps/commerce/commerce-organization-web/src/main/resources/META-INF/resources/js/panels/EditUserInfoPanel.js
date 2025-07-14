@@ -8,7 +8,7 @@ import ClayDatePicker from '@clayui/date-picker';
 import ClayForm, {ClayInput, ClaySelectWithOption} from '@clayui/form';
 import ClayIcon from '@clayui/icon';
 import classnames from 'classnames';
-import {openToast} from 'frontend-js-web';
+import {dateUtils, openToast} from 'frontend-js-web';
 import moment from 'moment';
 import PropTypes from 'prop-types';
 import React, {
@@ -660,8 +660,23 @@ function EditUserInfoPanel({
 								.toLowerCase()
 								.replace(/m/gi, 'M')}
 							disabled={isLoading}
+							firstDayOfWeek={dateUtils.getFirstDayOfWeek()}
 							id={`${namespace}birthDate`}
 							inputName={`${namespace}birthDate`}
+							months={[
+								`${Liferay.Language.get('january')}`,
+								`${Liferay.Language.get('february')}`,
+								`${Liferay.Language.get('march')}`,
+								`${Liferay.Language.get('april')}`,
+								`${Liferay.Language.get('may')}`,
+								`${Liferay.Language.get('june')}`,
+								`${Liferay.Language.get('july')}`,
+								`${Liferay.Language.get('august')}`,
+								`${Liferay.Language.get('september')}`,
+								`${Liferay.Language.get('october')}`,
+								`${Liferay.Language.get('november')}`,
+								`${Liferay.Language.get('december')}`,
+							]}
 							onChange={(value) => {
 								onChangeHandler({
 									target: {
@@ -674,6 +689,7 @@ function EditUserInfoPanel({
 							value={moment(userData.birthDate).format(
 								momentLocaleFormatRef.current
 							)}
+							weekdaysShort={dateUtils.getWeekdaysShort()}
 							years={{
 								end: moment().year(),
 								start: moment().year() - 100,
