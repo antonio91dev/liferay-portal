@@ -101,6 +101,12 @@ public class CopyLayoutMVCActionCommandTest {
 			_group, RandomTestUtil.randomString(),
 			WorkflowConstants.STATUS_APPROVED);
 
+		_draftLayout = _layout.fetchDraftLayout();
+
+		_segmentsExperienceId =
+			_segmentsExperienceLocalService.fetchDefaultSegmentsExperienceId(
+				_draftLayout.getPlid());
+
 		_serviceContext = _getServiceContext(_group);
 
 		ServiceContextThreadLocal.pushServiceContext(_serviceContext);
@@ -113,9 +119,7 @@ public class CopyLayoutMVCActionCommandTest {
 
 	@Test
 	public void testDoProcessActionCopyLayout() throws Exception {
-		_addFragmentEntryLinkToLayout(
-			_segmentsExperienceLocalService.fetchDefaultSegmentsExperienceId(
-				_layout.getPlid()));
+		_addFragmentEntryLinkToLayout();
 
 		_addModelResources(RoleTestUtil.addRole(RoleConstants.TYPE_REGULAR));
 
@@ -153,9 +157,7 @@ public class CopyLayoutMVCActionCommandTest {
 	public void testDoProcessActionCopyLayoutWithNavigationMenu()
 		throws Exception {
 
-		_addFragmentEntryLinkToLayout(
-			_segmentsExperienceLocalService.fetchDefaultSegmentsExperienceId(
-				_layout.getPlid()));
+		_addFragmentEntryLinkToLayout();
 
 		_addModelResources(RoleTestUtil.addRole(RoleConstants.TYPE_REGULAR));
 
@@ -183,9 +185,7 @@ public class CopyLayoutMVCActionCommandTest {
 	public void testDoProcessActionCopyLayoutWithPermissions()
 		throws Exception {
 
-		_addFragmentEntryLinkToLayout(
-			_segmentsExperienceLocalService.fetchDefaultSegmentsExperienceId(
-				_layout.getPlid()));
+		_addFragmentEntryLinkToLayout();
 
 		Role role = RoleTestUtil.addRole(RoleConstants.TYPE_REGULAR);
 
@@ -224,20 +224,18 @@ public class CopyLayoutMVCActionCommandTest {
 				_group.getGroupId(), layout.getPlid()));
 	}
 
-	private void _addFragmentEntryLinkToLayout(long segmentsExperienceId)
-		throws Exception {
-
+	private void _addFragmentEntryLinkToLayout() throws Exception {
 		FragmentEntry fragmentEntry = _getFragmentEntry();
 
 		ContentLayoutTestUtil.addFragmentEntryLinkToLayout(
 			null, fragmentEntry.getCss(), fragmentEntry.getConfiguration(),
 			fragmentEntry.getFragmentEntryId(), fragmentEntry.getHtml(),
-			fragmentEntry.getJs(), _layout.fetchDraftLayout(),
-			fragmentEntry.getFragmentEntryKey(), segmentsExperienceId,
+			fragmentEntry.getJs(),_draftLayout,
+			fragmentEntry.getFragmentEntryKey(), _segmentsExperienceId,
 			fragmentEntry.getType());
 
 		ContentLayoutTestUtil.publishLayout(
-			_layout.fetchDraftLayout(), _layout);
+			_draftLayout, _layout);
 	}
 
 	private void _addModelResources(Role role) throws Exception {
@@ -255,8 +253,6 @@ public class CopyLayoutMVCActionCommandTest {
 		int count = _segmentsExperienceLocalService.getSegmentsExperiencesCount(
 			_layout.getGroupId(), _layout.getPlid());
 
-		Layout draftLayout = _layout.fetchDraftLayout();
-
 		MVCActionCommand addSegmentsExperienceMVCActionCommand =
 			ContentLayoutTestUtil.getMVCActionCommand(
 				"/layout_content_page_editor/add_segments_experience");
@@ -264,14 +260,14 @@ public class CopyLayoutMVCActionCommandTest {
 		MockLiferayPortletActionRequest mockLiferayPortletActionRequest =
 			ContentLayoutTestUtil.getMockLiferayPortletActionRequest(
 				_companyLocalService.getCompany(_group.getCompanyId()), _group,
-				draftLayout);
+				_draftLayout);
 
 		mockLiferayPortletActionRequest.addParameter(
-			"groupId", String.valueOf(draftLayout.getGroupId()));
+			"groupId", String.valueOf(_draftLayout.getGroupId()));
 		mockLiferayPortletActionRequest.addParameter(
 			"name", RandomTestUtil.randomString());
 		mockLiferayPortletActionRequest.addParameter(
-			"plid", String.valueOf(draftLayout.getPlid()));
+			"plid", String.valueOf(_draftLayout.getPlid()));
 
 		ReflectionTestUtil.invoke(
 			addSegmentsExperienceMVCActionCommand, "doTransactionalCommand",
@@ -279,7 +275,7 @@ public class CopyLayoutMVCActionCommandTest {
 			mockLiferayPortletActionRequest,
 			new MockLiferayPortletActionResponse());
 
-		ContentLayoutTestUtil.publishLayout(draftLayout, _layout);
+		ContentLayoutTestUtil.publishLayout(_draftLayout, _layout);
 
 		Assert.assertEquals(
 			count + 1,
@@ -498,6 +494,8 @@ public class CopyLayoutMVCActionCommandTest {
 	private FragmentEntryLocalService _fragmentEntryLocalService;
 
 	@DeleteAfterTestRun
+	private Layout _draftLayout;
+
 	private Group _group;
 
 	private Layout _layout;
@@ -520,6 +518,8 @@ public class CopyLayoutMVCActionCommandTest {
 
 	@Inject
 	private RoleLocalService _roleLocalService;
+
+	private long _segmentsExperienceId;
 
 	@Inject
 	private SegmentsExperienceLocalService _segmentsExperienceLocalService;
