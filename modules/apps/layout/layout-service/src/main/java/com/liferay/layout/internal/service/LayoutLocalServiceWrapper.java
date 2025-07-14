@@ -196,11 +196,13 @@ public class LayoutLocalServiceWrapper
 			_layoutClassedModelUsageLocalService.
 				getLayoutClassedModelUsagesByPlid(sourceLayout.getPlid());
 
-		long classNameId = _portal.getClassNameId(
-			FragmentEntryLink.class.getName());
+		long[] classNameIds = {
+			_portal.getClassNameId(FragmentEntryLink.class.getName()),
+			_portal.getClassNameId(LayoutPageTemplateStructure.class.getName())
+		};
 
 		_deleteLayoutClassedModelUsages(
-			classNameId, sourceLayoutLayoutClassedModelUsages, targetLayout);
+			classNameIds, sourceLayoutLayoutClassedModelUsages, targetLayout);
 
 		List<LayoutClassedModelUsage> targetLayoutLayoutClassedModelUsages =
 			_layoutClassedModelUsageLocalService.
@@ -209,7 +211,8 @@ public class LayoutLocalServiceWrapper
 		for (LayoutClassedModelUsage sourceLayoutLayoutClassedModelUsage :
 				sourceLayoutLayoutClassedModelUsages) {
 
-			if ((classNameId ==
+			if (ArrayUtil.contains(
+					classNameIds,
 					sourceLayoutLayoutClassedModelUsage.getContainerType()) ||
 				_hasLayoutClassedModelUsage(
 					targetLayoutLayoutClassedModelUsages,
@@ -558,7 +561,7 @@ public class LayoutLocalServiceWrapper
 	}
 
 	private void _deleteLayoutClassedModelUsages(
-		long classNameId,
+		long[] classNameIds,
 		List<LayoutClassedModelUsage> sourceLayoutLayoutClassedModelUsages,
 		Layout targetLayout) {
 
@@ -566,7 +569,8 @@ public class LayoutLocalServiceWrapper
 				_layoutClassedModelUsageLocalService.
 					getLayoutClassedModelUsagesByPlid(targetLayout.getPlid())) {
 
-			if ((classNameId !=
+			if (!ArrayUtil.contains(
+					classNameIds,
 					targetLayoutClassedModelUsage.getContainerType()) &&
 				!_hasLayoutClassedModelUsage(
 					sourceLayoutLayoutClassedModelUsages,
