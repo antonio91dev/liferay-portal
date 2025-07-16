@@ -738,6 +738,13 @@ public class StagedLayoutSetStagedModelDataHandler
 			StagedLayoutSet stagedLayoutSet, Element stagedLayoutSetElement)
 		throws Exception {
 
+		if (!MapUtil.getBoolean(
+				portletDataContext.getParameterMap(),
+				PortletDataHandlerKeys.FAVICON)) {
+
+			return;
+		}
+
 		LayoutSet layoutSet = stagedLayoutSet.getLayoutSet();
 
 		StagedModelDataHandlerUtil.importReferenceStagedModel(
