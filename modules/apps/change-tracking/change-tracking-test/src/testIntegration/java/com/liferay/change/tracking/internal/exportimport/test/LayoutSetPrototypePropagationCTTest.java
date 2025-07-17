@@ -120,7 +120,7 @@ public class LayoutSetPrototypePropagationCTTest {
 			Assert.assertEquals(
 				ctCollection.getCtCollectionId(),
 				layoutSet.getCtCollectionId());
-			Assert.assertNotEquals(
+			Assert.assertEquals(
 				faviconFileEntryId, layoutSet.getFaviconFileEntryId());
 			Assert.assertEquals(
 				layoutSetPrototypeLayout.getFaviconFileEntryId(),
@@ -169,7 +169,7 @@ public class LayoutSetPrototypePropagationCTTest {
 		layoutSetPrototypeLayoutSet = _layoutSetLocalService.getLayoutSet(
 			layoutSetPrototype.getGroupId(), false);
 
-		Assert.assertEquals(
+		Assert.assertNotEquals(
 			layoutSetPrototypeLayoutSet.getFaviconFileEntryId(),
 			layoutSet.getFaviconFileEntryId());
 	}
