@@ -22,6 +22,7 @@ import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.ClassNameLocalService;
 import com.liferay.portal.kernel.service.CompanyLocalService;
+import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.AssertUtils;
 import com.liferay.portal.kernel.test.TestInfo;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
@@ -1346,7 +1347,7 @@ public class CustomFieldsUtilTest {
 	}
 
 	@Test
-	@TestInfo("LPD-54757")
+	@TestInfo({"LPD-54757", "LPD-61106"})
 	public void testToMapExpectedClassAndValue() throws Exception {
 
 		// Boolean
@@ -2069,6 +2070,9 @@ public class CustomFieldsUtilTest {
 				Arrays.asList(_DATA_STRING), null, _expandoColumn23, null),
 			String[].class, new String[] {_DATA_STRING});
 		_testToMapExpectedClassAndValue(
+			_createCustomField(_DATA_STRING, null, _expandoColumn23, null),
+			String.class, _DATA_STRING);
+		_testToMapExpectedClassAndValue(
 			_createCustomField(
 				new String[] {_DATA_STRING}, null, _expandoColumn23, null),
 			String[].class, new String[] {_DATA_STRING});
@@ -2081,6 +2085,9 @@ public class CustomFieldsUtilTest {
 				Arrays.asList(_DATA_STRING), null, _expandoColumn24, null),
 			String[].class, new String[] {_DATA_STRING});
 		_testToMapExpectedClassAndValue(
+			_createCustomField(_DATA_STRING, null, _expandoColumn24, null),
+			String.class, _DATA_STRING);
+		_testToMapExpectedClassAndValue(
 			_createCustomField(
 				new String[] {_DATA_STRING}, null, _expandoColumn24, null),
 			String[].class, new String[] {_DATA_STRING});
@@ -2088,6 +2095,9 @@ public class CustomFieldsUtilTest {
 			_createCustomField(
 				Arrays.asList(_DATA_INT), null, _expandoColumn25, null),
 			String[].class, new String[] {String.valueOf(_DATA_INT)});
+		_testToMapExpectedClassAndValue(
+			_createCustomField(_DATA_STRING, null, _expandoColumn25, null),
+			String.class, _DATA_STRING);
 		_testToMapExpectedClassAndValue(
 			_createCustomField(
 				Arrays.asList(_DATA_STRING), null, _expandoColumn25, null),
@@ -2123,7 +2133,7 @@ public class CustomFieldsUtilTest {
 	}
 
 	@Test
-	@TestInfo("LPD-54757")
+	@TestInfo({"LPD-54757", "LPD-61106"})
 	public void testToMapExpectedClassAndValueInvalidValues() {
 
 		// Boolean array
@@ -2306,7 +2316,12 @@ public class CustomFieldsUtilTest {
 
 		Assert.assertTrue(expectedClass.isInstance(actualValue));
 
-		ExpandoTestUtil.addValues(_expandoTable, _user.getPrimaryKey(), map);
+		_user.setExpandoBridgeAttributes(
+			new ServiceContext() {
+				{
+					setExpandoBridgeAttributes(map);
+				}
+			});
 
 		Assert.assertNotNull(
 			_getCustomField(
