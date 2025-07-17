@@ -228,11 +228,11 @@ const Modal = ({
 										title
 									)}
 
-									{loading && (
-										<span className="sr-only">
-											- {Liferay.Language.get('loading')}
-										</span>
-									)}
+									<span className="sr-only">
+										{loading
+											? `- ${Liferay.Language.get('loading')}`
+											: ''}
+									</span>
 								</ClayModal.Header>
 							)}
 
