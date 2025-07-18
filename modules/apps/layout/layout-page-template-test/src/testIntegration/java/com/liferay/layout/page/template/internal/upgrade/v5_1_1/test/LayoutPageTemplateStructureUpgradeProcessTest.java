@@ -89,11 +89,9 @@ public class LayoutPageTemplateStructureUpgradeProcessTest {
 		Layout layout = _layoutLocalService.fetchLayout(
 			layoutPageTemplateEntry.getPlid());
 
-		layout.setStatus(WorkflowConstants.STATUS_DRAFT);
-
-		layout.setType(LayoutConstants.TYPE_PORTLET);
-
 		layout.setUserId(RandomTestUtil.randomLong());
+		layout.setType(LayoutConstants.TYPE_PORTLET);
+		layout.setStatus(WorkflowConstants.STATUS_DRAFT);
 
 		layout = _layoutLocalService.updateLayout(layout);
 
