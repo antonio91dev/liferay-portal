@@ -1381,13 +1381,13 @@ public class CustomFieldsUtilTest {
 			boolean[].class, new boolean[] {false, true});
 		_testToMapExpectedClassAndValue(
 			_createCustomField(
-				Arrays.asList(_DATA_INT), null, _expandoColumn2, null),
-			boolean[].class, new boolean[] {false});
-		_testToMapExpectedClassAndValue(
-			_createCustomField(
 				Arrays.asList(Boolean.FALSE, Boolean.TRUE), null,
 				_expandoColumn2, null),
 			boolean[].class, new boolean[] {false, true});
+		_testToMapExpectedClassAndValue(
+			_createCustomField(
+				Arrays.asList(_DATA_INT), null, _expandoColumn2, null),
+			boolean[].class, new boolean[] {false});
 		_testToMapExpectedClassAndValue(
 			_createCustomField(
 				Arrays.asList(false, true), null, _expandoColumn2, null),
@@ -1413,11 +1413,11 @@ public class CustomFieldsUtilTest {
 		randomDate1 = new Date((randomDate1.getTime() / 1000) * 1000);
 
 		_testToMapExpectedClassAndValue(
-			_createCustomField(randomDate1, null, _expandoColumn3, null),
-			Date.class, randomDate1);
-		_testToMapExpectedClassAndValue(
 			_createCustomField(
 				_dateFormat.format(randomDate1), null, _expandoColumn3, null),
+			Date.class, randomDate1);
+		_testToMapExpectedClassAndValue(
+			_createCustomField(randomDate1, null, _expandoColumn3, null),
 			Date.class, randomDate1);
 
 		// Date array
@@ -1428,12 +1428,12 @@ public class CustomFieldsUtilTest {
 
 		_testToMapExpectedClassAndValue(
 			_createCustomField(
-				Arrays.asList(randomDate2), null, _expandoColumn4, null),
+				Arrays.asList(_dateFormat.format(randomDate2)), null,
+				_expandoColumn4, null),
 			Date[].class, new Date[] {randomDate2});
 		_testToMapExpectedClassAndValue(
 			_createCustomField(
-				Arrays.asList(_dateFormat.format(randomDate2)), null,
-				_expandoColumn4, null),
+				Arrays.asList(randomDate2), null, _expandoColumn4, null),
 			Date[].class, new Date[] {randomDate2});
 		_testToMapExpectedClassAndValue(
 			_createCustomField(
@@ -1694,10 +1694,6 @@ public class CustomFieldsUtilTest {
 
 		_testToMapExpectedClassAndValue(
 			_createCustomField(
-				new BigDecimal(_DATA_INT), null, _expandoColumn12, null),
-			Integer.class, _DATA_INT);
-		_testToMapExpectedClassAndValue(
-			_createCustomField(
 				String.valueOf(_DATA_INT), null, _expandoColumn12, null),
 			Integer.class, _DATA_INT);
 		_testToMapExpectedClassAndValue(
@@ -1706,14 +1702,13 @@ public class CustomFieldsUtilTest {
 		_testToMapExpectedClassAndValue(
 			_createCustomField(_DATA_LONG, null, _expandoColumn12, null),
 			Integer.class, (int)_DATA_LONG);
+		_testToMapExpectedClassAndValue(
+			_createCustomField(
+				new BigDecimal(_DATA_INT), null, _expandoColumn12, null),
+			Integer.class, _DATA_INT);
 
 		// Integer array
 
-		_testToMapExpectedClassAndValue(
-			_createCustomField(
-				Arrays.asList(new BigDecimal(_DATA_INT)), null,
-				_expandoColumn13, null),
-			int[].class, new int[] {_DATA_INT});
 		_testToMapExpectedClassAndValue(
 			_createCustomField(
 				Arrays.asList(String.valueOf(_DATA_INT)), null,
@@ -1727,6 +1722,11 @@ public class CustomFieldsUtilTest {
 			_createCustomField(
 				Arrays.asList(_DATA_LONG), null, _expandoColumn13, null),
 			int[].class, new int[] {(int)_DATA_LONG});
+		_testToMapExpectedClassAndValue(
+			_createCustomField(
+				Arrays.asList(new BigDecimal(_DATA_INT)), null,
+				_expandoColumn13, null),
+			int[].class, new int[] {_DATA_INT});
 		_testToMapExpectedClassAndValue(
 			_createCustomField(
 				new BigDecimal[] {new BigDecimal(_DATA_INT)}, null,
@@ -1760,8 +1760,8 @@ public class CustomFieldsUtilTest {
 
 		_testToMapExpectedClassAndValue(
 			_createCustomField(
-				new BigDecimal(_DATA_LONG), null, _expandoColumn14, null),
-			Long.class, _DATA_LONG);
+				String.valueOf(_DATA_INT), null, _expandoColumn14, null),
+			Long.class, (long)_DATA_INT);
 		_testToMapExpectedClassAndValue(
 			_createCustomField(
 				String.valueOf(_DATA_INT), null, _expandoColumn14, null),
@@ -1771,6 +1771,10 @@ public class CustomFieldsUtilTest {
 				String.valueOf(_DATA_LONG), null, _expandoColumn14, null),
 			Long.class, (long)_DATA_LONG);
 		_testToMapExpectedClassAndValue(
+			_createCustomField(
+				String.valueOf(_DATA_LONG), null, _expandoColumn14, null),
+			Long.class, _DATA_LONG);
+		_testToMapExpectedClassAndValue(
 			_createCustomField(_DATA_INT, null, _expandoColumn14, null),
 			Long.class, (long)_DATA_INT);
 		_testToMapExpectedClassAndValue(
@@ -1778,20 +1782,11 @@ public class CustomFieldsUtilTest {
 			Long.class, _DATA_LONG);
 		_testToMapExpectedClassAndValue(
 			_createCustomField(
-				String.valueOf(_DATA_INT), null, _expandoColumn14, null),
-			Long.class, (long)_DATA_INT);
-		_testToMapExpectedClassAndValue(
-			_createCustomField(
-				String.valueOf(_DATA_LONG), null, _expandoColumn14, null),
+				new BigDecimal(_DATA_LONG), null, _expandoColumn14, null),
 			Long.class, _DATA_LONG);
 
 		// Long array
 
-		_testToMapExpectedClassAndValue(
-			_createCustomField(
-				Arrays.asList(new BigDecimal(_DATA_LONG)), null,
-				_expandoColumn15, null),
-			long[].class, new long[] {_DATA_LONG});
 		_testToMapExpectedClassAndValue(
 			_createCustomField(
 				Arrays.asList(String.valueOf(_DATA_INT)), null,
@@ -1809,6 +1804,11 @@ public class CustomFieldsUtilTest {
 		_testToMapExpectedClassAndValue(
 			_createCustomField(
 				Arrays.asList(_DATA_LONG), null, _expandoColumn15, null),
+			long[].class, new long[] {_DATA_LONG});
+		_testToMapExpectedClassAndValue(
+			_createCustomField(
+				Arrays.asList(new BigDecimal(_DATA_LONG)), null,
+				_expandoColumn15, null),
 			long[].class, new long[] {_DATA_LONG});
 		_testToMapExpectedClassAndValue(
 			_createCustomField(
@@ -1845,11 +1845,6 @@ public class CustomFieldsUtilTest {
 			long[].class, new long[] {_DATA_LONG});
 		_testToMapExpectedClassAndValue(
 			_createCustomField(
-				Arrays.asList(new BigDecimal(_DATA_LONG)), null,
-				_expandoColumn16, null),
-			long[].class, new long[] {_DATA_LONG});
-		_testToMapExpectedClassAndValue(
-			_createCustomField(
 				Arrays.asList(String.valueOf(_DATA_INT)), null,
 				_expandoColumn16, null),
 			long[].class, new long[] {(long)_DATA_INT});
@@ -1865,6 +1860,11 @@ public class CustomFieldsUtilTest {
 		_testToMapExpectedClassAndValue(
 			_createCustomField(
 				Arrays.asList(_DATA_LONG), null, _expandoColumn16, null),
+			long[].class, new long[] {_DATA_LONG});
+		_testToMapExpectedClassAndValue(
+			_createCustomField(
+				Arrays.asList(new BigDecimal(_DATA_LONG)), null,
+				_expandoColumn16, null),
 			long[].class, new long[] {_DATA_LONG});
 		_testToMapExpectedClassAndValue(
 			_createCustomField(
@@ -1901,16 +1901,16 @@ public class CustomFieldsUtilTest {
 			long[].class, new long[] {_DATA_LONG});
 		_testToMapExpectedClassAndValue(
 			_createCustomField(
-				Arrays.asList(new BigDecimal(_DATA_LONG)), null,
-				_expandoColumn17, null),
-			long[].class, new long[] {_DATA_LONG});
-		_testToMapExpectedClassAndValue(
-			_createCustomField(
 				Arrays.asList(_DATA_INT), null, _expandoColumn17, null),
 			long[].class, new long[] {(long)_DATA_INT});
 		_testToMapExpectedClassAndValue(
 			_createCustomField(
 				Arrays.asList(_DATA_LONG), null, _expandoColumn17, null),
+			long[].class, new long[] {_DATA_LONG});
+		_testToMapExpectedClassAndValue(
+			_createCustomField(
+				Arrays.asList(new BigDecimal(_DATA_LONG)), null,
+				_expandoColumn17, null),
 			long[].class, new long[] {_DATA_LONG});
 		_testToMapExpectedClassAndValue(
 			_createCustomField(
@@ -1949,23 +1949,18 @@ public class CustomFieldsUtilTest {
 		// Number
 
 		_testToMapExpectedClassAndValue(
-			_createCustomField(
-				new BigDecimal(_DATA_LONG), null, _expandoColumn18, null),
-			Number.class, new BigDecimal(_DATA_LONG));
-		_testToMapExpectedClassAndValue(
 			_createCustomField(_DATA_INT, null, _expandoColumn18, null),
 			Number.class, _DATA_INT);
 		_testToMapExpectedClassAndValue(
 			_createCustomField(_DATA_LONG, null, _expandoColumn18, null),
 			Number.class, _DATA_LONG);
+		_testToMapExpectedClassAndValue(
+			_createCustomField(
+				new BigDecimal(_DATA_LONG), null, _expandoColumn18, null),
+			Number.class, new BigDecimal(_DATA_LONG));
 
 		// Number array
 
-		_testToMapExpectedClassAndValue(
-			_createCustomField(
-				Arrays.asList(new BigDecimal(_DATA_LONG)), null,
-				_expandoColumn19, null),
-			Number[].class, new Number[] {new BigDecimal(_DATA_LONG)});
 		_testToMapExpectedClassAndValue(
 			_createCustomField(
 				Arrays.asList(_DATA_INT), null, _expandoColumn19, null),
@@ -1974,6 +1969,11 @@ public class CustomFieldsUtilTest {
 			_createCustomField(
 				Arrays.asList(_DATA_LONG), null, _expandoColumn19, null),
 			Number[].class, new Number[] {_DATA_LONG});
+		_testToMapExpectedClassAndValue(
+			_createCustomField(
+				Arrays.asList(new BigDecimal(_DATA_LONG)), null,
+				_expandoColumn19, null),
+			Number[].class, new Number[] {new BigDecimal(_DATA_LONG)});
 		_testToMapExpectedClassAndValue(
 			_createCustomField(
 				new BigDecimal[] {new BigDecimal(_DATA_LONG)}, null,
@@ -2001,23 +2001,18 @@ public class CustomFieldsUtilTest {
 		// Short
 
 		_testToMapExpectedClassAndValue(
-			_createCustomField(
-				new BigDecimal(_DATA_LONG), null, _expandoColumn20, null),
-			Short.class, (short)_DATA_LONG);
-		_testToMapExpectedClassAndValue(
 			_createCustomField(_DATA_INT, null, _expandoColumn20, null),
 			Short.class, (short)_DATA_INT);
 		_testToMapExpectedClassAndValue(
 			_createCustomField(_DATA_LONG, null, _expandoColumn20, null),
 			Short.class, (short)_DATA_LONG);
+		_testToMapExpectedClassAndValue(
+			_createCustomField(
+				new BigDecimal(_DATA_LONG), null, _expandoColumn20, null),
+			Short.class, (short)_DATA_LONG);
 
 		// Short array
 
-		_testToMapExpectedClassAndValue(
-			_createCustomField(
-				Arrays.asList(new BigDecimal(_DATA_LONG)), null,
-				_expandoColumn21, null),
-			short[].class, new short[] {(short)_DATA_LONG});
 		_testToMapExpectedClassAndValue(
 			_createCustomField(
 				Arrays.asList(_DATA_INT), null, _expandoColumn21, null),
@@ -2025,6 +2020,11 @@ public class CustomFieldsUtilTest {
 		_testToMapExpectedClassAndValue(
 			_createCustomField(
 				Arrays.asList(_DATA_LONG), null, _expandoColumn21, null),
+			short[].class, new short[] {(short)_DATA_LONG});
+		_testToMapExpectedClassAndValue(
+			_createCustomField(
+				Arrays.asList(new BigDecimal(_DATA_LONG)), null,
+				_expandoColumn21, null),
 			short[].class, new short[] {(short)_DATA_LONG});
 		_testToMapExpectedClassAndValue(
 			_createCustomField(
@@ -2096,12 +2096,12 @@ public class CustomFieldsUtilTest {
 				Arrays.asList(_DATA_INT), null, _expandoColumn25, null),
 			String[].class, new String[] {String.valueOf(_DATA_INT)});
 		_testToMapExpectedClassAndValue(
-			_createCustomField(_DATA_STRING, null, _expandoColumn25, null),
-			String.class, _DATA_STRING);
-		_testToMapExpectedClassAndValue(
 			_createCustomField(
 				Arrays.asList(_DATA_STRING), null, _expandoColumn25, null),
 			String[].class, new String[] {_DATA_STRING});
+		_testToMapExpectedClassAndValue(
+			_createCustomField(_DATA_STRING, null, _expandoColumn25, null),
+			String.class, _DATA_STRING);
 		_testToMapExpectedClassAndValue(
 			_createCustomField(
 				new String[] {_DATA_STRING}, null, _expandoColumn25, null),
