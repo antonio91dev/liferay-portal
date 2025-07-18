@@ -89,6 +89,11 @@ public class StagedLayoutSetStagedModelDataHandlerTest
 	}
 
 	@Test
+	public void testExportImportFaviconUndefined() throws Exception {
+		_testExportImportFavicon(null, true);
+	}
+
+	@Test
 	@TestInfo("LPD-47835")
 	public void testExportImportLayoutPriorityWithDuplicateLayoutId()
 		throws Exception {
@@ -379,7 +384,7 @@ public class StagedLayoutSetStagedModelDataHandlerTest
 	}
 
 	private void _testExportImportFavicon(
-			boolean faviconEnabled, boolean shouldImportFavicon)
+			Boolean faviconEnabled, boolean shouldImportFavicon)
 		throws Exception {
 
 		initExport();
@@ -409,11 +414,13 @@ public class StagedLayoutSetStagedModelDataHandlerTest
 
 		initImport();
 
-		portletDataContext.getParameterMap(
-		).put(
-			PortletDataHandlerKeys.FAVICON,
-			new String[] {String.valueOf(faviconEnabled)}
-		);
+		if (faviconEnabled != null) {
+			portletDataContext.getParameterMap(
+			).put(
+				PortletDataHandlerKeys.FAVICON,
+				new String[] {String.valueOf(faviconEnabled)}
+			);
+		}
 
 		FileEntry exportedFaviconFileEntry = (FileEntry)readExportedStagedModel(
 			faviconFileEntry);
