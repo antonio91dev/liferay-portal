@@ -421,6 +421,17 @@ public class WorkflowDefinitionLinkDisplayContext {
 		return predicate;
 	}
 
+	protected WorkflowDefinitionLinkSearchEntry
+			createWorkflowDefinitionLinkSearchEntry(
+				WorkflowHandler<?> workflowHandler, Locale locale)
+		throws PortalException {
+
+		return new WorkflowDefinitionLinkSearchEntry(
+			workflowHandler.getClassName(),
+			HtmlUtil.escapeAttribute(workflowHandler.getType(locale)),
+			getWorkflowDefinitionLabel(workflowHandler));
+	}
+
 	protected List<WorkflowDefinitionLinkSearchEntry> filter(
 		List<WorkflowDefinitionLinkSearchEntry>
 			workflowDefinitionLinkSearchEntries,
@@ -486,17 +497,6 @@ public class WorkflowDefinitionLinkDisplayContext {
 			});
 	}
 
-	private WorkflowDefinitionLinkSearchEntry
-			_createWorkflowDefinitionLinkSearchEntry(
-				WorkflowHandler<?> workflowHandler, Locale locale)
-		throws PortalException {
-
-		return new WorkflowDefinitionLinkSearchEntry(
-			workflowHandler.getClassName(),
-			HtmlUtil.escapeAttribute(workflowHandler.getType(locale)),
-			getWorkflowDefinitionLabel(workflowHandler));
-	}
-
 	private List<WorkflowDefinitionLinkSearchEntry>
 			_createWorkflowDefinitionLinkSearchEntryList()
 		throws PortalException {
@@ -513,7 +513,7 @@ public class WorkflowDefinitionLinkDisplayContext {
 
 			WorkflowDefinitionLinkSearchEntry
 				workflowDefinitionLinkSearchEntry =
-					_createWorkflowDefinitionLinkSearchEntry(
+					createWorkflowDefinitionLinkSearchEntry(
 						workflowHandler, themeDisplay.getLocale());
 
 			workflowDefinitionLinkSearchEntries.add(
