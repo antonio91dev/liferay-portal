@@ -177,7 +177,7 @@ public class ImportDataDefinitionMVCActionCommandTest {
 
 		MockLiferayPortletActionRequest mockLiferayPortletActionRequest =
 			createMockLiferayPortletActionRequest(
-				"data_definition_with_valid_fields.json", "Imported Structure");
+				"valid_data_definition.json", "Imported Structure");
 
 		setUpUploadPortletRequest(mockLiferayPortletActionRequest);
 
@@ -196,7 +196,7 @@ public class ImportDataDefinitionMVCActionCommandTest {
 				"importDataDefinitionSuccessMessage"));
 
 		mockLiferayPortletActionRequest = createMockLiferayPortletActionRequest(
-			"data_definition_with_valid_fields.json", "Imported Structure");
+			"valid_data_definition.json", "Imported Structure");
 
 		setUpUploadPortletRequest(mockLiferayPortletActionRequest);
 
