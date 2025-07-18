@@ -16,6 +16,7 @@ import com.liferay.journal.service.JournalArticleService;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.search.Field;
@@ -123,6 +124,15 @@ public class JournalArticleSXPBlueprintInfoCollectionProvider
 	@Override
 	public String getLabel(Locale locale) {
 		return sxpBlueprint.getTitle(locale);
+	}
+
+	@Override
+	public boolean isAvailable() {
+		if (FeatureFlagManagerUtil.isEnabled("LPS-193551")) {
+			return super.isAvailable();
+		}
+
+		return false;
 	}
 
 	private List<JournalArticle> _getJournalArticles(SearchHits searchHits)

@@ -14,6 +14,7 @@ import com.liferay.info.pagination.InfoPage;
 import com.liferay.info.pagination.Pagination;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.search.searcher.SearchRequestBuilder;
@@ -77,6 +78,15 @@ public class AssetEntrySXPBlueprintInfoCollectionProvider
 			AssetEntrySXPBlueprintInfoCollectionProvider.class.getName(),
 			StringPool.UNDERLINE, sxpBlueprint.getCompanyId(),
 			StringPool.UNDERLINE, sxpBlueprint.getExternalReferenceCode());
+	}
+
+	@Override
+	public boolean isAvailable() {
+		if (FeatureFlagManagerUtil.isEnabled("LPS-129412")) {
+			return super.isAvailable();
+		}
+
+		return false;
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
