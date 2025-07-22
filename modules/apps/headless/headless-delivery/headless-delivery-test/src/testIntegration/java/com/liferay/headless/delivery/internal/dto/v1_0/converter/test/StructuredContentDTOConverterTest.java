@@ -87,13 +87,13 @@ public class StructuredContentDTOConverterTest {
 
 		int nextInt = RandomUtil.nextInt(5);
 
-		String xml = StringUtil.replace(
+		String json = StringUtil.replace(
 			StringUtil.replace(
 				_read("test-data-definition-select-from-list.json"),
 				"[$ALPHABETICAL_ORDER$]", alphabeticalOrder),
 			"[$RANDOM_INT$]", String.valueOf(nextInt));
 
-		JSONObject jsonObject = JSONFactoryUtil.createJSONObject(xml);
+		JSONObject jsonObject = JSONFactoryUtil.createJSONObject(json);
 
 		DataDefinition dataDefinition =
 			DataDefinitionTestUtil.addDataDefinition(
