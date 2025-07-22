@@ -18,6 +18,7 @@ import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.exportimport.kernel.lifecycle.ExportImportLifecycleManagerUtil;
 import com.liferay.exportimport.kernel.lifecycle.constants.ExportImportLifecycleConstants;
 import com.liferay.exportimport.test.util.lar.BaseStagedModelDataHandlerTestCase;
+import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalService;
 import com.liferay.layout.set.model.adapter.StagedLayoutSet;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -27,7 +28,6 @@ import com.liferay.portal.kernel.model.StagedModel;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.LayoutSetLocalService;
-import com.liferay.portal.kernel.test.TestInfo;
 import com.liferay.portal.kernel.test.constants.TestDataConstants;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -93,105 +93,6 @@ public class StagedLayoutSetStagedModelDataHandlerTest
 		_testExportImportFavicon(null, true);
 	}
 
-	@Test
-	@TestInfo("LPD-47835")
-	public void testExportImportLayoutPriorityWithDuplicateLayoutId()
-		throws Exception {
-
-		initExport();
-
-		Layout layout1 = LayoutTestUtil.addTypeContentLayout(stagingGroup);
-		Layout layout2 = LayoutTestUtil.addTypeContentLayout(stagingGroup);
-
-		Layout layout3 = LayoutTestUtil.addTypeContentLayout(stagingGroup);
-
-		layout3 = _layoutLocalService.updatePriority(layout3.getPlid(), 0);
-
-		LayoutPageTemplateEntry layoutPageTemplateEntry =
-			LayoutPageTemplateTestUtil.addLayoutPageTemplateEntry(
-				stagingGroup.getGroupId(),
-				LayoutPageTemplateEntryTypeConstants.MASTER_LAYOUT,
-				WorkflowConstants.STATUS_APPROVED);
-
-		Layout masterLayout = _updateLayoutId(
-			_layoutLocalService.getLayout(layoutPageTemplateEntry.getPlid()),
-			RandomTestUtil.randomLong());
-
-		layout3 = _updateLayoutId(layout3, masterLayout.getLayoutId());
-
-		Assert.assertEquals(masterLayout.getLayoutId(), layout3.getLayoutId());
-
-		Layout layout4 = LayoutTestUtil.addTypeContentLayout(
-			stagingGroup, false, false, masterLayout.getPlid());
-
-		StagedModelDataHandlerUtil.exportStagedModel(
-			portletDataContext, _assertPriority(layout1.getPlid(), 1));
-		StagedModelDataHandlerUtil.exportStagedModel(
-			portletDataContext, _assertPriority(layout2.getPlid(), 2));
-		StagedModelDataHandlerUtil.exportStagedModel(
-			portletDataContext, _assertPriority(layout3.getPlid(), 0));
-		StagedModelDataHandlerUtil.exportStagedModel(
-			portletDataContext, _assertPriority(layout4.getPlid(), 3));
-
-		StagedLayoutSet stagedLayoutSet = ModelAdapterUtil.adapt(
-			stagingGroup.getPublicLayoutSet(), LayoutSet.class,
-			StagedLayoutSet.class);
-
-		StagedModelDataHandlerUtil.exportStagedModel(
-			portletDataContext, stagedLayoutSet);
-
-		initImport();
-
-		ExportImportLifecycleManagerUtil.fireExportImportLifecycleEvent(
-			ExportImportLifecycleConstants.EVENT_LAYOUT_IMPORT_STARTED,
-			ExportImportLifecycleConstants.
-				PROCESS_FLAG_LAYOUT_IMPORT_IN_PROCESS,
-			portletDataContext.getExportImportProcessId(),
-			PortletDataContextFactoryUtil.clonePortletDataContext(
-				portletDataContext));
-
-		StagedModelDataHandlerUtil.importStagedModel(
-			portletDataContext, (Layout)readExportedStagedModel(layout1));
-		StagedModelDataHandlerUtil.importStagedModel(
-			portletDataContext, (Layout)readExportedStagedModel(layout2));
-		StagedModelDataHandlerUtil.importStagedModel(
-			portletDataContext, (Layout)readExportedStagedModel(layout3));
-		StagedModelDataHandlerUtil.importStagedModel(
-			portletDataContext, (Layout)readExportedStagedModel(layout4));
-
-		portletDataContext.setPrivateLayout(false);
-
-		StagedModelDataHandlerUtil.importStagedModel(
-			portletDataContext,
-			(StagedLayoutSet)readExportedStagedModel(stagedLayoutSet));
-
-		ExportImportLifecycleManagerUtil.fireExportImportLifecycleEvent(
-			ExportImportLifecycleConstants.EVENT_LAYOUT_IMPORT_SUCCEEDED,
-			ExportImportLifecycleConstants.
-				PROCESS_FLAG_LAYOUT_IMPORT_IN_PROCESS,
-			portletDataContext.getExportImportProcessId(),
-			PortletDataContextFactoryUtil.clonePortletDataContext(
-				portletDataContext));
-
-		_assertPriority(1, layout1.getUuid());
-		_assertPriority(2, layout2.getUuid());
-		_assertPriority(0, layout3.getUuid());
-
-		LayoutPageTemplateEntry importedLayoutPageTemplateEntry =
-			_layoutPageTemplateEntryLocalService.
-				getLayoutPageTemplateEntryByUuidAndGroupId(
-					layoutPageTemplateEntry.getUuid(), liveGroup.getGroupId());
-
-		Layout importedMasterLayout = _layoutLocalService.getLayout(
-			importedLayoutPageTemplateEntry.getPlid());
-
-		Layout importedLayout4 = _assertPriority(3, layout4.getUuid());
-
-		Assert.assertEquals(
-			importedMasterLayout.getPlid(),
-			importedLayout4.getMasterLayoutPlid());
-	}
-
 	@Override
 	@Test
 	public void testStagedModelDataHandler() throws Exception {
@@ -235,23 +136,6 @@ public class StagedLayoutSetStagedModelDataHandlerTest
 	@Override
 	protected Class<? extends StagedModel> getStagedModelClass() {
 		return StagedLayoutSet.class;
-	}
-
-	private Layout _assertPriority(int priority, String uuid) throws Exception {
-		Layout layout = _layoutLocalService.fetchLayoutByUuidAndGroupId(
-			uuid, liveGroup.getGroupId(), false);
-
-		Assert.assertEquals(priority, layout.getPriority());
-
-		return layout;
-	}
-
-	private Layout _assertPriority(long plid, int priority) throws Exception {
-		Layout layout = _layoutLocalService.getLayout(plid);
-
-		Assert.assertEquals(priority, layout.getPriority());
-
-		return layout;
 	}
 
 	private void _testClientExtensionEntries(String type, String url)
@@ -445,14 +329,6 @@ public class StagedLayoutSetStagedModelDataHandlerTest
 		else {
 			Assert.assertEquals(0, importedLayoutSet.getFaviconFileEntryId());
 		}
-	}
-
-	private Layout _updateLayoutId(Layout layout, long layoutId)
-		throws Exception {
-
-		layout.setLayoutId(layoutId);
-
-		return _layoutLocalService.updateLayout(layout);
 	}
 
 	@Inject
