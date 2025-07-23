@@ -6929,7 +6929,7 @@ log.sanitizer.enabled=false</echo>
 					</then>
 				</elseif>
 				<else>
-					<var name="app.server.tomcat.version" value="9.0.104" />
+					<var name="app.server.tomcat.version" value="9.0.107" />
 				</else>
 			</if>
 
