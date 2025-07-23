@@ -99,6 +99,8 @@ public class InfoRequestFieldValuesProviderHelper {
 		String classTypeId = ParamUtil.getString(
 			uploadServletRequest, "classTypeId");
 		long groupId = ParamUtil.getLong(uploadServletRequest, "groupId");
+		boolean nestedEntity = ParamUtil.getBoolean(
+			uploadServletRequest, "nestedEntity");
 
 		Map<String, FileItem[]> multipartParameterMap =
 			uploadServletRequest.getMultipartParameterMap();
@@ -109,7 +111,11 @@ public class InfoRequestFieldValuesProviderHelper {
 		for (InfoField<?> infoField :
 				_getInfoFields(className, classTypeId, groupId)) {
 
-			if (!infoField.isEditable()) {
+			if (!infoField.isEditable() ||
+				(!nestedEntity &&
+				 StringUtil.startsWith(
+					 infoField.getUniqueId(), "ObjectRelationship"))) {
+
 				continue;
 			}
 
