@@ -191,7 +191,7 @@ public class CopyLayoutMVCActionCommandTest {
 		Layout layout = _testCopyLayout(false, Collections.emptyMap());
 
 		_assertLayoutClassedModelUsages(
-			0, journalArticle.getResourcePrimKey(), layout.getPlid());
+			2, journalArticle.getResourcePrimKey(), layout.getPlid());
 
 		Layout draftLayout = layout.fetchDraftLayout();
 
@@ -290,12 +290,10 @@ public class CopyLayoutMVCActionCommandTest {
 		Layout layout = _layoutLocalService.fetchLayoutByFriendlyURL(
 			_group.getGroupId(), _layout.isPrivateLayout(), "/" + _NAME);
 
-		Layout draftLayout = layout.fetchDraftLayout();
-
 		Assert.assertEquals(
 			count,
 			_segmentsExperienceLocalService.getSegmentsExperiencesCount(
-				_group.getGroupId(), draftLayout.getPlid()));
+				_group.getGroupId(), layout.getPlid()));
 	}
 
 	private void _addFragmentEntryLinkToLayout(String editableValues)
