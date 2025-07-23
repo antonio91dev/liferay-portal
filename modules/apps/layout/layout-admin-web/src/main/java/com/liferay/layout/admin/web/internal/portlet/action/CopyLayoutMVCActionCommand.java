@@ -86,19 +86,21 @@ public class CopyLayoutMVCActionCommand extends BaseMVCActionCommand {
 			Layout.class.getName(), actionRequest);
 
 		try {
-			Layout sourceLayout = _layoutLocalService.fetchLayout(sourcePlid);
-
 			Layout targetLayout = _layoutService.copyLayout(
 				groupId, privateLayout, nameMap, false, false, copyPermissions,
 				sourcePlid, serviceContext);
 
+			Layout sourceLayout = _layoutLocalService.fetchLayout(sourcePlid);
+
+			targetLayout = _layoutLocalService.copyLayoutContent(
+				sourceLayout, targetLayout);
+
 			Layout draftLayout = targetLayout.fetchDraftLayout();
 
 			if (draftLayout != null) {
-				targetLayout = draftLayout;
+				_layoutLocalService.copyLayoutContent(
+					targetLayout, draftLayout);
 			}
-
-			_layoutLocalService.copyLayoutContent(sourceLayout, targetLayout);
 
 			String redirect = ParamUtil.getString(actionRequest, "redirect");
 
