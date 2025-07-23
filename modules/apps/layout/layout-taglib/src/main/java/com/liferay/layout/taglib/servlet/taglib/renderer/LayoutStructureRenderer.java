@@ -5,11 +5,14 @@
 
 package com.liferay.layout.taglib.servlet.taglib.renderer;
 
+import com.liferay.fragment.constants.FragmentConstants;
 import com.liferay.fragment.constants.FragmentWebKeys;
 import com.liferay.fragment.model.FragmentEntryLink;
 import com.liferay.fragment.renderer.DefaultFragmentRendererContext;
 import com.liferay.fragment.renderer.FragmentRendererController;
 import com.liferay.fragment.service.FragmentEntryLinkLocalServiceUtil;
+import com.liferay.fragment.util.configuration.FragmentConfigurationField;
+import com.liferay.fragment.util.configuration.FragmentEntryConfigurationParser;
 import com.liferay.frontend.taglib.clay.servlet.taglib.ButtonTag;
 import com.liferay.frontend.taglib.clay.servlet.taglib.ColTag;
 import com.liferay.frontend.taglib.clay.servlet.taglib.ContainerTag;
@@ -17,6 +20,7 @@ import com.liferay.frontend.taglib.clay.servlet.taglib.PaginationBarTag;
 import com.liferay.frontend.taglib.clay.servlet.taglib.RowTag;
 import com.liferay.frontend.taglib.servlet.taglib.ComponentTag;
 import com.liferay.info.constants.InfoDisplayWebKeys;
+import com.liferay.info.field.InfoField;
 import com.liferay.info.form.InfoForm;
 import com.liferay.info.item.InfoItemDetails;
 import com.liferay.info.item.InfoItemReference;
@@ -51,7 +55,6 @@ import com.liferay.layout.util.structure.RowStyledLayoutStructureItem;
 import com.liferay.layout.util.structure.collection.EmptyCollectionOptions;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
-import com.liferay.petra.string.StringUtil;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringWriter;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Layout;
@@ -72,12 +75,14 @@ import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.layoutconfiguration.util.RuntimePageUtil;
 import com.liferay.portal.util.PropsValues;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -754,8 +759,8 @@ public class LayoutStructureRenderer {
 					originalHttpServletRequest = _httpServletRequest;
 				}
 
-				List<String> ppids = StringUtil.split(
-					layoutTypePortlet.getStateMax());
+				List<String> ppids = Arrays.asList(
+					StringUtil.split(layoutTypePortlet.getStateMax()));
 				String templateId =
 					_themeDisplay.getThemeId() +
 						LayoutTemplateConstants.STANDARD_SEPARATOR + "max";
@@ -1194,6 +1199,34 @@ public class LayoutStructureRenderer {
 				String html = fragmentRendererController.render(
 					defaultFragmentRendererContext, _httpServletRequest,
 					httpServletResponse);
+
+				if ((infoForm != null) &&
+					Objects.equals(
+						fragmentEntryLink.getType(),
+						FragmentConstants.TYPE_INPUT)) {
+
+					FragmentEntryConfigurationParser
+						fragmentEntryConfigurationParser =
+							ServletContextUtil.
+								getFragmentEntryConfigurationParser();
+
+					String fieldName = GetterUtil.getString(
+						fragmentEntryConfigurationParser.getFieldValue(
+							fragmentEntryLink.getEditableValues(),
+							new FragmentConfigurationField(
+								"inputFieldId", "string", "", false, "text"),
+							_themeDisplay.getLocale()));
+
+					InfoField<?> infoField = infoForm.getInfoField(fieldName);
+
+					if ((infoField != null) &&
+						StringUtil.startsWith(
+							fieldName, "ObjectRelationship")) {
+
+						jspWriter.write("<input name=\"nestedEntity\" ");
+						jspWriter.write("type=\"hidden\" value=\"true\">");
+					}
+				}
 
 				if (GetterUtil.getBoolean(
 						_httpServletRequest.getAttribute(
