@@ -14896,7 +14896,7 @@ public class ObjectEntryResourceTest {
 				"title", "Unable to decode Base64 file"
 			),
 			_toFileEntry(
-				String::new, RandomTestUtil.randomString(7),
+				String::new, "$" + RandomTestUtil.randomString(7),
 				RandomTestUtil.randomString() + ".txt", null, null),
 			httpMethod, null, objectDefinition,
 			_OBJECT_FIELD_NAME_ATTACHMENT_USER_COMPUTER_SOURCE_1,
@@ -15495,7 +15495,7 @@ public class ObjectEntryResourceTest {
 				"title", "Unable to decode Base64 file"
 			),
 			_toFileEntry(
-				String::new, RandomTestUtil.randomString(7),
+				String::new, "$" + RandomTestUtil.randomString(7),
 				RandomTestUtil.randomString() + ".txt", null, null),
 			null, objectDefinition,
 			_OBJECT_FIELD_NAME_ATTACHMENT_USER_COMPUTER_SOURCE_1);
