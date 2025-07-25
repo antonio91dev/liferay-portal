@@ -204,9 +204,8 @@ public class PortalInstancesTest {
 		MockHttpServletRequest mockHttpServletRequest =
 			new MockHttpServletRequest();
 
-		mockHttpServletRequest.setServerName(hostname);
-
 		mockHttpServletRequest.addHeader("Host", hostname);
+		mockHttpServletRequest.setServerName(hostname);
 
 		Assert.assertEquals(
 			_company.getCompanyId(),
