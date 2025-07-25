@@ -145,8 +145,7 @@ public class PortalInstancesTest {
 
 			Assert.assertEquals(
 				_company.getCompanyId(),
-				CompanyThreadLocal.getCompanyId(
-				).longValue());
+				(long)CompanyThreadLocal.getCompanyId());
 		}
 
 		try (SafeCloseable safeCloseable =
@@ -159,8 +158,7 @@ public class PortalInstancesTest {
 
 			Assert.assertNotEquals(
 				_company.getCompanyId(),
-				CompanyThreadLocal.getCompanyId(
-				).longValue());
+				(long)CompanyThreadLocal.getCompanyId());
 		}
 	}
 
