@@ -214,8 +214,7 @@ public class PortalInstancesTest {
 
 		Assert.assertEquals(
 			_company.getCompanyId(),
-			CompanyThreadLocal.getCompanyId(
-			).longValue());
+			(long)CompanyThreadLocal.getCompanyId());
 
 		Assert.assertEquals(
 			_company.getCompanyId(),
