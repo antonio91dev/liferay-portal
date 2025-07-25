@@ -199,7 +199,7 @@ public class PortalInstancesTest {
 	}
 
 	private void _testGetCompanyId(
-		String hostname, LayoutSet expectedLayoutSet) {
+		String hostname, LayoutSet layoutSet) {
 
 		MockHttpServletRequest mockHttpServletRequest =
 			new MockHttpServletRequest();
@@ -214,13 +214,11 @@ public class PortalInstancesTest {
 		Assert.assertEquals(
 			_company.getCompanyId(),
 			(long)CompanyThreadLocal.getCompanyId());
-
 		Assert.assertEquals(
 			_company.getCompanyId(),
 			mockHttpServletRequest.getAttribute(WebKeys.COMPANY_ID));
-
 		Assert.assertEquals(
-			expectedLayoutSet,
+			layoutSet,
 			mockHttpServletRequest.getAttribute(
 				WebKeys.VIRTUAL_HOST_LAYOUT_SET));
 	}
