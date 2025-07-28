@@ -965,8 +965,7 @@ public class ObjectEntryDisplayContextImpl
 		// TODO Store the type and the object field type in the database
 
 		ObjectFieldBusinessType objectFieldBusinessType =
-			_objectFieldBusinessTypeRegistry.getObjectFieldBusinessType(
-				objectField.getBusinessType());
+			_getObjectFieldBusinessType(objectField);
 
 		DDMFormField ddmFormField = new DDMFormField(
 			objectField.getName(),
@@ -1144,6 +1143,17 @@ public class ObjectEntryDisplayContextImpl
 		return ddmFormValues;
 	}
 
+	private Object _getDisplayContextValue(
+			ObjectField objectField, Map<String, Object> values)
+		throws PortalException {
+
+		ObjectFieldBusinessType objectFieldBusinessType =
+			_getObjectFieldBusinessType(objectField);
+
+		return objectFieldBusinessType.getDisplayContextValue(
+			objectField, _objectRequestHelper.getUserId(), values);
+	}
+
 	private DTOConverterContext _getDTOConverterContext() {
 		return new DefaultDTOConverterContext(
 			false, null, null, _objectRequestHelper.getRequest(), null,
@@ -1223,6 +1233,22 @@ public class ObjectEntryDisplayContextImpl
 		}
 
 		return _objectEntry;
+	}
+
+	private ObjectFieldBusinessType _getObjectFieldBusinessType(
+		ObjectField objectField) {
+
+		if (Objects.equals(
+				objectField.getBusinessType(),
+				ObjectFieldConstants.BUSINESS_TYPE_DATE) &&
+			objectField.isMetadata()) {
+
+			return _objectFieldBusinessTypeRegistry.getObjectFieldBusinessType(
+				ObjectFieldConstants.BUSINESS_TYPE_DATE_TIME);
+		}
+
+		return _objectFieldBusinessTypeRegistry.getObjectFieldBusinessType(
+			objectField.getBusinessType());
 	}
 
 	private Object _getValue(
