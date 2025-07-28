@@ -677,6 +677,10 @@ public class ObjectDefinitionLocalServiceImpl
 		}
 	}
 
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x)
+	 */
+	@Deprecated
 	@Override
 	public void deployObjectDefinitions() {
 		_companyLocalService.forEachCompanyId(
