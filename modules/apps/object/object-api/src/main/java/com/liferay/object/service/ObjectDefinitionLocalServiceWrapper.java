@@ -216,6 +216,10 @@ public class ObjectDefinitionLocalServiceWrapper
 		_objectDefinitionLocalService.deployObjectDefinition(objectDefinition);
 	}
 
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x)
+	 */
+	@Deprecated
 	@Override
 	public void deployObjectDefinitions() {
 		_objectDefinitionLocalService.deployObjectDefinitions();

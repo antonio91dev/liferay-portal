@@ -173,6 +173,10 @@ public interface ObjectDefinitionLocalService
 
 	public void deployObjectDefinition(ObjectDefinition objectDefinition);
 
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x)
+	 */
+	@Deprecated
 	public void deployObjectDefinitions();
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)

@@ -201,6 +201,10 @@ public class ObjectDefinitionLocalServiceUtil {
 		getService().deployObjectDefinition(objectDefinition);
 	}
 
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x)
+	 */
+	@Deprecated
 	public static void deployObjectDefinitions() {
 		getService().deployObjectDefinitions();
 	}
