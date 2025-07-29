@@ -317,7 +317,7 @@ public class ModifiedFacetDisplayContextBuilderTest
 		ModifiedFacetDisplayContext modifiedFacetDisplayContext =
 			modifiedFacetDisplayContextBuilder.build();
 
-		_assertTermDisplayContextsDoNotHaveFromAndToParameters(
+		_assertBucketDisplayContextsDoNotHaveFromAndToParameters(
 			modifiedFacetDisplayContext.getBucketDisplayContexts());
 	}
 
@@ -457,6 +457,26 @@ public class ModifiedFacetDisplayContextBuilderTest
 		jsonArray.put(jsonObject);
 	}
 
+	private void _assertBucketDisplayContextsDoNotHaveFromAndToParameters(
+		List<BucketDisplayContext> bucketDisplayContexts) {
+
+		for (BucketDisplayContext bucketDisplayContext :
+				bucketDisplayContexts) {
+
+			String label = bucketDisplayContext.getBucketText();
+
+			if (label.equals("custom-range")) {
+				continue;
+			}
+
+			String rangeURL = bucketDisplayContext.getFilterValue();
+
+			_assertHasParameter(rangeURL, "modified");
+			_assertDoesNotHasParameter(rangeURL, "modifiedFrom");
+			_assertDoesNotHasParameter(rangeURL, "modifiedTo");
+		}
+	}
+
 	private void _assertDoesNotHasParameter(String url, String name) {
 		Assert.assertTrue(
 			Validator.isNull(
@@ -467,24 +487,6 @@ public class ModifiedFacetDisplayContextBuilderTest
 		Assert.assertTrue(
 			Validator.isNotNull(
 				HttpComponentsUtil.getParameter(url, name, false)));
-	}
-
-	private void _assertTermDisplayContextsDoNotHaveFromAndToParameters(
-		List<BucketDisplayContext> termDisplayContexts) {
-
-		for (BucketDisplayContext termDisplayContext : termDisplayContexts) {
-			String label = termDisplayContext.getBucketText();
-
-			if (label.equals("custom-range")) {
-				continue;
-			}
-
-			String rangeURL = termDisplayContext.getFilterValue();
-
-			_assertHasParameter(rangeURL, "modified");
-			_assertDoesNotHasParameter(rangeURL, "modifiedFrom");
-			_assertDoesNotHasParameter(rangeURL, "modifiedTo");
-		}
 	}
 
 	private JSONObject _createDataJSONObject(String... labelsAndRanges) {
