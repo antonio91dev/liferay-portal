@@ -211,7 +211,7 @@ journalEditArticleDisplayContext.setViewAttributes();
 								<clay:link
 									borderless="<%= true %>"
 									displayType="secondary"
-									href="<%= journalEditArticleDisplayContext.getBackURL() %>"
+									href="<%= PortalUtil.escapeRedirect(journalEditArticleDisplayContext.getBackURL()) %>"
 									label="cancel"
 									type="button"
 								/>
