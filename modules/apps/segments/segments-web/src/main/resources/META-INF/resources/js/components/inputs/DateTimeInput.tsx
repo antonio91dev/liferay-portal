@@ -100,6 +100,7 @@ function DateTimeInput({
 				dateFormat="yyyy/MM/dd"
 				disabled={disabled}
 				expanded={expanded}
+				firstDayOfWeek={dateUtils.getFirstDayOfWeek()}
 				months={[
 					`${Liferay.Language.get('january')}`,
 					`${Liferay.Language.get('february')}`,
@@ -118,6 +119,7 @@ function DateTimeInput({
 				onChange={setDisplayDate}
 				onExpandedChange={onExpandedChange}
 				value={displayDate}
+				weekdaysShort={dateUtils.getWeekdaysShort()}
 				years={{
 					end: new Date().getFullYear(),
 					start: 1900,
