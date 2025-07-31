@@ -70,13 +70,13 @@ public class DataLayoutBuilderTagTest {
 	public void testDataLayoutDDMFormAdapterCreateDDMFormFieldValue()
 		throws Exception {
 
+		_testDataLayoutDDMFormAdapterCreateDDMFormFieldValue(
+			null, StringPool.BLANK);
+
 		String propertyValue = RandomTestUtil.randomString();
 
 		_testDataLayoutDDMFormAdapterCreateDDMFormFieldValue(
 			propertyValue, propertyValue);
-
-		_testDataLayoutDDMFormAdapterCreateDDMFormFieldValue(
-			null, StringPool.BLANK);
 	}
 
 	private void _testDataLayoutDDMFormAdapterCreateDDMFormFieldValue(
