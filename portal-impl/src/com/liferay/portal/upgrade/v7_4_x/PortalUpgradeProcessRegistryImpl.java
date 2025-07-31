@@ -563,6 +563,8 @@ public class PortalUpgradeProcessRegistryImpl
 			new Version(31, 14, 2),
 			UpgradeProcessFactory.alterColumnType(
 				"AssetVocabulary", "visibilityType", "INTEGER"));
+
+		upgradeVersionTreeMap.put(new Version(31, 14, 3), new UpgradeDB2());
 	}
 
 }
