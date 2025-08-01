@@ -495,7 +495,6 @@ public class EditUserMVCActionCommand
 		throws Exception {
 
 		long companyId = _portal.getCompanyId(actionRequest);
-
 		long userId = _portal.getUserId(actionRequest);
 
 		for (long accountUserId : accountUserIds) {
