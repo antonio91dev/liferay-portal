@@ -112,9 +112,11 @@ public class JournalArticleModelValidatorTest {
 			clazz.getResourceAsStream(
 				"dependencies/journal_article_content.xml"));
 
-		content = StringUtil.replace(content, "$UUID", fileEntry.getUuid());
 		content = StringUtil.replace(
-			content, "$GROUP_ID", String.valueOf(fileEntry.getGroupId()));
+			content, new String[] {"[$GROUP_ID]", "[$UUID]"},
+			new String[] {
+				fileEntry.getUuid(), String.valueOf(fileEntry.getGroupId())
+			});
 
 		ReflectionTestUtil.invoke(
 			_journalArticleModelValidator, "validateReferences",

@@ -7,12 +7,12 @@
 					"classNameId": 33788,
 					"description": "",
 					"fileEntryId": "33789",
-					"groupId": "$GROUP_ID",
+					"groupId": "[$GROUP_ID]",
 					"height": 1365,
 					"title": "test.png",
 					"type": "document",
 					"url": "/documents/d/guest/INVALIDLINK?download=true",
-					"uuid": "$UUID",
+					"uuid": "[$UUID]",
 					"width": 1728
 				}
 			]]>
