@@ -169,15 +169,15 @@ public class BatchEngineBundleTrackerTest {
 	public void testProcessBatchEngineBundleUsesActiveAdministratorUser()
 		throws Exception {
 
-		AtomicReference<BatchEngineImportTask>
-			initialBatchEngineImportTaskAtomicReference = new AtomicReference<>();
+		AtomicReference<BatchEngineImportTask> atomicReference =
+			new AtomicReference<>();
 
 		_testProcessBatchEngineBundle(
-			initialBatchEngineImportTaskAtomicReference::set, "batch11",
+			atomicReference::set, "batch11",
 			"/batch11/data.batch-engine-data.json");
 
 		BatchEngineImportTask batchEngineImportTask1 =
-			initialBatchEngineImportTaskAtomicReference.get();
+			atomicReference.get();
 
 		long originalUserId = batchEngineImportTask1.getUserId();
 
@@ -198,15 +198,11 @@ public class BatchEngineBundleTrackerTest {
 
 		Assert.assertTrue(adminUser.isActive());
 
-		AtomicReference<BatchEngineImportTask>
-			fallbackBatchEngineImportTaskAtomicReference = new AtomicReference<>();
-
 		_testProcessBatchEngineBundle(
-			fallbackBatchEngineImportTaskAtomicReference::set, "batch11",
+			atomicReference::set, "batch11",
 			"/batch11/data.batch-engine-data.json");
 
-		BatchEngineImportTask batchEngineImportTask2 =
-			fallbackBatchEngineImportTaskAtomicReference.get();
+		BatchEngineImportTask batchEngineImportTask2 = atomicReference.get();
 
 		User fallbackBatchEngineImportTaskUser = _userLocalService.getUser(
 			batchEngineImportTask2.getUserId());
