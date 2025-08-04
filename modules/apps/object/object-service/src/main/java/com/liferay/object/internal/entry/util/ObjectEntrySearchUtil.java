@@ -13,6 +13,7 @@ import com.liferay.object.model.ObjectField;
 import com.liferay.object.petra.sql.dsl.DynamicObjectDefinitionLocalizationTable;
 import com.liferay.object.petra.sql.dsl.DynamicObjectDefinitionTable;
 import com.liferay.object.service.ObjectFieldLocalService;
+import com.liferay.object.util.HttpServletRequestThreadLocal;
 import com.liferay.petra.sql.dsl.Column;
 import com.liferay.petra.sql.dsl.DSLFunctionFactoryUtil;
 import com.liferay.petra.sql.dsl.DSLQueryFactoryUtil;
@@ -32,13 +33,26 @@ import java.math.BigDecimal;
 
 import java.util.Locale;
 
+import javax.servlet.http.HttpServletRequest;
+
 /**
  * @author Carolina Barbosa
  */
 public class ObjectEntrySearchUtil {
 
 	public static String getLanguageId() throws PortalException {
-		Locale locale = LocaleThreadLocal.getThemeDisplayLocale();
+		HttpServletRequest httpServletRequest =
+			HttpServletRequestThreadLocal.getHttpServletRequest();
+
+		Locale locale = null;
+
+		if (httpServletRequest != null) {
+			locale = httpServletRequest.getLocale();
+		}
+
+		if (locale == null) {
+			locale = LocaleThreadLocal.getThemeDisplayLocale();
+		}
 
 		if (locale == null) {
 			locale = LocaleThreadLocal.getSiteDefaultLocale();
