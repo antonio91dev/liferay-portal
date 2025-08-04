@@ -176,22 +176,22 @@ public class BatchEngineBundleTrackerTest {
 			atomicReference::set, "batch11",
 			"/batch11/data.batch-engine-data.json");
 
-		BatchEngineImportTask batchEngineImportTask1 =
+		BatchEngineImportTask batchEngineImportTask =
 			atomicReference.get();
 
-		long originalUserId = batchEngineImportTask1.getUserId();
+		long userId = batchEngineImportTask.getUserId();
 
-		User originalUser = _userLocalService.getUser(originalUserId);
+		User user = _userLocalService.getUser(userId);
 
-		Assert.assertTrue(originalUser.isActive());
+		Assert.assertTrue(user.isActive());
 
-		int originalStatus = originalUser.getStatus();
+		int status = user.getStatus();
 
-		originalUser = _userLocalService.updateStatus(
-			originalUser, WorkflowConstants.STATUS_INACTIVE,
+		user = _userLocalService.updateStatus(
+			user, WorkflowConstants.STATUS_INACTIVE,
 			new ServiceContext());
 
-		Assert.assertFalse(originalUser.isActive());
+		Assert.assertFalse(user.isActive());
 
 		User adminUser = UserTestUtil.addCompanyAdminUser(
 			_companyLocalService.getCompany(TestPropsValues.getCompanyId()));
@@ -202,22 +202,18 @@ public class BatchEngineBundleTrackerTest {
 			atomicReference::set, "batch11",
 			"/batch11/data.batch-engine-data.json");
 
-		BatchEngineImportTask batchEngineImportTask2 = atomicReference.get();
+		batchEngineImportTask = atomicReference.get();
 
-		User fallbackBatchEngineImportTaskUser = _userLocalService.getUser(
-			batchEngineImportTask2.getUserId());
+		user = _userLocalService.getUser(batchEngineImportTask.getUserId());
 
-		Assert.assertTrue(fallbackBatchEngineImportTaskUser.isActive());
-
+		Assert.assertTrue(user.isActive());
 		Assert.assertTrue(
 			ListUtil.exists(
-				_roleLocalService.getUserRoles(
-					fallbackBatchEngineImportTaskUser.getUserId()),
-				userRole -> RoleConstants.ADMINISTRATOR.equals(
-					userRole.getName())));
+				_roleLocalService.getUserRoles(user.getUserId()),
+				role -> RoleConstants.ADMINISTRATOR.equals(role.getName())));
 
 		_userLocalService.updateStatus(
-			originalUserId, originalStatus, new ServiceContext());
+			userId, status, new ServiceContext());
 	}
 
 	private User _createAdminUser() throws Exception {
