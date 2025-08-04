@@ -157,8 +157,6 @@ public class SiteNavigationMenuExportImportTest
 				childSiteNavigationMenuItem2.
 					getParentSiteNavigationMenuItemId());
 
-		Assert.assertNotNull(childSiteNavigationMenuItem1);
-
 		Assert.assertEquals(
 			_liveGroup.getGroupId(), childSiteNavigationMenuItem1.getGroupId());
 	}
