@@ -13,15 +13,18 @@ import com.liferay.info.pagination.InfoPage;
 import com.liferay.journal.constants.JournalFolderConstants;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.test.util.JournalTestUtil;
+import com.liferay.osgi.service.tracker.collections.list.ServiceTrackerList;
+import com.liferay.osgi.service.tracker.collections.list.ServiceTrackerListFactory;
 import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagListener;
+import com.liferay.portal.kernel.module.util.SystemBundleUtil;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
-import com.liferay.portal.kernel.test.util.FeatureFlagTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
@@ -29,17 +32,17 @@ import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.WebKeys;
-import com.liferay.portal.test.rule.FeatureFlag;
+import com.liferay.portal.test.rule.FeatureFlags;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 import com.liferay.search.experiences.model.SXPBlueprint;
 import com.liferay.search.experiences.service.SXPBlueprintLocalService;
 
-import jakarta.servlet.http.HttpServletRequest;
-
 import java.util.Collections;
 import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -55,7 +58,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 /**
  * @author Joshua Cords
  */
-@FeatureFlag("LPS-129412")
+@FeatureFlags("LPS-193551")
 @RunWith(Arquillian.class)
 public class SXPBlueprintInfoCollectionProviderTest {
 
@@ -68,14 +71,14 @@ public class SXPBlueprintInfoCollectionProviderTest {
 
 	@BeforeClass
 	public static void setUpClass() throws Exception {
-		FeatureFlagTestUtil.invokeFeatureFlagListeners(
-			TestPropsValues.getCompanyId(), true, "LPS-129412");
+		_invokeFeatureFlagListeners(
+			TestPropsValues.getCompanyId(), true, "LPS-193551");
 	}
 
 	@AfterClass
 	public static void tearDownClass() throws Exception {
-		FeatureFlagTestUtil.invokeFeatureFlagListeners(
-			TestPropsValues.getCompanyId(), false, "LPS-129412");
+		_invokeFeatureFlagListeners(
+			TestPropsValues.getCompanyId(), false, "LPS-193551");
 	}
 
 	@Before
@@ -110,9 +113,10 @@ public class SXPBlueprintInfoCollectionProviderTest {
 			_infoItemServiceRegistry.getInfoItemService(
 				InfoCollectionProvider.class,
 				StringBundler.concat(
-					SXPBlueprint.class.getName(), StringPool.UNDERLINE,
+					_CLASSNAME, StringPool.UNDERLINE,
 					sxpBlueprint.getCompanyId(), StringPool.UNDERLINE,
-					sxpBlueprint.getExternalReferenceCode()));
+					sxpBlueprint.getExternalReferenceCode(),
+					StringPool.UNDERLINE, JournalArticle.class.getName()));
 
 		ServiceContextThreadLocal.pushServiceContext(_serviceContext);
 
@@ -146,9 +150,10 @@ public class SXPBlueprintInfoCollectionProviderTest {
 			_infoItemServiceRegistry.getInfoItemService(
 				InfoCollectionProvider.class,
 				StringBundler.concat(
-					SXPBlueprint.class.getName(), StringPool.UNDERLINE,
+					_CLASSNAME, StringPool.UNDERLINE,
 					sxpBlueprint.getCompanyId(), StringPool.UNDERLINE,
-					sxpBlueprint.getExternalReferenceCode()));
+					sxpBlueprint.getExternalReferenceCode(),
+					StringPool.UNDERLINE, JournalArticle.class.getName()));
 
 		Assert.assertTrue(infoCollectionProvider.isAvailable());
 
@@ -160,6 +165,23 @@ public class SXPBlueprintInfoCollectionProviderTest {
 		}
 	}
 
+	private static void _invokeFeatureFlagListeners(
+		long companyId, boolean enabled, String key) {
+
+		try (ServiceTrackerList<FeatureFlagListener> featureFlagListeners =
+				ServiceTrackerListFactory.open(
+					SystemBundleUtil.getBundleContext(),
+					FeatureFlagListener.class,
+					StringBundler.concat("(featureFlagKey=", key, ")"))) {
+
+			for (FeatureFlagListener featureFlagListener :
+					featureFlagListeners) {
+
+				featureFlagListener.onValue(companyId, key, enabled);
+			}
+		}
+	}
+
 	private String _readJSON(String name) {
 		return StringUtil.read(
 			_clazz,
@@ -167,6 +189,10 @@ public class SXPBlueprintInfoCollectionProviderTest {
 				"dependencies/", _clazz.getSimpleName(), StringPool.PERIOD,
 				name, ".json"));
 	}
+
+	private static final String _CLASSNAME =
+		"com.liferay.search.experiences.internal.info.collection.provider." +
+			"JournalArticleSXPBlueprintInfoCollectionProvider";
 
 	private final Class<?> _clazz = getClass();
 

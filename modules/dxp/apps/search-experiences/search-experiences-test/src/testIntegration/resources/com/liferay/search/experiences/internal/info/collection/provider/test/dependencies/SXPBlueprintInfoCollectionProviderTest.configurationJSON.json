@@ -9,7 +9,6 @@
 		"clauseContributorsIncludes": [
 			"*"
 		],
-		"collectionProvider": true,
 		"searchableAssetTypes": [
 			"com.liferay.journal.model.JournalArticle"
 		]
