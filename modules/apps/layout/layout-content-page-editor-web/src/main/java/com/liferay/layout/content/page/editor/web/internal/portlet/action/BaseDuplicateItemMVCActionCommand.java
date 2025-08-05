@@ -71,6 +71,9 @@ public abstract class BaseDuplicateItemMVCActionCommand
 				CheckNoninstanceablePortletThreadLocal.
 					setCheckNoninstanceablePortletWithSafeCloseable(true)) {
 
+			JSONObject duplicatedEditableValuesJSONObject =
+				jsonFactory.createJSONObject();
+
 			FragmentEntryLink fragmentEntryLink =
 				fragmentEntryLinkLocalService.getFragmentEntryLink(
 					fragmentEntryLinkId);
@@ -134,12 +137,6 @@ public abstract class BaseDuplicateItemMVCActionCommand
 				}
 			}
 
-			String fragmentEntryLinkNamespace =
-				fragmentEntryLink.getNamespace();
-
-			JSONObject duplicatedEditableValuesJSONObject =
-				jsonFactory.createJSONObject();
-
 			for (String key : editableValuesJSONObject.keySet()) {
 				Object value = editableValuesJSONObject.get(key);
 
@@ -156,7 +153,7 @@ public abstract class BaseDuplicateItemMVCActionCommand
 				for (String curKey : jsonObject.keySet()) {
 					duplicatedJSONObject.put(
 						StringUtil.replace(
-							curKey, fragmentEntryLinkNamespace, namespace),
+							curKey, fragmentEntryLink.getNamespace(), namespace),
 						jsonObject.get(curKey));
 				}
 
