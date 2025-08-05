@@ -153,7 +153,8 @@ public abstract class BaseDuplicateItemMVCActionCommand
 				for (String curKey : jsonObject.keySet()) {
 					duplicatedJSONObject.put(
 						StringUtil.replace(
-							curKey, fragmentEntryLink.getNamespace(), namespace),
+							curKey, fragmentEntryLink.getNamespace(),
+							namespace),
 						jsonObject.get(curKey));
 				}
 
