@@ -158,11 +158,11 @@ public class SortTranslatorImpl implements SortTranslator {
 		String sortFieldName = sort.getFieldName();
 
 		if (Objects.equals(sortFieldName, Field.ENTRY_CLASS_NAME) ||
+			Objects.equals(sortFieldName, Field.PRIORITY) ||
+			Objects.equals(sortFieldName, _SCORE_FIELD_NAME) ||
 			Objects.equals(sortFieldName, "_id") ||
 			Objects.equals(sortFieldName, "_index") ||
-			Objects.equals(sortFieldName, _SCORE_FIELD_NAME) ||
 			StringUtil.endsWith(sortFieldName, "_sortable.keyword") ||
-			Objects.equals(sortFieldName, Field.PRIORITY) ||
 			StringUtil.startsWith(sortFieldName, "nestedFieldArray.")) {
 
 			return sortFieldName;
