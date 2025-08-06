@@ -83,7 +83,9 @@ public class CommerceAccountRoleHelperImpl
 		_checkAccountRole(
 			AccountRoleConstants.ROLE_NAME_ACCOUNT_SUPPLIER, serviceContext);
 
-		if (FeatureFlagManagerUtil.isEnabled("LPD-10562")) {
+		if (FeatureFlagManagerUtil.isEnabled(
+				serviceContext.getCompanyId(), "LPD-10562")) {
+
 			_checkRole(
 				AccountRoleConstants.ROLE_NAME_RETURNS_MANAGER,
 				RoleConstants.TYPE_REGULAR, serviceContext);

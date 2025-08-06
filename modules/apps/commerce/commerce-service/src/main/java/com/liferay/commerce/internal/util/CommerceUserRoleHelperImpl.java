@@ -62,7 +62,9 @@ public class CommerceUserRoleHelperImpl implements CommerceUserRoleHelper {
 	public void checkCommerceUserRoles(ServiceContext serviceContext)
 		throws PortalException {
 
-		if (FeatureFlagManagerUtil.isEnabled("LPD-10562")) {
+		if (FeatureFlagManagerUtil.isEnabled(
+				serviceContext.getCompanyId(), "LPD-10562")) {
+
 			_checkRole(
 				RoleConstants.USER, RoleConstants.TYPE_REGULAR, serviceContext);
 		}

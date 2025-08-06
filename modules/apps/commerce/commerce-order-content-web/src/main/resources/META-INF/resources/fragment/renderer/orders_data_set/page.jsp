@@ -44,7 +44,7 @@
 			style="<%= displayStyle %>"
 		/>
 
-		<c:if test='<%= FeatureFlagManagerUtil.isEnabled("LPD-10562") %>'>
+		<c:if test='<%= FeatureFlagManagerUtil.isEnabled(company.getCompanyId(), "LPD-10562") %>'>
 			<liferay-frontend:component
 				context='<%=
 					HashMapBuilder.<String, Object>put(
