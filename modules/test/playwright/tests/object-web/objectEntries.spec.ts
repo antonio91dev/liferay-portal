@@ -1410,6 +1410,10 @@ test.describe('Manage object entries through View Object Entries', () => {
 			'sampleFile.txt'
 		);
 
+		await page
+			.getByRole('button', {name: 'sampleFile.txt'})
+			.waitFor({state: 'visible'});
+
 		const fileEntryId1 = await page.getAttribute(
 			'input[data-field-name^="testAttachment"]',
 			'value'
@@ -1429,6 +1433,10 @@ test.describe('Manage object entries through View Object Entries', () => {
 			__dirname,
 			'astronaut.png'
 		);
+
+		await page
+			.getByRole('button', {name: 'astronaut.png'})
+			.waitFor({state: 'visible'});
 
 		expect(
 			await apiHelpers.headlessDelivery.getDocument(fileEntryId1)
@@ -1462,6 +1470,10 @@ test.describe('Manage object entries through View Object Entries', () => {
 			'sampleFile.txt'
 		);
 
+		await page
+			.getByRole('button', {name: 'sampleFile.txt'})
+			.waitFor({state: 'visible'});
+
 		const fileEntryId3 = await page.getAttribute(
 			'input[data-field-name^="testAttachment"]',
 			'value'
@@ -1480,6 +1492,10 @@ test.describe('Manage object entries through View Object Entries', () => {
 			'astronaut.png'
 		);
 
+		await page
+			.getByRole('button', {name: 'astronaut.png'})
+			.waitFor({state: 'visible'});
+
 		await viewObjectEntriesPage.saveObjectEntryButton.click();
 
 		await expect(viewObjectEntriesPage.successMessage).toBeVisible();
@@ -1491,6 +1507,10 @@ test.describe('Manage object entries through View Object Entries', () => {
 			__dirname,
 			'sampleFile.txt'
 		);
+
+		await page
+			.getByRole('button', {name: 'sampleFile.txt'})
+			.waitFor({state: 'visible'});
 
 		await page.reload();
 
