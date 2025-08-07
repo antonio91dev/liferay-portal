@@ -21,10 +21,10 @@ public class MySQLSQLTransformerLogic extends BaseSQLTransformerLogic {
 
 		Function[] functions = {
 			getAggregationFunction(), getBitwiseCheckFunction(),
-			getBooleanFunction(), getCastClobTextFunction(),
-			getCastLongFunction(), getCastTextFunction(),
-			getDropTableIfExistsTextFunction(), getIntegerDivisionFunction(),
-			getNullDateFunction()
+			getBitwiseOrFunction(), getBooleanFunction(),
+			getCastClobTextFunction(), getCastLongFunction(),
+			getCastTextFunction(), getDropTableIfExistsTextFunction(),
+			getIntegerDivisionFunction(), getNullDateFunction()
 		};
 
 		if (!db.isSupportsStringCaseSensitiveQuery()) {
