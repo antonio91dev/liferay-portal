@@ -8,11 +8,8 @@ package com.liferay.object.dynamic.data.mapping.form.field.type.internal.attachm
 import com.liferay.document.library.kernel.service.DLAppLocalService;
 import com.liferay.document.library.util.DLURLHelper;
 import com.liferay.dynamic.data.mapping.form.field.type.DDMFormFieldTemplateContextContributor;
-import com.liferay.dynamic.data.mapping.model.DDMForm;
 import com.liferay.dynamic.data.mapping.model.DDMFormField;
 import com.liferay.dynamic.data.mapping.render.DDMFormFieldRenderingContext;
-import com.liferay.dynamic.data.mapping.util.DDMFormFieldTemplateContextContributorUtil;
-import com.liferay.dynamic.data.mapping.util.DDMFormFieldValueUtil;
 import com.liferay.item.selector.ItemSelector;
 import com.liferay.item.selector.criteria.FileEntryItemSelectorReturnType;
 import com.liferay.item.selector.criteria.file.criterion.FileItemSelectorCriterion;
@@ -23,9 +20,6 @@ import com.liferay.object.field.attachment.AttachmentManager;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
-import com.liferay.portal.kernel.json.JSONFactory;
-import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -46,12 +40,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
-
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author Carolina Barbosa
@@ -80,15 +74,15 @@ public class AttachmentDDMFormFieldTemplateContextContributor
 			GetterUtil.getLong(ddmFormField.getProperty("objectFieldId")),
 			themeDisplay.isSignedIn());
 
-		Map<String, Object> parameters = HashMapBuilder.<String, Object>put(
+		return HashMapBuilder.<String, Object>put(
 			"acceptedFileExtensions",
 			ddmFormField.getProperty("acceptedFileExtensions")
 		).put(
 			"deleteURL",
 			() -> {
 				if (!Objects.equals(
-					ddmFormField.getProperty("fileSource"),
-					ObjectFieldSettingConstants.VALUE_USER_COMPUTER)) {
+						ddmFormField.getProperty("fileSource"),
+						ObjectFieldSettingConstants.VALUE_USER_COMPUTER)) {
 
 					return null;
 				}
@@ -129,38 +123,11 @@ public class AttachmentDDMFormFieldTemplateContextContributor
 			"url",
 			_getURL(
 				ddmFormField, ddmFormFieldRenderingContext, httpServletRequest)
+		).putAll(
+			_getFileEntryProperties(
+				ddmFormField, themeDisplay,
+				GetterUtil.getLong(ddmFormFieldRenderingContext.getValue()))
 		).build();
-
-		if (FeatureFlagManagerUtil.isEnabled("LPD-32050")) {
-			boolean localizedObjectField = GetterUtil.getBoolean(
-				ddmFormField.getProperty("localizedObjectField"));
-
-			parameters.put(
-				"fileEntryProperties",
-				_getFileEntryProperties(
-					ddmFormField, ddmFormFieldRenderingContext,
-					localizedObjectField, themeDisplay));
-			parameters.put("localizedObjectField", localizedObjectField);
-			parameters.put(
-				"value",
-				_getValue(ddmFormFieldRenderingContext, localizedObjectField));
-
-			DDMForm ddmForm = ddmFormField.getDDMForm();
-
-			parameters.putAll(
-				DDMFormFieldTemplateContextContributorUtil.
-					getLocalizationParameters(
-						ddmFormField, ddmForm.getDefaultLocale()));
-		}
-		else {
-			parameters.putAll(
-				_getFileEntryProperties(
-					ddmFormField, themeDisplay,
-					GetterUtil.getLong(
-						ddmFormFieldRenderingContext.getValue())));
-		}
-
-		return parameters;
 	}
 
 	@Activate
@@ -168,35 +135,6 @@ public class AttachmentDDMFormFieldTemplateContextContributor
 	protected void activate(Map<String, Object> properties) {
 		_objectConfiguration = ConfigurableUtil.createConfigurable(
 			ObjectConfiguration.class, properties);
-	}
-
-	private Object _getFileEntryProperties(
-		DDMFormField ddmFormField,
-		DDMFormFieldRenderingContext ddmFormFieldRenderingContext,
-		boolean localizedObjectField, ThemeDisplay themeDisplay) {
-
-		if (localizedObjectField) {
-			JSONObject localizedValueJSONObject =
-				DDMFormFieldValueUtil.getValueJSONObject(
-					ddmFormFieldRenderingContext);
-
-			Map<String, Object> localizedValue =
-				localizedValueJSONObject.toMap();
-
-			for (Map.Entry<String, Object> entry : localizedValue.entrySet()) {
-				localizedValue.put(
-					entry.getKey(),
-					_getFileEntryProperties(
-						ddmFormField, themeDisplay,
-						GetterUtil.getLong(entry.getValue())));
-			}
-
-			return _jsonFactory.createJSONObject(localizedValue);
-		}
-
-		return _getFileEntryProperties(
-			ddmFormField, themeDisplay,
-			GetterUtil.getLong(ddmFormFieldRenderingContext.getValue()));
 	}
 
 	private Map<String, String> _getFileEntryProperties(
@@ -324,18 +262,6 @@ public class AttachmentDDMFormFieldTemplateContextContributor
 		return StringPool.BLANK;
 	}
 
-	private Object _getValue(
-		DDMFormFieldRenderingContext ddmFormFieldRenderingContext,
-		boolean localizedObjectField) {
-
-		if (localizedObjectField) {
-			return DDMFormFieldValueUtil.getValueJSONObject(
-				ddmFormFieldRenderingContext);
-		}
-
-		return ddmFormFieldRenderingContext.getValue();
-	}
-
 	private static final Log _log = LogFactoryUtil.getLog(
 		AttachmentDDMFormFieldTemplateContextContributor.class);
 
@@ -353,9 +279,6 @@ public class AttachmentDDMFormFieldTemplateContextContributor
 
 	@Reference
 	private ItemSelector _itemSelector;
-
-	@Reference
-	private JSONFactory _jsonFactory;
 
 	@Reference
 	private Language _language;
