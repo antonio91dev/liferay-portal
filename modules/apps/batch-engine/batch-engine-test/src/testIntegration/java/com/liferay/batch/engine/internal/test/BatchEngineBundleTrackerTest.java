@@ -109,26 +109,26 @@ public class BatchEngineBundleTrackerTest {
 
 	@Test
 	public void testProcessBatchEngineBundle() throws Exception {
-		_testProcessBatchEngineBundle("batch1", "/batch1/export.json");
-		_testProcessBatchEngineBundle("batch2");
+		_testProcessBatchEngineBundle(null, "batch1", "/batch1/export.json");
+		_testProcessBatchEngineBundle(null, "batch2");
 		_testProcessBatchEngineBundle(
-			"batch3", "/batch3/batch1/export.json",
+			null, "batch3", "/batch3/batch1/export.json",
 			"/batch3/batch2/export.json");
 		_testProcessBatchEngineBundle(
-			"batch4", "/batch4/batch1/export.json",
+			null, "batch4", "/batch4/batch1/export.json",
 			"/batch4/batch2/export.json", "/batch4/batch2/batch3/export.json");
 		_testProcessBatchEngineBundle(
-			"batch5", "/batch5/data.batch-engine-data.json");
+			null, "batch5", "/batch5/data.batch-engine-data.json");
 		_testProcessBatchEngineBundle(
-			"batch6", "/batch6/1data.batch-engine-data.json",
+			null, "batch6", "/batch6/1data.batch-engine-data.json",
 			"/batch6/2data.batch-engine-data.json");
-		_testProcessBatchEngineBundle("batch7", "/batch7/export.json");
+		_testProcessBatchEngineBundle(null, "batch7", "/batch7/export.json");
 		_testProcessBatchEngineBundle(
-			"batch8", "/batch8/1data.batch-engine-data.json",
+			null, "batch8", "/batch8/1data.batch-engine-data.json",
 			"/batch8/2data.batch-engine-data.json",
 			"/batch8/10data.batch-engine-data.json");
 		_testProcessBatchEngineBundle(
-			"batch9", "/batch9/data.batch-engine-data.json");
+			null, "batch9", "/batch9/data.batch-engine-data.json");
 
 		_company = CompanyTestUtil.addCompany(true);
 
@@ -142,7 +142,7 @@ public class BatchEngineBundleTrackerTest {
 		_userLocalService.updateUser(user);
 
 		_testProcessBatchEngineBundle(
-			"batch9", "/batch9/data.batch-engine-data.json",
+			null, "batch9", "/batch9/data.batch-engine-data.json",
 			"/batch9/data.batch-engine-data.json");
 	}
 
@@ -155,7 +155,7 @@ public class BatchEngineBundleTrackerTest {
 			ReflectionTestUtil.setFieldValue(
 				DBUpgrader.class, "_upgradeClient", true);
 
-			_testProcessBatchEngineBundle("batch1");
+			_testProcessBatchEngineBundle(null, "batch1");
 		}
 		finally {
 			ReflectionTestUtil.setFieldValue(
@@ -266,7 +266,8 @@ public class BatchEngineBundleTrackerTest {
 	}
 
 	private void _testProcessBatchEngineBundle(
-			String dirName, String... expectedDataFileNames)
+		Consumer<BatchEngineImportTask> consumer, String dirName,
+		String... expectedDataFileNames)
 		throws Exception {
 
 		ComponentDescriptionDTO componentDescriptionDTO1 =
@@ -294,38 +295,46 @@ public class BatchEngineBundleTrackerTest {
 
 		ServiceRegistration<BatchEngineImportTaskExecutor>
 			serviceRegistration1 = _bundleContext.registerService(
-				BatchEngineImportTaskExecutor.class,
-				new BatchEngineImportTaskExecutor() {
+			BatchEngineImportTaskExecutor.class,
+			new BatchEngineImportTaskExecutor() {
 
-					@Override
-					public void execute(
-						BatchEngineImportTask batchEngineImportTask) {
+				@Override
+				public void execute(
+					BatchEngineImportTask batchEngineImportTask) {
 
-						String dataFileName = _getDataFileName(
-							batchEngineImportTask);
-
-						if (dataFileName != null) {
-							processedDataFileNames.add(dataFileName);
-						}
+					if (consumer != null) {
+						consumer.accept(batchEngineImportTask);
 					}
 
-					@Override
-					public void execute(
-						BatchEngineImportTask batchEngineImportTask,
-						BatchEngineTaskItemDelegate<?>
-							batchEngineTaskItemDelegate,
-						boolean checkPermissions) {
+					String dataFileName = _getDataFileName(
+						batchEngineImportTask);
 
-						String dataFileName = _getDataFileName(
-							batchEngineImportTask);
+					if (dataFileName != null) {
+						processedDataFileNames.add(dataFileName);
+					}
+				}
 
-						if (dataFileName != null) {
-							processedDataFileNames.add(dataFileName);
-						}
+				@Override
+				public void execute(
+					BatchEngineImportTask batchEngineImportTask,
+					BatchEngineTaskItemDelegate<?>
+						batchEngineTaskItemDelegate,
+					boolean checkPermissions) {
+
+					if (consumer != null) {
+						consumer.accept(batchEngineImportTask);
 					}
 
-				},
-				null);
+					String dataFileName = _getDataFileName(
+						batchEngineImportTask);
+
+					if (dataFileName != null) {
+						processedDataFileNames.add(dataFileName);
+					}
+				}
+
+			},
+			null);
 
 		ServiceRegistration<BatchEngineUnitReader> serviceRegistration2 =
 			_bundleContext.registerService(
