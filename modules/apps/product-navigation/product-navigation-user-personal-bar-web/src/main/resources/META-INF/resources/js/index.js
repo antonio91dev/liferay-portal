@@ -53,6 +53,16 @@ export function signInButtonPropsTransformer({
 
 				if (isModalOpen) {
 					updateModalContent(responseHTML);
+					if (document.readyState === 'complete') {
+						const signInButton = document.getElementsByClassName(
+							'btn disabled btn-primary'
+						)[0];
+
+						if (signInButton) {
+							signInButton.classList.remove('disabled');
+							signInButton.disabled = false;
+						}
+					}
 				}
 			})
 			.catch(() => {
@@ -70,7 +80,6 @@ export function signInButtonPropsTransformer({
 
 				return;
 			}
-
 			if (signInButton) {
 				openModal({
 					bodyHTML:
