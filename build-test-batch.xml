@@ -9694,11 +9694,19 @@ information. Make sure to commit in all build services results.
 								<gradle-execute dir="modules/util/source-formatter" task="deploy" />
 							</then>
 						</if>
+
+						<echo>Running com.liferay.source.formatter.jar from HEAD.</echo>
 					</then>
 					<else>
 						<antcall target="setup-sdk" />
 
 						<antcall target="setup-yarn" />
+
+						<loadproperties>
+							<zipentry name="META-INF/MANIFEST.MF" zipfile="tools/sdk/dependencies/com.liferay.source.formatter/lib/com.liferay.source.formatter.jar" />
+						</loadproperties>
+
+						<echo>Running com.liferay.source.formatter.jar ${Bundle-Version}.</echo>
 					</else>
 				</if>
 
