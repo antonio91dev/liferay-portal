@@ -32,9 +32,9 @@ import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.ClassUtil;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
-import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.kernel.zip.ZipWriter;
@@ -213,17 +213,6 @@ public class BatchEngineBundleTrackerTest {
 		_userLocalService.updateStatus(userId, status, new ServiceContext());
 	}
 
-	private User _createAdminUser() throws Exception {
-		User user = UserTestUtil.addUser();
-
-		Role role = _roleLocalService.getRole(
-			user.getCompanyId(), RoleConstants.ADMINISTRATOR);
-
-		_userLocalService.addRoleUser(role.getRoleId(), user);
-
-		return user;
-	}
-
 	private String _getDataFileName(
 		BatchEngineImportTask batchEngineImportTask) {
 
@@ -231,8 +220,8 @@ public class BatchEngineBundleTrackerTest {
 	}
 
 	private void _testProcessBatchEngineBundle(
-		Consumer<BatchEngineImportTask> consumer, String dirName,
-		String... expectedDataFileNames)
+			Consumer<BatchEngineImportTask> consumer, String dirName,
+			String... expectedDataFileNames)
 		throws Exception {
 
 		ComponentDescriptionDTO componentDescriptionDTO1 =
@@ -260,46 +249,46 @@ public class BatchEngineBundleTrackerTest {
 
 		ServiceRegistration<BatchEngineImportTaskExecutor>
 			serviceRegistration1 = _bundleContext.registerService(
-			BatchEngineImportTaskExecutor.class,
-			new BatchEngineImportTaskExecutor() {
+				BatchEngineImportTaskExecutor.class,
+				new BatchEngineImportTaskExecutor() {
 
-				@Override
-				public void execute(
-					BatchEngineImportTask batchEngineImportTask) {
+					@Override
+					public void execute(
+						BatchEngineImportTask batchEngineImportTask) {
 
-					if (consumer != null) {
-						consumer.accept(batchEngineImportTask);
+						if (consumer != null) {
+							consumer.accept(batchEngineImportTask);
+						}
+
+						String dataFileName = _getDataFileName(
+							batchEngineImportTask);
+
+						if (dataFileName != null) {
+							processedDataFileNames.add(dataFileName);
+						}
 					}
 
-					String dataFileName = _getDataFileName(
-						batchEngineImportTask);
+					@Override
+					public void execute(
+						BatchEngineImportTask batchEngineImportTask,
+						BatchEngineTaskItemDelegate<?>
+							batchEngineTaskItemDelegate,
+						boolean checkPermissions) {
 
-					if (dataFileName != null) {
-						processedDataFileNames.add(dataFileName);
+						if (consumer != null) {
+							consumer.accept(batchEngineImportTask);
+						}
+
+						String dataFileName = _getDataFileName(
+							batchEngineImportTask);
+
+						if (dataFileName != null) {
+							processedDataFileNames.add(dataFileName);
+						}
 					}
-				}
 
-				@Override
-				public void execute(
-					BatchEngineImportTask batchEngineImportTask,
-					BatchEngineTaskItemDelegate<?>
-						batchEngineTaskItemDelegate,
-					boolean checkPermissions) {
-
-					if (consumer != null) {
-						consumer.accept(batchEngineImportTask);
-					}
-
-					String dataFileName = _getDataFileName(
-						batchEngineImportTask);
-
-					if (dataFileName != null) {
-						processedDataFileNames.add(dataFileName);
-					}
-				}
-
-			},
-			null);
+				},
+				null);
 
 		ServiceRegistration<BatchEngineUnitReader> serviceRegistration2 =
 			_bundleContext.registerService(
