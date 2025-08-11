@@ -57,18 +57,6 @@ public class DynamicDataSourceTest {
 
 	@Before
 	public void setUp() throws Exception {
-		_dbManagerUtilMockedStatic.when(
-			() -> DBManagerUtil.getDBType(Mockito.any())
-		).thenReturn(
-			null
-		);
-
-		_dialectDetectorMockedStatic.when(
-			() -> DialectDetector.getDialect(Mockito.any())
-		).thenReturn(
-			null
-		);
-
 		FastDateFormatFactoryUtil fastDateFormatFactoryUtil =
 			new FastDateFormatFactoryUtil();
 
@@ -83,6 +71,18 @@ public class DynamicDataSourceTest {
 			ReflectionTestUtil.getFieldValue(
 				SpringHibernateThreadLocalUtil.class,
 				"_currentTransactionReadOnlyThreadLocal");
+
+		_dbManagerUtilMockedStatic.when(
+			() -> DBManagerUtil.getDBType(Mockito.any())
+		).thenReturn(
+			null
+		);
+
+		_dialectDetectorMockedStatic.when(
+			() -> DialectDetector.getDialect(Mockito.any())
+		).thenReturn(
+			null
+		);
 
 		_tempDir = FileUtil.createTempFolder();
 
