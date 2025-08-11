@@ -3,6 +3,7 @@ Bundle-SymbolicName: com.liferay.portal.security.sso.openid.connect.impl
 Bundle-Version: 7.0.40
 Import-Package:\
 	!com.google.crypto.tink.*,\
+	!com.google.errorprone.annotations.*,\
 	\
 	!jakarta.servlet.*,\
 	\

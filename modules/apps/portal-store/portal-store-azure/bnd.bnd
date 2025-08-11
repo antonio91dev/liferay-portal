@@ -7,6 +7,7 @@ Import-Package:\
 	!com.github.luben.zstd,\
 	\
 	!com.google.crypto.tink.subtle,\
+	!com.google.errorprone.annotations.*,\
 	!com.google.protobuf.*,\
 	\
 	!com.jcraft.jzlib,\

@@ -3,6 +3,7 @@ Bundle-SymbolicName: com.liferay.portal.security.sso.openid.connect.persistence.
 Bundle-Version: 6.0.33
 Import-Package:\
 	!com.google.crypto.tink.*,\
+	!com.google.errorprone.annotations.*,\
 	\
 	!jakarta.servlet.*,\
 	\
