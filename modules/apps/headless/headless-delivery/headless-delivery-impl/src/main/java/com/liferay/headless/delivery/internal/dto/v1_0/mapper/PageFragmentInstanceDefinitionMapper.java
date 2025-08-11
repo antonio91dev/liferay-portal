@@ -69,6 +69,7 @@ import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -344,28 +345,53 @@ public class PageFragmentInstanceDefinitionMapper {
 			return new FragmentField[0];
 		}
 
-		JSONObject editableValuesJSONObject = null;
+		JSONObject editableValuesJSONObject =
+			fragmentEntryLink.getEditableValuesJSONObject();
 
-		try {
-			editableValuesJSONObject = _jsonFactory.createJSONObject(
-				fragmentEntryLink.getEditableValues());
-		}
-		catch (JSONException jsonException) {
-			if (_log.isDebugEnabled()) {
-				_log.debug(jsonException);
+		JSONObject processedEditableValuesJSONObject =
+			_jsonFactory.createJSONObject();
+
+		String editableValues = fragmentEntryLink.getEditableValues();
+		String fragmentEntryLinkNamespace = fragmentEntryLink.getNamespace();
+
+		if (editableValues.contains(fragmentEntryLinkNamespace)) {
+			for (String key : editableValuesJSONObject.keySet()) {
+				Object value = editableValuesJSONObject.get(key);
+
+				if (!(value instanceof JSONObject)) {
+					processedEditableValuesJSONObject.put(key, value);
+
+					continue;
+				}
+
+				JSONObject jsonObject = (JSONObject)value;
+				JSONObject duplicatedJSONObject =
+					_jsonFactory.createJSONObject();
+
+				for (String curKey : jsonObject.keySet()) {
+					duplicatedJSONObject.put(
+						StringUtil.replace(
+							curKey, fragmentEntryLinkNamespace, "[namespace]"),
+						jsonObject.get(curKey));
+				}
+
+				processedEditableValuesJSONObject.put(
+					key, duplicatedJSONObject);
 			}
+		}
 
-			return null;
+		if (SetUtil.isEmpty(processedEditableValuesJSONObject.keySet())) {
+			processedEditableValuesJSONObject = editableValuesJSONObject;
 		}
 
 		List<FragmentField> fragmentFields = new ArrayList<>(
 			_getBackgroundImageFragmentFields(
-				editableValuesJSONObject.getJSONObject(
+				processedEditableValuesJSONObject.getJSONObject(
 					FragmentEntryProcessorConstants.
 						KEY_BACKGROUND_IMAGE_FRAGMENT_ENTRY_PROCESSOR),
 				saveMapping));
 
-		JSONObject jsonObject = editableValuesJSONObject.getJSONObject(
+		JSONObject jsonObject = processedEditableValuesJSONObject.getJSONObject(
 			FragmentEntryProcessorConstants.
 				KEY_EDITABLE_FRAGMENT_ENTRY_PROCESSOR);
 
