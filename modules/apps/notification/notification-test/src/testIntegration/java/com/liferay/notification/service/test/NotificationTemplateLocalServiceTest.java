@@ -17,6 +17,7 @@ import com.liferay.notification.model.NotificationTemplate;
 import com.liferay.notification.service.NotificationRecipientSettingLocalService;
 import com.liferay.notification.service.NotificationTemplateLocalService;
 import com.liferay.notification.test.util.NotificationTemplateUtil;
+import com.liferay.notification.util.NotificationRecipientSettingUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.User;
@@ -72,11 +73,11 @@ public class NotificationTemplateLocalServiceTest {
 					TestPropsValues.getUser(), StringUtil.randomString(255),
 					RandomTestUtil.randomString(),
 					Arrays.asList(
-						NotificationTemplateUtil.
+						NotificationRecipientSettingUtil.
 							createNotificationRecipientSetting(
 								notificationRecipientSettingName,
 								RandomTestUtil.randomString()),
-						NotificationTemplateUtil.
+						NotificationRecipientSettingUtil.
 							createNotificationRecipientSetting(
 								NotificationRecipientSettingConstants.
 									NAME_ROLE_NAME,
@@ -95,11 +96,11 @@ public class NotificationTemplateLocalServiceTest {
 					TestPropsValues.getUser(), StringUtil.randomString(255),
 					RandomTestUtil.randomString(),
 					Arrays.asList(
-						NotificationTemplateUtil.
+						NotificationRecipientSettingUtil.
 							createNotificationRecipientSetting(
 								notificationRecipientSettingName,
 								RandomTestUtil.randomString()),
-						NotificationTemplateUtil.
+						NotificationRecipientSettingUtil.
 							createNotificationRecipientSetting(
 								NotificationRecipientSettingConstants.
 									NAME_SINGLE_RECIPIENT,
