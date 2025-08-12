@@ -5,6 +5,7 @@ dependencies {
 	compileOnly group: "javax.ws.rs", name: "javax.ws.rs-api", version: "2.1"
 	compileOnly project(":apps:headless:headless-admin-user:headless-admin-user-api")
 	compileOnly project(":apps:list-type:list-type-api")
+	compileOnly project(":apps:notification:notification-api")
 	compileOnly project(":apps:object:object-api")
 	compileOnly project(":apps:object:object-rest-api")
 	compileOnly project(":apps:portal-vulcan:portal-vulcan-api")
