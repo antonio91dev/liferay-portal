@@ -16,8 +16,10 @@ import com.liferay.list.type.service.ListTypeDefinitionServiceUtil;
 import com.liferay.list.type.service.ListTypeEntryLocalServiceUtil;
 import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.util.ArrayUtil;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -75,13 +77,19 @@ public class CPSpecificationOptionImpl extends CPSpecificationOptionBaseImpl {
 
 	@Override
 	public List<ListTypeEntry> getListTypeEntries() {
+		long[] listTypeDefinitionIds = TransformUtil.transformToLongArray(
+			CPSpecificationOptionListTypeDefinitionRelLocalServiceUtil.
+				getCPSpecificationOptionListTypeDefinitionRels(
+					getCPSpecificationOptionId()),
+			CPSpecificationOptionListTypeDefinitionRel::
+				getListTypeDefinitionId);
+
+		if (ArrayUtil.isEmpty(listTypeDefinitionIds)) {
+			return Collections.emptyList();
+		}
+
 		return ListTypeEntryLocalServiceUtil.getListTypeEntries(
-			TransformUtil.transformToLongArray(
-				CPSpecificationOptionListTypeDefinitionRelLocalServiceUtil.
-					getCPSpecificationOptionListTypeDefinitionRels(
-						getCPSpecificationOptionId()),
-				CPSpecificationOptionListTypeDefinitionRel::
-					getListTypeDefinitionId));
+			listTypeDefinitionIds);
 	}
 
 }
