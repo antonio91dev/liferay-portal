@@ -6,6 +6,8 @@
 package com.liferay.portlet.preferences.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.exportimport.kernel.service.StagingLocalService;
+import com.liferay.layout.test.util.ContentLayoutTestUtil;
 import com.liferay.layout.test.util.LayoutTestUtil;
 import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.petra.string.StringPool;
@@ -14,23 +16,33 @@ import com.liferay.portal.kernel.bean.ClassLoaderBeanHandler;
 import com.liferay.portal.kernel.model.CompanyConstants;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
+import com.liferay.portal.kernel.model.LayoutRevision;
+import com.liferay.portal.kernel.model.LayoutStagingHandler;
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.model.PortletApp;
 import com.liferay.portal.kernel.model.PortletPreferences;
 import com.liferay.portal.kernel.model.PortletPreferencesIds;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
+import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
+import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.PortletPreferencesLocalService;
 import com.liferay.portal.kernel.service.PortletPreferencesLocalServiceWrapper;
 import com.liferay.portal.kernel.service.ServiceWrapper;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
+import com.liferay.portal.kernel.test.rule.CompanyProviderClassTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
+import com.liferay.portal.kernel.test.util.RandomTestUtil;
+import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.PortletKeys;
 import com.liferay.portal.kernel.util.ProxyUtil;
+import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.model.impl.PortletAppImpl;
 import com.liferay.portal.spring.aop.AopInvocationHandler;
+import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
+import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 import com.liferay.portlet.PortletPreferencesImpl;
 import com.liferay.portlet.StrictPortletPreferencesImpl;
 
@@ -61,7 +73,13 @@ public class PortletPreferencesLocalServiceTest
 	@ClassRule
 	@Rule
 	public static final AggregateTestRule aggregateTestRule =
-		new LiferayIntegrationTestRule();
+		new AggregateTestRule(
+			new LiferayIntegrationTestRule() {
+				{
+					skipTestRule(CompanyProviderClassTestRule.INSTANCE);
+				}
+			},
+			PermissionCheckerMethodTestRule.INSTANCE);
 
 	@BeforeClass
 	public static void setUpClass() {
@@ -1315,6 +1333,76 @@ public class PortletPreferencesLocalServiceTest
 		assertValues(currentJxPortletPreferences, _NAME, _MULTIPLE_VALUES);
 	}
 
+	@Test
+	public void testUpdateTypeSettingsLayoutRevision() throws Exception {
+		String originalName = PrincipalThreadLocal.getName();
+
+		Layout layoutInit = LayoutTestUtil.addTypeContentLayout(testGroup);
+
+		try {
+			PrincipalThreadLocal.setName(TestPropsValues.getUserId());
+
+			_stagingLocalService.enableLocalStaging(
+				TestPropsValues.getUserId(), testGroup, true, false,
+				ServiceContextTestUtil.getServiceContext(
+					testGroup, TestPropsValues.getUserId()));
+
+			Group stagingGroup = testGroup.getStagingGroup();
+
+			Layout stagingLayout =
+				_layoutLocalService.getLayoutByUuidAndGroupId(
+					layoutInit.getUuid(), stagingGroup.getGroupId(),
+					layoutInit.isPrivateLayout());
+
+			Layout draftLayout = stagingLayout.fetchDraftLayout();
+
+			UnicodeProperties typeSettingsUnicodeProperties =
+				draftLayout.getTypeSettingsProperties();
+
+			String property = RandomTestUtil.randomString();
+			String valueProperty = RandomTestUtil.randomString();
+
+			typeSettingsUnicodeProperties.setProperty(property, valueProperty);
+
+			_layoutLocalService.updateLayout(
+				draftLayout.getGroupId(), draftLayout.isPrivateLayout(),
+				draftLayout.getLayoutId(),
+				typeSettingsUnicodeProperties.toString());
+
+			ContentLayoutTestUtil.publishLayout(draftLayout, stagingLayout);
+
+			portletPreferencesLocalService.updatePreferences(
+				PortletKeys.PREFS_OWNER_ID_DEFAULT,
+				PortletKeys.PREFS_OWNER_TYPE_LAYOUT, stagingLayout.getPlid(),
+				testPortlet.getPortletId(),
+				getPortletPreferencesXML(_NAME, _SINGLE_VALUE));
+
+			Layout updatedLayout = _layoutLocalService.getLayout(
+				stagingLayout.getPlid());
+
+			LayoutStagingHandler layoutStagingHandler =
+				new LayoutStagingHandler(updatedLayout);
+
+			LayoutRevision layoutRevision =
+				layoutStagingHandler.getLayoutRevision();
+
+			Assert.assertTrue(
+				layoutRevision.getTypeSettings(
+				).contains(
+					property + "=" + valueProperty
+				));
+
+			Assert.assertTrue(
+				updatedLayout.getTypeSettings(
+				).contains(
+					property + "=" + valueProperty
+				));
+		}
+		finally {
+			PrincipalThreadLocal.setName(originalName);
+		}
+	}
+
 	protected void assertEmptyPortletPreferencesMap(
 		javax.portlet.PortletPreferences jxPortletPreferences) {
 
@@ -1447,7 +1535,13 @@ public class PortletPreferencesLocalServiceTest
 	@DeleteAfterTestRun
 	private final List<Group> _groups = new ArrayList<>();
 
+	@Inject
+	private LayoutLocalService _layoutLocalService;
+
 	private ServiceBag<PortletPreferencesLocalService> _serviceBag;
+
+	@Inject
+	private StagingLocalService _stagingLocalService;
 
 	private static class TestPortletPreferencesLocalServiceWrapper
 		extends PortletPreferencesLocalServiceWrapper {
