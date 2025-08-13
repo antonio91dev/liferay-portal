@@ -5,15 +5,20 @@
 
 package com.liferay.portal.dao.jdbc;
 
+import com.liferay.petra.lang.SafeCloseable;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.db.DBManagerUtil;
+import com.liferay.portal.kernel.dao.db.DBType;
 import com.liferay.portal.kernel.dao.jdbc.DataSourceFactory;
+import com.liferay.portal.kernel.test.util.PropsValuesTestUtil;
 import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.UnicodePropertiesBuilder;
 import com.liferay.portal.spring.hibernate.DialectDetector;
 import com.liferay.portal.test.log.LogCapture;
+import com.liferay.portal.test.log.LogEntry;
 import com.liferay.portal.test.log.LoggerTestUtil;
 import com.liferay.portal.test.rule.LiferayUnitTestRule;
 import com.liferay.portal.util.FastDateFormatFactoryImpl;
@@ -23,7 +28,11 @@ import com.liferay.portal.util.PropsUtil;
 import java.io.File;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 
@@ -74,8 +83,14 @@ public class DataSourceFactoryTest {
 			null
 		);
 
-		_dialectDetectorMockedStatic.when(
-			() -> DialectDetector.getDialect(Mockito.any())
+		_dbManagerUtilMockedStatic.when(
+			() -> DBManagerUtil.getDBType(Mockito.<Object>any())
+		).thenReturn(
+			null
+		);
+
+		_dbManagerUtilMockedStatic.when(
+			() -> DBManagerUtil.getDBType(Mockito.<Object>isNull())
 		).thenReturn(
 			null
 		);
@@ -89,6 +104,109 @@ public class DataSourceFactoryTest {
 		_dialectDetectorMockedStatic.close();
 
 		FileUtil.deltree(_tempDir);
+	}
+
+	@Test
+	public void testCheckSQLServer() throws Exception {
+		_dbManagerUtilMockedStatic.when(
+			() -> DBManagerUtil.getDBType(Mockito.<Object>any())
+		).thenReturn(
+			DBType.SQLSERVER
+		);
+
+		_dbManagerUtilMockedStatic.when(
+			() -> DBManagerUtil.getDBType(Mockito.<Object>isNull())
+		).thenReturn(
+			DBType.SQLSERVER
+		);
+
+		Connection connection = Mockito.mock(Connection.class);
+
+		DataSource dataSource = Mockito.mock(DataSource.class);
+
+		Mockito.when(
+			dataSource.getConnection()
+		).thenReturn(
+			connection
+		);
+
+		PreparedStatement preparedStatement = Mockito.mock(
+			PreparedStatement.class);
+
+		Mockito.when(
+			connection.prepareStatement(Mockito.anyString())
+		).thenReturn(
+			preparedStatement
+		);
+
+		ResultSet resultSet = Mockito.mock(ResultSet.class);
+
+		Mockito.when(
+			preparedStatement.executeQuery()
+		).thenReturn(
+			resultSet
+		);
+
+		Mockito.when(
+			resultSet.next()
+		).thenReturn(
+			true
+		);
+
+		Mockito.when(
+			resultSet.getBoolean("is_read_committed_snapshot_on")
+		).thenReturn(
+			false
+		);
+
+		Mockito.when(
+			resultSet.getString("name")
+		).thenReturn(
+			"lportal"
+		);
+
+		DataSourceFactoryImpl dataSourceFactoryImpl =
+			new DataSourceFactoryImpl() {
+
+				@Override
+				protected DataSource initDataSourceHikariCP(
+					Properties properties) {
+
+					return dataSource;
+				}
+
+				@Override
+				protected void testDatabaseClass(String driverClassName) {
+				}
+
+			};
+
+		Properties properties = new Properties();
+
+		properties.setProperty("driverClassName", "java.lang.String");
+
+		try (LogCapture logCapture = LoggerTestUtil.configureJDKLogger(
+				DataSourceFactoryImpl.class.getName(), Level.WARNING);
+			SafeCloseable safeCloseable =
+				PropsValuesTestUtil.swapWithSafeCloseable(
+					"RETRY_JDBC_ON_STARTUP_MAX_RETRIES", 0)) {
+
+			dataSourceFactoryImpl.initDataSource(properties);
+
+			List<String> logMessages = new ArrayList<>();
+
+			for (LogEntry logEntry : logCapture.getLogEntries()) {
+				logMessages.add(logEntry.getMessage());
+			}
+
+			Assert.assertTrue(
+				logMessages.contains(
+					StringBundler.concat(
+						"SQL Server may have deadlocks because ",
+						"\"read_committed_snapshot\" is disabled for database ",
+						"\"lportal\". To enable, execute: alter database ",
+						"lportal set read_committed_snapshot on")));
+		}
 	}
 
 	@Test
