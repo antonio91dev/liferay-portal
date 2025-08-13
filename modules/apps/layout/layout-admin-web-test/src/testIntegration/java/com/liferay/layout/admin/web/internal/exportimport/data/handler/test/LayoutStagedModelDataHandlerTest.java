@@ -152,12 +152,10 @@ import com.liferay.template.model.TemplateEntry;
 import com.liferay.template.service.TemplateEntryLocalService;
 import com.liferay.template.test.util.TemplateTestUtil;
 
-
 import java.io.File;
 import java.io.Serializable;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -655,6 +653,43 @@ public class LayoutStagedModelDataHandlerTest
 	}
 
 	@Test
+	@TestInfo("LPD-56607")
+	public void testImportLayoutWithMasterLayoutShouldNotChangePortletDataContext()
+		throws Exception {
+
+		LayoutPageTemplateEntry layoutPageTemplateEntry =
+			LayoutPageTemplateTestUtil.addLayoutPageTemplateEntry(
+				stagingGroup.getGroupId(),
+				LayoutPageTemplateEntryTypeConstants.MASTER_LAYOUT,
+				WorkflowConstants.STATUS_APPROVED);
+
+		Layout layout = LayoutTestUtil.addTypeContentLayout(
+			stagingGroup, false, false, layoutPageTemplateEntry.getPlid());
+
+		initExport();
+
+		StagedModelDataHandlerUtil.exportStagedModel(
+			portletDataContext, layout);
+
+		initImport();
+
+		Assert.assertFalse(portletDataContext.isPrivateLayout());
+
+		ExportImportLifecycleManagerUtil.fireExportImportLifecycleEvent(
+			ExportImportLifecycleConstants.EVENT_LAYOUT_IMPORT_STARTED,
+			ExportImportLifecycleConstants.
+				PROCESS_FLAG_LAYOUT_IMPORT_IN_PROCESS,
+			portletDataContext.getExportImportProcessId(),
+			PortletDataContextFactoryUtil.clonePortletDataContext(
+				portletDataContext));
+
+		StagedModelDataHandlerUtil.importStagedModel(
+			portletDataContext, readExportedStagedModel(layout));
+
+		Assert.assertFalse(portletDataContext.isPrivateLayout());
+	}
+
+	@Test
 	@TestInfo("LPD-62221")
 	public void testImportLayoutWithMissingMasterLayout() throws Exception {
 		Group group1 = GroupTestUtil.addGroup();
@@ -749,43 +784,6 @@ public class LayoutStagedModelDataHandlerTest
 		Group group2 = GroupTestUtil.addGroup();
 
 		_importLayouts(file, group2.getGroupId(), getParameterMap());
-	}
-
-	@Test
-	@TestInfo("LPD-56607")
-	public void testImportLayoutWithMasterLayoutShouldNotChangePortletDataContext()
-		throws Exception {
-
-		LayoutPageTemplateEntry layoutPageTemplateEntry =
-			LayoutPageTemplateTestUtil.addLayoutPageTemplateEntry(
-				stagingGroup.getGroupId(),
-				LayoutPageTemplateEntryTypeConstants.MASTER_LAYOUT,
-				WorkflowConstants.STATUS_APPROVED);
-
-		Layout layout = LayoutTestUtil.addTypeContentLayout(
-			stagingGroup, false, false, layoutPageTemplateEntry.getPlid());
-
-		initExport();
-
-		StagedModelDataHandlerUtil.exportStagedModel(
-			portletDataContext, layout);
-
-		initImport();
-
-		Assert.assertFalse(portletDataContext.isPrivateLayout());
-
-		ExportImportLifecycleManagerUtil.fireExportImportLifecycleEvent(
-			ExportImportLifecycleConstants.EVENT_LAYOUT_IMPORT_STARTED,
-			ExportImportLifecycleConstants.
-				PROCESS_FLAG_LAYOUT_IMPORT_IN_PROCESS,
-			portletDataContext.getExportImportProcessId(),
-			PortletDataContextFactoryUtil.clonePortletDataContext(
-				portletDataContext));
-
-		StagedModelDataHandlerUtil.importStagedModel(
-			portletDataContext, readExportedStagedModel(layout));
-
-		Assert.assertFalse(portletDataContext.isPrivateLayout());
 	}
 
 	@Test
