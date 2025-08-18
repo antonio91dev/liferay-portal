@@ -13269,8 +13269,16 @@ public class ObjectEntryResourceTest {
 	}
 
 	private TaxonomyCategory _addTaxonomyCategory() throws Exception {
+		return _addTaxonomyCategory(
+			_testGroupId, _assetVocabulary.getVocabularyId());
+	}
+
+	private TaxonomyCategory _addTaxonomyCategory(
+		long groupId, long taxonomyVocabularyId)
+		throws Exception {
+
 		return _taxonomyCategoryResource.postTaxonomyVocabularyTaxonomyCategory(
-			_assetVocabulary.getVocabularyId(),
+			taxonomyVocabularyId,
 			new TaxonomyCategory() {
 				{
 					dateCreated = RandomTestUtil.nextDate();
@@ -13283,12 +13291,13 @@ public class ObjectEntryResourceTest {
 					name = StringUtil.toLowerCase(
 						RandomTestUtil.randomString());
 					numberOfTaxonomyCategories = RandomTestUtil.randomInt();
-					siteId = _testGroupId;
+					siteId = groupId;
 					taxonomyCategoryUsageCount = RandomTestUtil.randomInt();
 					taxonomyVocabularyId = RandomTestUtil.randomLong();
 				}
 			});
 	}
+
 
 	private FileEntry _addTempFileEntry(
 			String content, ObjectDefinition objectDefinition, String title)
