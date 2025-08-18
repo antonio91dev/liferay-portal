@@ -24,9 +24,9 @@ public class OracleSQLTransformerLogic extends BaseSQLTransformerLogic {
 		super(db);
 
 		Function[] functions = {
-			getAggregationFunction(), getBooleanFunction(),
-			getCastClobTextFunction(), getCastLongFunction(),
-			getCastTextFunction(), getConcatFunction(),
+			getAggregationFunction(), getBitwiseOrFunction(),
+			getBooleanFunction(), getCastClobTextFunction(),
+			getCastLongFunction(), getCastTextFunction(), getConcatFunction(),
 			getDropTableIfExistsTextFunction(), getIntegerDivisionFunction(),
 			getNullDateFunction(), _getEscapeFunction(),
 			_getNotEqualsBlankStringFunction()
@@ -46,6 +46,10 @@ public class OracleSQLTransformerLogic extends BaseSQLTransformerLogic {
 				"CONCAT(", StringPool.BLANK, " || ", StringPool.BLANK);
 
 		return sqlFunctionTransformer::transform;
+	}
+
+	protected String replaceBitwiseOr(Matcher matcher) {
+		return matcher.replaceAll("($1 + $2 - BITAND($1, $2))");
 	}
 
 	@Override
