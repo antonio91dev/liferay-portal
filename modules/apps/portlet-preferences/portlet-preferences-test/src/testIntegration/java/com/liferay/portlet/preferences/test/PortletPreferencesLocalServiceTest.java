@@ -7,7 +7,6 @@ package com.liferay.portlet.preferences.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.exportimport.kernel.service.StagingLocalService;
-import com.liferay.layout.test.util.ContentLayoutTestUtil;
 import com.liferay.layout.test.util.LayoutTestUtil;
 import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.petra.string.StringPool;
@@ -27,6 +26,8 @@ import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.PortletPreferencesLocalService;
 import com.liferay.portal.kernel.service.PortletPreferencesLocalServiceWrapper;
+import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.service.ServiceWrapper;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.CompanyProviderClassTestRule;
@@ -1335,9 +1336,9 @@ public class PortletPreferencesLocalServiceTest
 
 	@Test
 	public void testUpdateTypeSettingsLayoutRevision() throws Exception {
-		String originalName = PrincipalThreadLocal.getName();
+		Layout layout = LayoutTestUtil.addTypeContentLayout(testGroup);
 
-		Layout layoutInit = LayoutTestUtil.addTypeContentLayout(testGroup);
+		String originalName = PrincipalThreadLocal.getName();
 
 		try {
 			PrincipalThreadLocal.setName(TestPropsValues.getUserId());
@@ -1351,8 +1352,8 @@ public class PortletPreferencesLocalServiceTest
 
 			Layout stagingLayout =
 				_layoutLocalService.getLayoutByUuidAndGroupId(
-					layoutInit.getUuid(), stagingGroup.getGroupId(),
-					layoutInit.isPrivateLayout());
+					layout.getUuid(), stagingGroup.getGroupId(),
+					layout.isPrivateLayout());
 
 			Layout draftLayout = stagingLayout.fetchDraftLayout();
 
@@ -1370,7 +1371,12 @@ public class PortletPreferencesLocalServiceTest
 				draftLayout.getLayoutId(),
 				typeSettingsUnicodeProperties.toString());
 
-			ContentLayoutTestUtil.publishLayout(draftLayout, stagingLayout);
+			ServiceContext serviceContext =
+				ServiceContextTestUtil.getServiceContext();
+
+			serviceContext.setAttribute("exporting", Boolean.FALSE);
+
+			ServiceContextThreadLocal.pushServiceContext(serviceContext);
 
 			portletPreferencesLocalService.updatePreferences(
 				PortletKeys.PREFS_OWNER_ID_DEFAULT,
@@ -1401,6 +1407,7 @@ public class PortletPreferencesLocalServiceTest
 		}
 		finally {
 			PrincipalThreadLocal.setName(originalName);
+			ServiceContextThreadLocal.popServiceContext();
 		}
 	}
 
