@@ -75,7 +75,7 @@ test('LPD-33466 User can update pricing quantity of UOM', async ({
 
 	await expect(
 		commerceAdminProductDetailsSkusPage.pricinQuantity
-	).toHaveValue('1');
+	).toHaveValue('1.0');
 
 	await commerceAdminProductDetailsSkusPage.pricinQuantity.fill('2');
 
@@ -87,7 +87,7 @@ test('LPD-33466 User can update pricing quantity of UOM', async ({
 
 	await expect(
 		commerceAdminProductDetailsSkusPage.pricinQuantity
-	).toHaveValue('2');
+	).toHaveValue('2.0');
 });
 
 test('LPD-36797 Quantity selector starting quantity in catalog page and minicart is correct when UOM is set with decimal base unit quantity and decimal multiple order quantity', async ({
