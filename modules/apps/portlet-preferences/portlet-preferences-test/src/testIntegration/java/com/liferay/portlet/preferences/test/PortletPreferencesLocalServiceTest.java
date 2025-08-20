@@ -75,11 +75,7 @@ public class PortletPreferencesLocalServiceTest
 	@Rule
 	public static final AggregateTestRule aggregateTestRule =
 		new AggregateTestRule(
-			new LiferayIntegrationTestRule() {
-				{
-					skipTestRule(CompanyProviderClassTestRule.INSTANCE);
-				}
-			},
+			new LiferayIntegrationTestRule() ,
 			PermissionCheckerMethodTestRule.INSTANCE);
 
 	@BeforeClass
