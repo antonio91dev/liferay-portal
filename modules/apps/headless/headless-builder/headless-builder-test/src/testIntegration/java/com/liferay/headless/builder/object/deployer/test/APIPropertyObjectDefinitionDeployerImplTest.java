@@ -103,7 +103,7 @@ public class APIPropertyObjectDefinitionDeployerImplTest {
 			List<ObjectRelatedModelsProvider<?>> objectRelatedModelsProviders)
 		throws Exception {
 
-		int aPIPropertyObjectRelatedModelsProviders = 0;
+		int count = 0;
 
 		try (SafeCloseable safeCloseable = CompanyThreadLocal.lock(companyId)) {
 			ObjectDefinition objectDefinition =
@@ -123,12 +123,12 @@ public class APIPropertyObjectDefinitionDeployerImplTest {
 				if (objectDefinitionClassName.equals(
 						objectRelatedModelsProvider.getClassName())) {
 
-					aPIPropertyObjectRelatedModelsProviders++;
+					count++;
 				}
 			}
 		}
 
-		return aPIPropertyObjectRelatedModelsProviders;
+		return count;
 	}
 
 	private List<ObjectRelatedModelsProvider<?>>
