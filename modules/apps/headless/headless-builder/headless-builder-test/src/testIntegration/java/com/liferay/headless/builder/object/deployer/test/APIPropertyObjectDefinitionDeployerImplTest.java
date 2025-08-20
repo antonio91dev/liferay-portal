@@ -78,10 +78,6 @@ public class APIPropertyObjectDefinitionDeployerImplTest {
 				_getObjectRelatedModelsProviders(
 					bundleContext, company1.getCompanyId());
 
-		int company1APIPropertyObjectRelatedModelsProviders =
-			_countAPIPropertyObjectRelatedModelsProviders(
-				company1.getCompanyId(), company1objectRelatedModelsProviders);
-
 		Company company2 = CompanyTestUtil.addCompany();
 
 		List<ObjectRelatedModelsProvider<?>>
@@ -89,16 +85,14 @@ public class APIPropertyObjectDefinitionDeployerImplTest {
 				_getObjectRelatedModelsProviders(
 					bundleContext, company2.getCompanyId());
 
-		int company2APIPropertyObjectRelatedModelsProviders =
-			_countAPIPropertyObjectRelatedModelsProviders(
-				company2.getCompanyId(), company2objectRelatedModelsProviders);
-
 		Assert.assertEquals(
-			company1APIPropertyObjectRelatedModelsProviders,
-			company2APIPropertyObjectRelatedModelsProviders);
+			_count(
+				company1.getCompanyId(), company1objectRelatedModelsProviders),
+			_count(
+				company2.getCompanyId(), company2objectRelatedModelsProviders));
 	}
 
-	private int _countAPIPropertyObjectRelatedModelsProviders(
+	private int _count(
 			long companyId,
 			List<ObjectRelatedModelsProvider<?>> objectRelatedModelsProviders)
 		throws Exception {
