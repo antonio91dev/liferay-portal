@@ -76,10 +76,12 @@ public class APIPropertyObjectDefinitionDeployerImplTest {
 
 		Assert.assertEquals(
 			_count(
-				company1.getCompanyId(), _getObjectRelatedModelsProviders(
+				company1.getCompanyId(),
+				_getObjectRelatedModelsProviders(
 					bundleContext, company1.getCompanyId())),
 			_count(
-				company2.getCompanyId(), _getObjectRelatedModelsProviders(
+				company2.getCompanyId(),
+				_getObjectRelatedModelsProviders(
 					bundleContext, company2.getCompanyId())));
 	}
 
