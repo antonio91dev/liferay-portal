@@ -124,11 +124,10 @@ public class APIPropertyObjectDefinitionDeployerImplTest {
 		List<ObjectRelatedModelsProvider<?>> objectRelatedModelsProviders =
 			new ArrayList<>();
 
-		ServiceReference<?>[] serviceReferences =
-			bundleContext.getServiceReferences(
-				ObjectRelatedModelsProvider.class.getName(), null);
+		for (ServiceReference<?> serviceReference :
+				bundleContext.getServiceReferences(
+					ObjectRelatedModelsProvider.class.getName(), null)) {
 
-		for (ServiceReference<?> serviceReference : serviceReferences) {
 			ObjectRelatedModelsProvider<?> objectRelatedModelsProvider =
 				(ObjectRelatedModelsProvider<?>)bundleContext.getService(
 					serviceReference);
@@ -136,8 +135,7 @@ public class APIPropertyObjectDefinitionDeployerImplTest {
 			if ((objectRelatedModelsProvider != null) &&
 				(objectRelatedModelsProvider.getCompanyId() == companyId)) {
 
-				objectRelatedModelsProviders.add(
-					objectRelatedModelsProvider);
+				objectRelatedModelsProviders.add(objectRelatedModelsProvider);
 			}
 		}
 
