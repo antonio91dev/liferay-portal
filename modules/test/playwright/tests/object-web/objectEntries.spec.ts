@@ -1321,6 +1321,142 @@ test.describe('Manage object entries through View Object Entries', () => {
 		await expect(viewObjectEntriesPage.successMessageArabic).toBeVisible();
 	});
 
+	test('change the object entry status from Draft to Approved after processing an update', async ({
+		apiHelpers,
+		objectLayoutsPage,
+		page,
+		viewObjectEntriesPage,
+	}) => {
+		const {objectFields} = await mockObjectFields({
+			apiHelpers,
+			objectFieldBusinessTypes: ['text'],
+		});
+
+		const objectField: ObjectField = objectFields[0];
+
+		const objectDefinitionAPIClient =
+			await apiHelpers.buildRestClient(ObjectDefinitionApi);
+
+		const {body: objectDefinition} =
+			await objectDefinitionAPIClient.postObjectDefinition({
+				enableObjectEntryDraft: true,
+				label: {
+					en_US: 'ObjectDefinitionLabel' + getRandomInt(),
+				},
+				name: 'ObjectDefinitionName' + getRandomInt(),
+				objectFields,
+				pluralLabel: {
+					en_US: 'ObjectDefinitionLabel' + getRandomInt(),
+				},
+				scope: 'company',
+				status: {
+					code: 0,
+				},
+			});
+
+		apiHelpers.data.push({
+			id: objectDefinition.id,
+			type: 'objectDefinition',
+		});
+
+		const applicationName =
+			'c/' + objectDefinition.name.toLowerCase() + 's';
+
+		const objectEntry1 = await apiHelpers.objectEntry.postObjectEntry(
+			{
+				[objectField.name]: 'test',
+				status: {
+					code: 2,
+					label: 'draft',
+					label_i18n: 'Draft',
+				},
+			},
+			applicationName
+		);
+
+		await viewObjectEntriesPage.goto(objectDefinition.className);
+
+		await expect(page.getByText('Draft')).toBeVisible();
+
+		await page.getByRole('link', {name: String(objectEntry1.id)}).click();
+
+		await viewObjectEntriesPage.fillObjectEntry({
+			objectFieldBusinessType: 'Text',
+			objectFieldLabel: objectField.label['en_US'],
+			objectFieldValue: 'test 1',
+		});
+
+		await viewObjectEntriesPage.saveObjectEntryButton.click();
+
+		await expect(viewObjectEntriesPage.successMessage).toBeVisible();
+
+		await viewObjectEntriesPage.backButton.click();
+
+		await expect(page.getByText('Approved')).toBeVisible();
+
+		await expect(
+			page.locator('div').getByText('test 1', {exact: true})
+		).toBeVisible();
+
+		const objectLayoutName = getRandomString();
+
+		const objectLayoutBlockName = getRandomString();
+
+		const objectLayoutTabName = getRandomString();
+
+		await objectLayoutsPage.goto(objectDefinition.label['en_US']);
+
+		await objectLayoutsPage.createObjectLayout(objectLayoutName);
+
+		await objectLayoutsPage.createObjectLayoutContent(
+			objectLayoutBlockName,
+			objectLayoutName,
+			objectLayoutTabName
+		);
+
+		await objectLayoutsPage.iframeLocator
+			.getByRole('option', {name: objectField.label['en_US']})
+			.click();
+
+		await objectLayoutsPage.saveAddFieldButton.click();
+
+		const objectEntry2 = await apiHelpers.objectEntry.postObjectEntry(
+			{
+				[objectField.name]: 'test',
+				status: {
+					code: 2,
+					label: 'draft',
+					label_i18n: 'Draft',
+				},
+			},
+			applicationName
+		);
+
+		await viewObjectEntriesPage.goto(objectDefinition.className);
+
+		await expect(page.getByText('Draft')).toBeVisible();
+
+		await page.getByRole('link', {name: String(objectEntry2.id)}).click();
+
+		await viewObjectEntriesPage.fillObjectEntry({
+			objectFieldBusinessType: 'Text',
+			objectFieldLabel: objectField.label['en_US'],
+			objectFieldValue: 'test 2',
+		});
+
+		await viewObjectEntriesPage.saveObjectEntryButton.click();
+
+		await expect(viewObjectEntriesPage.successMessage).toBeVisible();
+
+		await viewObjectEntriesPage.backButton.click();
+
+		await expect(page.getByText('Approved').nth(1)).toBeVisible();
+
+		await expect(
+			page.locator('div').getByText('test 2', {exact: true})
+		).toBeVisible();
+	});
+
 	test('verify if object entries with localized boolean field are correctly persisted', async ({
 		apiHelpers,
 		page,
