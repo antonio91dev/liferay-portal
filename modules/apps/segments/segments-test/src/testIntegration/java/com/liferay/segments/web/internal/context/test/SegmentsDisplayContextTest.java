@@ -49,6 +49,7 @@ import com.liferay.roles.admin.role.type.contributor.RoleTypeContributor;
 import com.liferay.roles.admin.role.type.contributor.provider.RoleTypeContributorProvider;
 import com.liferay.segments.configuration.SegmentsCompanyConfiguration;
 import com.liferay.segments.configuration.SegmentsConfiguration;
+import com.liferay.segments.configuration.provider.SegmentsConfigurationProvider;
 import com.liferay.segments.constants.SegmentsEntryConstants;
 import com.liferay.segments.constants.SegmentsPortletKeys;
 import com.liferay.segments.criteria.Criteria;
@@ -60,7 +61,6 @@ import java.net.URLEncoder;
 
 import java.nio.charset.StandardCharsets;
 
-import java.util.Dictionary;
 import java.util.Map;
 
 import javax.portlet.Portlet;
@@ -162,6 +162,9 @@ public class SegmentsDisplayContextTest {
 								"roleSegmentationEnabled", false
 							).build())) {
 
+				_segmentsConfigurationProvider.
+					clearSegmentsCompanyConfigurations();
+
 				SegmentsEntry segmentsEntry = SegmentsTestUtil.addSegmentsEntry(
 					ServiceContextTestUtil.getServiceContext(
 						_group.getGroupId(), _user.getUserId()));
@@ -190,6 +193,9 @@ public class SegmentsDisplayContextTest {
 							HashMapDictionaryBuilder.<String, Object>put(
 								"roleSegmentationEnabled", true
 							).build())) {
+
+				_segmentsConfigurationProvider.
+					clearSegmentsCompanyConfigurations();
 
 				SegmentsEntry segmentsEntry = SegmentsTestUtil.addSegmentsEntry(
 					ServiceContextTestUtil.getServiceContext(
@@ -416,6 +422,33 @@ public class SegmentsDisplayContextTest {
 				new ConfigurationTemporarySwapper(
 					SegmentsConfiguration.class.getName(),
 					HashMapDictionaryBuilder.<String, Object>put(
+						"roleSegmentationEnabled", false
+					).build())) {
+
+			try (CompanyConfigurationTemporarySwapper
+					companyConfigurationTemporarySwapper =
+						new CompanyConfigurationTemporarySwapper(
+							TestPropsValues.getCompanyId(),
+							SegmentsCompanyConfiguration.class.getName(),
+							HashMapDictionaryBuilder.<String, Object>put(
+								"roleSegmentationEnabled", false
+							).build())) {
+
+				_segmentsConfigurationProvider.
+					clearSegmentsCompanyConfigurations();
+
+				Assert.assertFalse(
+					_isRoleSegmentationEnabled(TestPropsValues.getCompanyId()));
+			}
+		}
+	}
+
+	@Test
+	public void testIsRoleSegmentationEnabled() throws Exception {
+		try (ConfigurationTemporarySwapper configurationTemporarySwapper =
+				new ConfigurationTemporarySwapper(
+					SegmentsConfiguration.class.getName(),
+					HashMapDictionaryBuilder.<String, Object>put(
 						"roleSegmentationEnabled", true
 					).build())) {
 
@@ -428,26 +461,12 @@ public class SegmentsDisplayContextTest {
 								"roleSegmentationEnabled", true
 							).build())) {
 
+				_segmentsConfigurationProvider.
+					clearSegmentsCompanyConfigurations();
+
 				Assert.assertTrue(
 					_isRoleSegmentationEnabled(TestPropsValues.getCompanyId()));
 			}
-		}
-	}
-
-	@Test
-	public void testIsRoleSegmentationEnabled() throws Exception {
-		Dictionary<String, Object> dictionary =
-			HashMapDictionaryBuilder.<String, Object>put(
-				"roleSegmentationEnabled", true
-			).build();
-
-		try (ConfigurationTemporarySwapper configurationTemporarySwapper =
-				new ConfigurationTemporarySwapper(
-					"com.liferay.segments.configuration.SegmentsConfiguration",
-					dictionary)) {
-
-			Assert.assertTrue(
-				_isRoleSegmentationEnabled(TestPropsValues.getCompanyId()));
 		}
 	}
 
@@ -468,6 +487,9 @@ public class SegmentsDisplayContextTest {
 							HashMapDictionaryBuilder.<String, Object>put(
 								"segmentationEnabled", false
 							).build())) {
+
+				_segmentsConfigurationProvider.
+					clearSegmentsCompanyConfigurations();
 
 				Assert.assertFalse(
 					_isSegmentationEnabled(TestPropsValues.getCompanyId()));
@@ -492,6 +514,9 @@ public class SegmentsDisplayContextTest {
 							HashMapDictionaryBuilder.<String, Object>put(
 								"segmentationEnabled", true
 							).build())) {
+
+				_segmentsConfigurationProvider.
+					clearSegmentsCompanyConfigurations();
 
 				Assert.assertTrue(
 					_isSegmentationEnabled(TestPropsValues.getCompanyId()));
@@ -917,6 +942,9 @@ public class SegmentsDisplayContextTest {
 
 	@Inject
 	private RoleTypeContributorProvider _roleTypeContributorProvider;
+
+	@Inject
+	private SegmentsConfigurationProvider _segmentsConfigurationProvider;
 
 	private ServiceTracker<Portlet, Portlet> _serviceTracker;
 	private User _user;
