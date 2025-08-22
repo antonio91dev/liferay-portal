@@ -13,23 +13,27 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
-import com.liferay.portal.kernel.portlet.bridges.mvc.MVCRenderCommand;
-import com.liferay.portal.kernel.portlet.bridges.mvc.constants.MVCRenderConstants;
+import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
+import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
+import com.liferay.portal.kernel.servlet.SessionMessages;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.taglib.security.PermissionsURLTag;
+
+import javax.portlet.ActionRequest;
+import javax.portlet.ActionResponse;
+import javax.portlet.PortletRequest;
 
 import java.util.List;
 
 import javax.portlet.PortletException;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
-
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -42,26 +46,24 @@ import org.osgi.service.component.annotations.Reference;
 		"javax.portlet.name=" + JournalPortletKeys.JOURNAL,
 		"mvc.command.name=/journal/change_articles_permissions"
 	},
-	service = MVCRenderCommand.class
+	service = MVCActionCommand.class
 )
-public class ChangeArticlesPermissionsMVCRenderCommand
-	implements MVCRenderCommand {
+public class ChangeArticlesPermissionsMVCActionCommand
+	extends BaseMVCActionCommand {
 
 	@Override
-	public String render(
-			RenderRequest renderRequest, RenderResponse renderResponse)
-		throws PortletException {
+	protected void doProcessAction(
+			ActionRequest actionRequest, ActionResponse actionResponse)
+		throws Exception {
 
-		ThemeDisplay themeDisplay = (ThemeDisplay)renderRequest.getAttribute(
+		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
 		HttpServletRequest httpServletRequest = _portal.getHttpServletRequest(
-			renderRequest);
-		HttpServletResponse httpServletResponse =
-			_portal.getHttpServletResponse(renderResponse);
+			actionRequest);
 
 		String[] articleIds = ParamUtil.getStringValues(
-			renderRequest, "articleIds");
+			actionRequest, "articleIds");
 
 		try {
 			List<Long> resourcePrimKeys = TransformUtil.transformToList(
@@ -83,19 +85,26 @@ public class ChangeArticlesPermissionsMVCRenderCommand
 				StringPool.BLANK, null, StringUtil.merge(resourcePrimKeys),
 				LiferayWindowState.POP_UP.toString(), null, httpServletRequest);
 
-			httpServletResponse.sendRedirect(permissionsURL);
+			_hideDefaultSuccessMessage(actionRequest);
+
+			sendRedirect(actionRequest, actionResponse, permissionsURL);
 		}
 		catch (Exception exception) {
 			_log.error(exception);
 
-			return "/error.jsp";
+			throw exception;
 		}
+	}
 
-		return MVCRenderConstants.MVC_PATH_VALUE_SKIP_DISPATCH;
+	private void _hideDefaultSuccessMessage(PortletRequest portletRequest) {
+		SessionMessages.add(
+			portletRequest,
+			PortalUtil.getPortletId(portletRequest) +
+				SessionMessages.KEY_SUFFIX_HIDE_DEFAULT_SUCCESS_MESSAGE);
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
-		ChangeArticlesPermissionsMVCRenderCommand.class);
+		ChangeArticlesPermissionsMVCActionCommand.class);
 
 	@Reference
 	private JournalArticleService _journalArticleService;
