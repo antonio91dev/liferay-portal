@@ -23,6 +23,7 @@ import {nextPage, setItemsPerPage} from '../../utils/pagination';
 import addApprovedStructuredContent from '../../utils/structured-content/addApprovedStructuredContent';
 import getBasicWebContentStructureId from '../../utils/structured-content/getBasicWebContentStructureId';
 import {waitForAlert} from '../../utils/waitForAlert';
+import {checkAccessibility} from '../../utils/checkAccessibility';
 import {journalPagesTest} from './fixtures/journalPagesTest';
 import getDataStructureDefinition from './utils/getDataStructureDefinition';
 
@@ -1316,6 +1317,8 @@ baseTest(
 		});
 
 		await openFieldset(page, 'Fields');
+
+		await checkAccessibility({page, selectors: ['.ddm-label']});
 
 		await expect(textBox).toBeDisabled();
 	}
