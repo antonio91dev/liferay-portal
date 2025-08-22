@@ -11,6 +11,8 @@ import {
 	ObjectValidationRuleApi,
 } from '@liferay/object-admin-rest-client-js';
 import {expect, mergeTests} from '@playwright/test';
+import fs from 'fs';
+import path from 'path';
 
 import {accountSettingsPagesTest} from '../../fixtures/accountSettingsPagesTest';
 import {applicationsMenuPageTest} from '../../fixtures/applicationsMenuPageTest';
@@ -25,15 +27,15 @@ import {pageEditorPagesTest} from '../../fixtures/pageEditorPagesTest';
 import {workflowPagesTest} from '../../fixtures/workflowPagesTest';
 import {getRandomInt} from '../../utils/getRandomInt';
 import getRandomString from '../../utils/getRandomString';
+import {waitForAlert} from '../../utils/waitForAlert';
 import {journalPagesTest} from '../journal-web/fixtures/journalPagesTest';
 import getPageDefinition from '../layout-content-page-editor-web/utils/getPageDefinition';
 import getWidgetDefinition from '../layout-content-page-editor-web/utils/getWidgetDefinition';
 import {mockedObjectFields} from './dependencies/objectMockedFields';
 import {getFDSDateFormat, getPageEditorDateFormat} from './utils/dateFormat';
+import {createFile, deleteFile} from './utils/fileHelpers';
 import evaluateKeepCheckingAfterFound from './utils/keepCheckingAfterFound';
 import {mockObjectFields} from './utils/mockObjectFields';
-import { createFile, deleteFile } from './utils/fileHelpers';
-import { waitForAlert } from '../../utils/waitForAlert';
 
 export const test = mergeTests(
 	accountSettingsPagesTest,
@@ -158,6 +160,70 @@ test.describe('Manage object entries through Object Definition widget', () => {
 	});
 });
 
+test('verify that an appropriate error message appears after attempting to upload an oversized file', async ({
+	apiHelpers,
+	page,
+	viewObjectEntriesPage,
+}) => {
+	const {objectFields} = await mockObjectFields({
+		apiHelpers,
+		objectFieldBusinessTypes: ['richText'],
+	});
+
+	const objectDefinition =
+		await apiHelpers.objectAdmin.postRandomObjectDefinition({
+			objectFields,
+			status: {code: 0},
+		});
+
+	apiHelpers.data.push({
+		id: objectDefinition.id,
+		type: 'objectDefinition',
+	});
+
+	await test.step('Go to the object entry page, click to add an entry, attempt to upload the files, and verify the error messages', async () => {
+		await viewObjectEntriesPage.goto(objectDefinition.className);
+
+		await viewObjectEntriesPage.clickAddObjectEntry(
+			objectDefinition.label['en_US']
+		);
+
+		const filePath = path.join(__dirname, 'dependencies', 'planet.jpg');
+
+		const fileBase64 = fs.readFileSync(filePath).toString('base64');
+
+		const imageHtml = `<p><img alt="" src="data:image/jpeg;base64,${fileBase64}" /></p>`;
+
+		const sourceButton = page.getByLabel('Source');
+
+		await sourceButton.click();
+
+		await page.getByRole('textbox').last().fill(imageHtml);
+
+		await sourceButton.click();
+		await viewObjectEntriesPage.saveObjectEntryButton.click();
+
+		await waitForAlert(page, 'Error:The input was too large.', {
+			type: 'danger',
+		});
+
+		await page.reload();
+
+		const imagesHtml = `<p><img alt="" src="data:image/jpeg;base64,${fileBase64}" /><img alt="" src="data:image/jpeg;base64,${fileBase64}" /><img alt="" src="data:image/jpeg;base64,${fileBase64}" /><img alt="" src="data:image/jpeg;base64,${fileBase64}" /><img alt="" src="data:image/jpeg;base64,${fileBase64}" /></p>`;
+
+		await sourceButton.click();
+
+		await page.getByRole('textbox').last().fill(imagesHtml);
+
+		await sourceButton.click();
+		await viewObjectEntriesPage.saveObjectEntryButton.click();
+
+		await waitForAlert(page, 'Error:Upload size is too large.', {
+			type: 'danger',
+		});
+	});
+});
+
 test.describe('Manage object entries through Page Templates', () => {
 	test('can view all entries related to an object in the relationship field', async ({
 		apiHelpers,
@@ -166,8 +232,8 @@ test.describe('Manage object entries through Page Templates', () => {
 	}) => {
 		const objectFields: ObjectField[] = [
 			{
-				DBType: "Boolean",
-				businessType: "Boolean",
+				DBType: 'Boolean',
+				businessType: 'Boolean',
 				externalReferenceCode: 'booleanField',
 				indexed: true,
 				indexedAsKeyword: false,
@@ -178,11 +244,11 @@ test.describe('Manage object entries through Page Templates', () => {
 				name: 'booleanField',
 				required: false,
 				system: false,
-				type: "Boolean",
+				type: 'Boolean',
 			},
 			{
-				DBType: "String",
-				businessType: "Text",
+				DBType: 'String',
+				businessType: 'Text',
 				externalReferenceCode: 'textField',
 				indexed: true,
 				indexedAsKeyword: false,
@@ -193,7 +259,7 @@ test.describe('Manage object entries through Page Templates', () => {
 				name: 'textField',
 				required: false,
 				system: false,
-				type: "String",
+				type: 'String',
 			},
 		];
 
@@ -262,7 +328,7 @@ test.describe('Manage object entries through Page Templates', () => {
 				objectDefinitionId1: objectDefinition1.id,
 				objectDefinitionId2: objectDefinition2.id,
 				objectDefinitionName2: objectDefinition2.name,
-				type: "oneToMany",
+				type: 'oneToMany',
 			}
 		);
 
@@ -440,7 +506,7 @@ test.describe('Manage object entries through Page Templates', () => {
 			let matchString: string;
 
 			switch (objectField.businessType) {
-				case "AutoIncrement": {
+				case 'AutoIncrement': {
 					matchString = '1';
 
 					break;
@@ -456,14 +522,14 @@ test.describe('Manage object entries through Page Templates', () => {
 
 					continue overloop;
 				}
-				case "Picklist": {
+				case 'Picklist': {
 					matchString = (
 						objectEntry[objectField.name] as {key: string}
 					).key;
 
 					break;
 				}
-				case "MultiselectPicklist": {
+				case 'MultiselectPicklist': {
 					(objectEntry[objectField.name] as string[]).forEach(
 						(listTypeEntry, index) => {
 							index < 1
@@ -559,14 +625,14 @@ test.describe('Manage object entries through View Object Entries', () => {
 
 		for (const objectField of objectFields) {
 			switch (objectField.businessType) {
-				case "Attachment": {
+				case 'Attachment': {
 					await viewObjectEntriesPage.selectFileFromDocumentsAndMedia(
 						ATTACHMENT_FILE_NAME
 					);
 
 					break;
 				}
-				case "Boolean": {
+				case 'Boolean': {
 					objectEntry[objectField.name]
 						? await page
 								.getByLabel(objectField.label['en_US'])
@@ -577,7 +643,7 @@ test.describe('Manage object entries through View Object Entries', () => {
 
 					break;
 				}
-				case "Picklist": {
+				case 'Picklist': {
 					await viewObjectEntriesPage.selectDropdownItem(
 						objectField.label['en_US'],
 						objectEntry[objectField.name].key.toString()
@@ -606,12 +672,12 @@ test.describe('Manage object entries through View Object Entries', () => {
 			let matchString: string;
 
 			switch (businessType) {
-				case "Attachment": {
+				case 'Attachment': {
 					matchString = ATTACHMENT_FILE_NAME;
 
 					break;
 				}
-				case "Boolean": {
+				case 'Boolean': {
 					matchString = objectEntry[name] ? 'Yes' : 'No';
 
 					break;
@@ -623,12 +689,12 @@ test.describe('Manage object entries through View Object Entries', () => {
 
 					break;
 				}
-				case "Picklist": {
+				case 'Picklist': {
 					matchString = (objectEntry[name] as {key: string}).key;
 
 					break;
 				}
-				case "MultiselectPicklist": {
+				case 'MultiselectPicklist': {
 					(objectEntry[name] as string[]).forEach(
 						(listTypeEntry, index) => {
 							index < 1
@@ -639,7 +705,7 @@ test.describe('Manage object entries through View Object Entries', () => {
 
 					break;
 				}
-				case "RichText": {
+				case 'RichText': {
 					matchString = objectEntry[name].substring(0, 35);
 
 					break;
@@ -708,11 +774,10 @@ test.describe('Manage object entries through View Object Entries', () => {
 				});
 
 				await test.step('Verify attachment field maximum file size validation', async () => {
+
 					// await objectFieldsPage.openObjectField();
 
-					await page
-						.getByRole('link', { name: 'Attachment' })
-						.click();
+					await page.getByRole('link', {name: 'Attachment'}).click();
 
 					await expect(objectFieldsPage.maximumFileSize).toHaveValue(
 						'0'
@@ -879,9 +944,7 @@ test.describe('Manage object entries through View Object Entries', () => {
 		await page.getByPlaceholder(placeHolderText).click();
 
 		const multiselectPicklistField = objectFields.find(
-			({businessType}) =>
-				businessType ===
-				"MultiselectPicklist"
+			({businessType}) => businessType === 'MultiselectPicklist'
 		);
 
 		const firstOptionName = objectEntry[multiselectPicklistField.name][0];
@@ -1036,7 +1099,7 @@ test.describe('Manage object entries through View Object Entries', () => {
 				objectDefinitionId1: objectDefinition1.id,
 				objectDefinitionId2: objectDefinition2.id,
 				objectDefinitionName2: objectDefinition2.name,
-				type: "oneToMany",
+				type: 'oneToMany',
 			}
 		);
 
@@ -1124,7 +1187,7 @@ test.describe('Manage object entries through View Object Entries', () => {
 			objectDefinitionId1: objectDefinition1.id,
 			objectDefinitionId2: objectDefinition2.id,
 			objectDefinitionName2: objectDefinition2.name,
-			type: "manyToMany",
+			type: 'manyToMany',
 		};
 
 		await objectRelationshipApiClient.postObjectDefinitionByExternalReferenceCodeObjectRelationship(
@@ -1184,7 +1247,7 @@ test.describe('Manage object entries through View Object Entries', () => {
 		);
 
 		await viewObjectEntriesPage.fillObjectEntry({
-			objectFieldBusinessType: "Text",
+			objectFieldBusinessType: 'Text',
 			objectFieldLabel: objectField,
 			objectFieldValue: 'tests',
 		});
@@ -1574,7 +1637,7 @@ test.describe('Manage object entries through Workflow', () => {
 		const objectFieldValue = getRandomString();
 
 		await viewObjectEntriesPage.fillObjectEntry({
-			objectFieldBusinessType: "Text",
+			objectFieldBusinessType: 'Text',
 			objectFieldLabel: objectDefinition.titleObjectFieldName,
 			objectFieldValue,
 		});
