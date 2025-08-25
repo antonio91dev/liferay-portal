@@ -7,7 +7,7 @@ package com.liferay.dynamic.data.mapping.util;
 
 import com.liferay.dynamic.data.mapping.form.field.type.internal.checkbox.CheckboxDDMFormFieldTemplateContextContributor;
 import com.liferay.dynamic.data.mapping.model.DDMFormField;
-import com.liferay.dynamic.data.mapping.test.util.BaseDDMFormFieldTemplateContextContributorTestCase;
+import com.liferay.dynamic.data.mapping.test.util.BaseDDMFormFieldTypeSettingsTestCase;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.test.rule.LiferayUnitTestRule;

@@ -273,7 +273,7 @@ describe('ReactFieldBase', () => {
 			getByTitle('this-field-cannot-be-localized')
 		).toBeInTheDocument();
 
-		expect(getByLabelText('my-label')).toHaveClass('text-muted');
+		expect(getByLabelText('my-label')).toHaveClass('text-secondary');
 	});
 
 	describe('Hide Field', () => {
