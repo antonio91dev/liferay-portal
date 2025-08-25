@@ -83,7 +83,7 @@ if (organization != null) {
 <liferay-ui:error exception="<%= NoSuchCountryException.class %>" message="please-select-a-country" />
 
 <div class="<%= OrganizationLocalServiceUtil.isCountryEnabled(type) ? StringPool.BLANK : "hide" %>" id="<portlet:namespace />countryDiv">
-	<aui:select label="country" name="countryId" />
+	<aui:select label="country" name="countryId" required="<%= OrganizationLocalServiceUtil.isCountryRequired(type) %>" />
 
 	<aui:select label="region" name="regionId" />
 </div>
