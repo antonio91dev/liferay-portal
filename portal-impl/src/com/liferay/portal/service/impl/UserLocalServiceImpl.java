@@ -4570,6 +4570,8 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 						companyGroup.getGroupId(), user.getUuid());
 
 					assetCategoryIds = assetEntry.getCategoryIds();
+
+					break;
 				}
 			}
 		}
