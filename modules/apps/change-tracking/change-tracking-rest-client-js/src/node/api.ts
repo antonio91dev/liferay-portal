@@ -3,10 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-/**
- * @author David Truong
- * @generated
- */
+export {checkAllBox} from './checkAllBox';
 
 export * from './api/apis';
 export * from './model/models';

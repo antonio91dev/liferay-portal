@@ -246,7 +246,7 @@ public class RowChecker {
 
 		StringBundler sb = new StringBundler(9);
 
-		sb.append("onClick=\"Liferay.Util.rowCheckerCheckAllBox(AUI().");
+		sb.append("onClick=\"Liferay.Util.checkAllBox(");
 		sb.append("one(this).ancestor('.table'), AUI().one(this).");
 		sb.append("ancestor('tr:not(.d-none)'), ");
 		sb.append(checkBoxRowIds);

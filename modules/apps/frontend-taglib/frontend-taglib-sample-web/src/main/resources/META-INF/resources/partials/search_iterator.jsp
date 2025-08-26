@@ -13,6 +13,7 @@ SearchIteratorDisplayContext searchIteratorDisplayContext = (SearchIteratorDispl
 
 <clay:container-fluid>
 	<liferay-ui:search-container
+		rowChecker='<%= new com.liferay.portal.kernel.dao.search.RowChecker((RenderResponse)request.getAttribute("javax.portlet.response")) %>'
 		searchContainer="<%= searchIteratorDisplayContext.getSearchContainer() %>"
 	>
 		<liferay-ui:search-container-row

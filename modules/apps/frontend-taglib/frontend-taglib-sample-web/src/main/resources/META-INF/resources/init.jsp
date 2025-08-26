@@ -20,4 +20,6 @@ page import="com.liferay.frontend.taglib.sample.web.internal.display.context.Sea
 page import="com.liferay.frontend.taglib.sample.web.internal.display.context.SearchPaginatorDisplayContext" %><%@
 page import="com.liferay.portal.kernel.util.ParamUtil" %>
 
+<%@ page import="javax.portlet.RenderResponse" %>
+
 <liferay-theme:defineObjects />
