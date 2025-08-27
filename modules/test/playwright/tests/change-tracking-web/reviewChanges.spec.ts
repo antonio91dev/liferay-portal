@@ -247,7 +247,6 @@ test('User time zone from theme display is applied to publication FDS', async ({
 
 		await expect(
 			page
-				.locator('[data-id*="dateCreated"]')
 				.getByText(timeZoneTime.format('MMM D, YYYY, h'))
 				.first()
 		).toBeVisible();
