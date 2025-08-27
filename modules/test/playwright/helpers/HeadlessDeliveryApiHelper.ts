@@ -37,6 +37,13 @@ type TDocumentFolder = {
 	viewableBy?: string;
 };
 
+type TDocumentShortcut = {
+	externalReferenceCode?: string;
+	folderId?: number;
+	targetDocumentId?: number;
+	viewableBy?: string;
+};
+
 type TWikiNode = {
 	description?: string;
 	externalReferenceCode?: string;
@@ -351,6 +358,28 @@ export class HeadlessDeliveryApiHelper {
 			`${this.apiHelpers.baseUrl}${this.basePath}/sites/${siteId}/document-folders`,
 			{
 				data: documentFolder,
+				failOnStatusCode: true,
+				headers: {
+					...(await this.apiHelpers.getCSRFTokenHeader()),
+				},
+			}
+		);
+	}
+
+	async postDocumentShortcut(
+		siteId: number | string,
+		documentShortcut?: TDocumentShortcut
+	) {
+		documentShortcut = {
+			externalReferenceCode: getRandomString(),
+			viewableBy: 'Anyone',
+			...(documentShortcut || {}),
+		};
+
+		return this.apiHelpers.post(
+			`${this.apiHelpers.baseUrl}${this.basePath}/sites/${siteId}/document-shortcuts`,
+			{
+				data: documentShortcut,
 				failOnStatusCode: true,
 				headers: {
 					...(await this.apiHelpers.getCSRFTokenHeader()),
