@@ -56,6 +56,25 @@ test.beforeEach(
 );
 
 test.describe('Add new event modal', () => {
+	test('follows accessibility guidelines related to focus when navigating with tab', async ({
+		calendarWidgetPage,
+		page,
+	}) => {
+		await calendarWidgetPage.clickAddEventButton();
+
+		await page.keyboard.down('Tab');
+
+		await expect(calendarWidgetPage.title).toBeFocused();
+
+		await page.keyboard.down('Tab');
+
+		await expect(calendarWidgetPage.titleLocalesDropdown).toBeFocused();
+
+		await page.keyboard.down('Tab');
+
+		await expect(calendarWidgetPage.startDate).toBeFocused();
+	});
+
 	test('has description editor with an aria-label', async ({
 		calendarWidgetPage,
 		page,

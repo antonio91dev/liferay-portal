@@ -17,6 +17,7 @@ export class CalendarWidgetPage {
 	readonly calendarOptions: Locator;
 	readonly calendarWidget: Locator;
 	readonly closeConfigurationButton: Locator;
+	readonly closeEventModalButton: Locator;
 	readonly configurationMenuItem: Locator;
 	readonly endDate: Locator;
 	readonly endTime: Locator;
@@ -39,6 +40,7 @@ export class CalendarWidgetPage {
 	readonly successAlert: Locator;
 	readonly timeZoneDropdown: Locator;
 	readonly title: Locator;
+	readonly titleLocalesDropdown: Locator;
 	readonly toggleSideBarButton: Locator;
 	readonly useGlobalTimeZoneCheckBox: Locator;
 
@@ -63,6 +65,7 @@ export class CalendarWidgetPage {
 			exact: true,
 			name: 'close',
 		});
+		this.closeEventModalButton = page.getByRole('button', {name: 'Close'});
 		this.configurationMenuItem = page.getByRole('menuitem', {
 			exact: true,
 			name: 'Configuration',
@@ -125,6 +128,9 @@ export class CalendarWidgetPage {
 		this.title = page
 			.frameLocator('iframe')
 			.getByLabel('Title', {exact: true});
+		this.titleLocalesDropdown = page
+			.frameLocator('iframe')
+			.locator('[id$="titleMenu"]');
 		this.toggleSideBarButton = page.locator(
 			'.calendar-portlet-column-toggler .lexicon-icon-caret-left'
 		);
