@@ -20,7 +20,7 @@ import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.AssumeTestRule;
 import com.liferay.portal.kernel.test.rule.DataGuard;
 import com.liferay.portal.kernel.test.util.CompanyTestUtil;
-import com.liferay.portal.test.rule.FeatureFlag;
+import com.liferay.portal.test.rule.FeatureFlags;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
@@ -44,7 +44,7 @@ import org.osgi.framework.ServiceReference;
  * @author Magdalena Jedraszak
  */
 @DataGuard(scope = DataGuard.Scope.METHOD)
-@FeatureFlag("LPS-178642")
+@FeatureFlags("LPS-178642")
 @RunWith(Arquillian.class)
 public class APIPropertyObjectDefinitionDeployerImplTest {
 
