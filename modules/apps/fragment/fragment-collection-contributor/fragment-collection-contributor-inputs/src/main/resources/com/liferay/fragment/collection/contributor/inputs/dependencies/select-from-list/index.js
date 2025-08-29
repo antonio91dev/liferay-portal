@@ -111,7 +111,13 @@ function handleResultListClick(event) {
 }
 
 function handleInputBlur() {
-	uiInputElement.value = labelInputElement.value;
+	if (!uiInputElement.value) {
+		labelInputElement.value = '';
+		valueInputElement.value = null;
+	}
+	else {
+		uiInputElement.value = labelInputElement.value;
+	}
 
 	if (checkIsOpenDropdown()) {
 		setTimeout(() => closeDropdown(), 500);
