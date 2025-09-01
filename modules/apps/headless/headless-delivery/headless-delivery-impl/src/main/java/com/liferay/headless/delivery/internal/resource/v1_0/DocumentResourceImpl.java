@@ -396,7 +396,7 @@ public class DocumentResourceImpl extends BaseDocumentResourceImpl {
 		}
 
 		if (description == null) {
-			existingFileEntry.getDescription();
+			description = existingFileEntry.getDescription();
 		}
 
 		if (displayDate == null) {
