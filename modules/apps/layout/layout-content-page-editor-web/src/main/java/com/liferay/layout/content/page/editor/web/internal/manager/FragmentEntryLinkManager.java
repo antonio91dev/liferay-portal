@@ -559,6 +559,14 @@ public class FragmentEntryLinkManager {
 		FragmentEntryLink fragmentEntryLink, Locale locale) {
 
 		if (fragmentEntryLink.getFragmentEntryId() <= 0) {
+			FragmentRenderer fragmentRenderer =
+				_fragmentRendererRegistry.getFragmentRenderer(
+					fragmentEntryLink.getRendererKey());
+
+			if (fragmentRenderer != null) {
+				return null;
+			}
+
 			return getFragmentEntry(
 				fragmentEntryLink.getGroupId(),
 				fragmentEntryLink.getRendererKey(), locale);
