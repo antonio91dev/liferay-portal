@@ -7,6 +7,7 @@ package com.liferay.portal.upgrade.v7_4_x;
 
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.Group;
+import com.liferay.portal.kernel.model.ReleaseConstants;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.upgrade.BaseExternalReferenceCodeUpgradeProcess;
 import com.liferay.portal.kernel.upgrade.BaseUuidUpgradeProcess;
@@ -565,6 +566,13 @@ public class PortalUpgradeProcessRegistryImpl
 				"AssetVocabulary", "visibilityType", "INTEGER"));
 
 		upgradeVersionTreeMap.put(new Version(31, 14, 3), new UpgradeDB2());
+		upgradeVersionTreeMap.put(
+			new Version(31, 14, 4),
+			UpgradeProcessFactory.runSQL(
+				StringBundler.concat(
+					"update Release_ set verified = [$FALSE$] where ",
+					"servletContextName = '",
+					ReleaseConstants.DEFAULT_SERVLET_CONTEXT_NAME, "'")));
 	}
 
 }
