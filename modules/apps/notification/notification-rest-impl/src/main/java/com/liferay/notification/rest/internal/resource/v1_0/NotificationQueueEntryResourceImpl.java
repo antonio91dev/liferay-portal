@@ -15,6 +15,7 @@ import com.liferay.notification.handler.NotificationHandlerTracker;
 import com.liferay.notification.model.NotificationRecipient;
 import com.liferay.notification.rest.dto.v1_0.NotificationQueueEntry;
 import com.liferay.notification.rest.dto.v1_0.util.NotificationUtil;
+import com.liferay.notification.rest.internal.odata.entity.v1_0.NotificationQueueEntryEntityModel;
 import com.liferay.notification.rest.resource.v1_0.NotificationQueueEntryResource;
 import com.liferay.notification.service.NotificationQueueEntryService;
 import com.liferay.notification.type.NotificationType;
@@ -29,6 +30,7 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.vulcan.pagination.Page;
 import com.liferay.portal.vulcan.pagination.Pagination;
 import com.liferay.portal.vulcan.util.SearchUtil;
@@ -39,6 +41,8 @@ import java.util.Map;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ServiceScope;
+
+import javax.ws.rs.core.MultivaluedMap;
 
 /**
  * @author Paulo Albuquerque
@@ -57,6 +61,11 @@ public class NotificationQueueEntryResourceImpl
 
 		_notificationQueueEntryService.deleteNotificationQueueEntry(
 			notificationQueueEntryId);
+	}
+
+	@Override
+	public EntityModel getEntityModel(MultivaluedMap multivaluedMap) {
+		return _entityModel;
 	}
 
 	@Override
@@ -281,6 +290,9 @@ public class NotificationQueueEntryResourceImpl
 			}
 		};
 	}
+
+	private static final EntityModel _entityModel =
+		new NotificationQueueEntryEntityModel();
 
 	@Reference
 	private Language _language;
