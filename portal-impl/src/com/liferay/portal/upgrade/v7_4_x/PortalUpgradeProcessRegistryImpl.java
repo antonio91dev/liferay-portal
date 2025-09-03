@@ -566,6 +566,7 @@ public class PortalUpgradeProcessRegistryImpl
 				"AssetVocabulary", "visibilityType", "INTEGER"));
 
 		upgradeVersionTreeMap.put(new Version(31, 14, 3), new UpgradeDB2());
+
 		upgradeVersionTreeMap.put(
 			new Version(31, 14, 4),
 			UpgradeProcessFactory.runSQL(
