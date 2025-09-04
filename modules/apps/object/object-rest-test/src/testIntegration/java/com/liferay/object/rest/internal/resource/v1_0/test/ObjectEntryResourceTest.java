@@ -13274,7 +13274,7 @@ public class ObjectEntryResourceTest {
 	}
 
 	private TaxonomyCategory _addTaxonomyCategory(
-		long groupId, long taxonomyVocabularyId)
+			long groupId, long taxonomyVocabularyId)
 		throws Exception {
 
 		return _taxonomyCategoryResource.postTaxonomyVocabularyTaxonomyCategory(
@@ -13297,7 +13297,6 @@ public class ObjectEntryResourceTest {
 				}
 			});
 	}
-
 
 	private FileEntry _addTempFileEntry(
 			String content, ObjectDefinition objectDefinition, String title)
