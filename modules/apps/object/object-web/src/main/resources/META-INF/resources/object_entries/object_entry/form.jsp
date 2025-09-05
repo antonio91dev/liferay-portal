@@ -55,6 +55,9 @@ portletDisplay.setURLBack(backURL);
 
 <c:if test="<%= !objectEntryDisplayContext.isReadOnly() %>">
 	<aui:script sandbox="<%= true %>">
+		const hasObjectLayout =
+			<%= objectEntryDisplayContext.getObjectLayoutTab() != null %>;
+
 		function <portlet:namespace />getExternalReferenceCode() {
 			return String(
 				'<%= (objectEntry == null) ? "" : objectEntry.getExternalReferenceCode() %>'
