@@ -439,10 +439,11 @@ public class FragmentLayoutStructureItemImporter
 				StringUtil.randomId(), position, fragmentKey, type,
 				serviceContext);
 
-		JSONObject restoredEditableValuesJSONObject =
-			JSONFactoryUtil.createJSONObject();
 		JSONObject editableValuesJSONObject =
 			fragmentEntryLink.getEditableValuesJSONObject();
+
+		JSONObject restoredEditableValuesJSONObject =
+			JSONFactoryUtil.createJSONObject();
 
 		String editableValues = fragmentEntryLink.getEditableValues();
 
