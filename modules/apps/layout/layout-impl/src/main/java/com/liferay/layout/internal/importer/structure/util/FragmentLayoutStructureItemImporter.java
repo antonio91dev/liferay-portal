@@ -1438,7 +1438,7 @@ public class FragmentLayoutStructureItemImporter
 		return jsonObject;
 	}
 
-	private static final String _NAMESPACE_PLACEHOLDER = "[namespace]";
+	private static final String _NAMESPACE_PLACEHOLDER = "[$NAMESPACE$]";
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		FragmentLayoutStructureItemImporter.class);
