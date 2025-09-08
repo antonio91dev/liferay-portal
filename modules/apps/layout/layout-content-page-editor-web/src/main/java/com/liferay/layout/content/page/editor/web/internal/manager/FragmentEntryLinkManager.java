@@ -111,19 +111,19 @@ public class FragmentEntryLinkManager {
 			return Collections.emptySet();
 		}
 
-		FragmentEntry fragmentEntry = _getFragmentEntry(
-			fragmentEntryLink, locale);
-
-		if (fragmentEntry != null) {
-			return _getFieldTypes(fragmentEntry.getTypeOptions());
-		}
-
 		FragmentRenderer fragmentRenderer =
 			_fragmentRendererRegistry.getFragmentRenderer(
 				fragmentEntryLink.getRendererKey());
 
 		if (fragmentRenderer != null) {
 			return _getFieldTypes(fragmentRenderer.getTypeOptions());
+		}
+
+		FragmentEntry fragmentEntry = _getFragmentEntry(
+			fragmentEntryLink, LocaleUtil.getMostRelevantLocale());
+
+		if (fragmentEntry != null) {
+			return _getFieldTypes(fragmentEntry.getTypeOptions());
 		}
 
 		return Collections.emptySet();
@@ -559,14 +559,6 @@ public class FragmentEntryLinkManager {
 		FragmentEntryLink fragmentEntryLink, Locale locale) {
 
 		if (fragmentEntryLink.getFragmentEntryId() <= 0) {
-			FragmentRenderer fragmentRenderer =
-				_fragmentRendererRegistry.getFragmentRenderer(
-					fragmentEntryLink.getRendererKey());
-
-			if (fragmentRenderer != null) {
-				return null;
-			}
-
 			return getFragmentEntry(
 				fragmentEntryLink.getGroupId(),
 				fragmentEntryLink.getRendererKey(), locale);
