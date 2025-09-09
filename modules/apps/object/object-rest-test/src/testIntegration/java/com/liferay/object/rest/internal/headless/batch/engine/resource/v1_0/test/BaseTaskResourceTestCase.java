@@ -21,7 +21,7 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 
-import java.util.Collections;
+import java.util.Arrays;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -43,11 +43,15 @@ public abstract class BaseTaskResourceTestCase {
 	@Before
 	public void setUp() throws Exception {
 		objectDefinition = ObjectDefinitionTestUtil.publishObjectDefinition(
-			Collections.singletonList(
+			Arrays.asList(
 				ObjectFieldUtil.createObjectField(
 					ObjectFieldConstants.BUSINESS_TYPE_TEXT,
 					ObjectFieldConstants.DB_TYPE_STRING,
-					OBJECT_FIELD_NAME_TEXT)),
+					OBJECT_FIELD_NAME_TEXT_1),
+				ObjectFieldUtil.createObjectField(
+					ObjectFieldConstants.BUSINESS_TYPE_TEXT,
+					ObjectFieldConstants.DB_TYPE_STRING,
+					OBJECT_FIELD_NAME_TEXT_2)),
 			ObjectDefinitionConstants.SCOPE_COMPANY,
 			TestPropsValues.getUserId());
 	}
@@ -86,7 +90,10 @@ public abstract class BaseTaskResourceTestCase {
 	protected static final String ENDPOINT_IMPORT_TASK_BY_ERC =
 		"headless-batch-engine/v1.0/import-task/by-external-reference-code/";
 
-	protected static final String OBJECT_FIELD_NAME_TEXT =
+	protected static final String OBJECT_FIELD_NAME_TEXT_1 =
+		"x" + RandomTestUtil.randomString();
+
+	protected static final String OBJECT_FIELD_NAME_TEXT_2 =
 		"x" + RandomTestUtil.randomString();
 
 	@DeleteAfterTestRun
