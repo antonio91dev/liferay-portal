@@ -555,3 +555,26 @@ test('LPD-45897 Can delete accounts in bulk', async ({
 
 	await expect(accountsPage.noAccountsMessage).toBeVisible();
 });
+
+test(
+	'Escape account name to avoid XSS injections',
+	{tag: '@LPD-65007'},
+	async ({accountsPage, apiHelpers, page}) => {
+		const name = '<img src=x onerror=alert(origin)>';
+
+		await apiHelpers.headlessAdminUser.postAccount({
+			name,
+			type: 'business',
+		});
+
+		page.on('dialog', async (dialog) => {
+			if (dialog.type() === 'alert') {
+				throw new Error('XSS detected');
+			}
+		});
+
+		await accountsPage.goto();
+
+		await expect(accountsPage.accountsTableCell(name)).toBeVisible();
+	}
+);
