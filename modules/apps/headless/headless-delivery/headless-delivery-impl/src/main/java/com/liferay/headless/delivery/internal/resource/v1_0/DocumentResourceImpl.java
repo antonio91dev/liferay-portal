@@ -400,11 +400,11 @@ public class DocumentResourceImpl extends BaseDocumentResourceImpl {
 		}
 
 		if (displayDate == null) {
-			existingFileEntry.getDisplayDate();
+			displayDate = existingFileEntry.getDisplayDate();
 		}
 
 		if (expirationDate == null) {
-			existingFileEntry.getExpirationDate();
+			expirationDate = existingFileEntry.getExpirationDate();
 		}
 
 		return _toDocument(
