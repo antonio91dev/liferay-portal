@@ -93,13 +93,23 @@ public class SegmentsEntryRetrieverTest {
 	public void testGetSegmentsEntryIdsInSimulationModeWithDefaultSegmentsEntry()
 		throws Exception {
 
-		long[] segmentsEntryIds = _getSegmentsEntryIdsInSimulationMode(
-			Constants.PREVIEW, SegmentsEntryConstants.ID_DEFAULT);
+		try (CompanyConfigurationTemporarySwapper
+				companyConfigurationTemporarySwapper =
+					new CompanyConfigurationTemporarySwapper(
+						TestPropsValues.getCompanyId(),
+						SegmentsCompanyConfiguration.class.getName(),
+						HashMapDictionaryBuilder.<String, Object>put(
+							"segmentationEnabled", true
+						).build())) {
 
-		Assert.assertEquals(
-			Arrays.toString(segmentsEntryIds), 1, segmentsEntryIds.length);
-		Assert.assertEquals(
-			SegmentsEntryConstants.ID_DEFAULT, segmentsEntryIds[0]);
+			long[] segmentsEntryIds = _getSegmentsEntryIdsInSimulationMode(
+				Constants.PREVIEW, SegmentsEntryConstants.ID_DEFAULT);
+
+			Assert.assertEquals(
+				Arrays.toString(segmentsEntryIds), 1, segmentsEntryIds.length);
+			Assert.assertEquals(
+				SegmentsEntryConstants.ID_DEFAULT, segmentsEntryIds[0]);
+		}
 	}
 
 	@Test
@@ -108,27 +118,48 @@ public class SegmentsEntryRetrieverTest {
 
 		long segmentsEntryId = RandomTestUtil.randomLong();
 
-		long[] segmentsEntryIds = _getSegmentsEntryIdsInSimulationMode(
-			Constants.PREVIEW, segmentsEntryId);
+		try (CompanyConfigurationTemporarySwapper
+				companyConfigurationTemporarySwapper =
+					new CompanyConfigurationTemporarySwapper(
+						TestPropsValues.getCompanyId(),
+						SegmentsCompanyConfiguration.class.getName(),
+						HashMapDictionaryBuilder.<String, Object>put(
+							"segmentationEnabled", true
+						).build())) {
 
-		Assert.assertEquals(
-			Arrays.toString(segmentsEntryIds), 2, segmentsEntryIds.length);
-		Assert.assertTrue(
-			ArrayUtil.contains(
-				segmentsEntryIds, SegmentsEntryConstants.ID_DEFAULT));
-		Assert.assertTrue(
-			ArrayUtil.contains(segmentsEntryIds, segmentsEntryId));
+			long[] segmentsEntryIds = _getSegmentsEntryIdsInSimulationMode(
+				Constants.PREVIEW, segmentsEntryId);
+
+			Assert.assertEquals(
+				Arrays.toString(segmentsEntryIds), 2, segmentsEntryIds.length);
+			Assert.assertTrue(
+				ArrayUtil.contains(
+					segmentsEntryIds, SegmentsEntryConstants.ID_DEFAULT));
+			Assert.assertTrue(
+				ArrayUtil.contains(segmentsEntryIds, segmentsEntryId));
+		}
 	}
 
 	@Test
 	public void testGetSegmentsEntryIdsWithoutSegmentsEntry() throws Exception {
-		long[] segmentsEntryIds = _segmentsEntryRetriever.getSegmentsEntryIds(
-			_group.getGroupId(), _user.getUserId(), null, new long[0]);
+		try (CompanyConfigurationTemporarySwapper
+				companyConfigurationTemporarySwapper =
+					new CompanyConfigurationTemporarySwapper(
+						TestPropsValues.getCompanyId(),
+						SegmentsCompanyConfiguration.class.getName(),
+						HashMapDictionaryBuilder.<String, Object>put(
+							"segmentationEnabled", true
+						).build())) {
 
-		Assert.assertEquals(
-			Arrays.toString(segmentsEntryIds), 1, segmentsEntryIds.length);
-		Assert.assertEquals(
-			SegmentsEntryConstants.ID_DEFAULT, segmentsEntryIds[0]);
+			long[] segmentsEntryIds =
+				_segmentsEntryRetriever.getSegmentsEntryIds(
+					_group.getGroupId(), _user.getUserId(), null, new long[0]);
+
+			Assert.assertEquals(
+				Arrays.toString(segmentsEntryIds), 1, segmentsEntryIds.length);
+			Assert.assertEquals(
+				SegmentsEntryConstants.ID_DEFAULT, segmentsEntryIds[0]);
+		}
 	}
 
 	@Test
