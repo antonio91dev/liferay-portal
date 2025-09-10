@@ -439,13 +439,13 @@ public class FragmentLayoutStructureItemImporter
 				StringUtil.randomId(), position, fragmentKey, type,
 				serviceContext);
 
-		JSONObject editableValuesJSONObject =
-			fragmentEntryLink.getEditableValuesJSONObject();
+		String editableValues = fragmentEntryLink.getEditableValues();
+
+		JSONObject editableValuesJSONObject = JSONFactoryUtil.createJSONObject(
+			editableValues);
 
 		JSONObject restoredEditableValuesJSONObject =
 			JSONFactoryUtil.createJSONObject();
-
-		String editableValues = fragmentEntryLink.getEditableValues();
 
 		if (editableValues.contains(_NAMESPACE_PLACEHOLDER)) {
 			String fragmentEntryLinkNamespace =

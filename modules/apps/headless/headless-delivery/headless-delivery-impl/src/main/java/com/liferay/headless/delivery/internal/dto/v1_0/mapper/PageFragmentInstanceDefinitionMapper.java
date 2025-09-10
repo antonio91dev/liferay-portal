@@ -338,20 +338,22 @@ public class PageFragmentInstanceDefinitionMapper {
 	}
 
 	private FragmentField[] _getFragmentFields(
-		FragmentEntryLink fragmentEntryLink, boolean saveInlineContent,
-		boolean saveMapping) {
+			FragmentEntryLink fragmentEntryLink, boolean saveInlineContent,
+			boolean saveMapping)
+		throws JSONException {
 
 		if (!saveInlineContent && !saveMapping) {
 			return new FragmentField[0];
 		}
 
-		JSONObject editableValuesJSONObject =
-			fragmentEntryLink.getEditableValuesJSONObject();
+		String editableValues = fragmentEntryLink.getEditableValues();
+
+		JSONObject editableValuesJSONObject = _jsonFactory.createJSONObject(
+			editableValues);
 
 		JSONObject processedEditableValuesJSONObject =
 			_jsonFactory.createJSONObject();
 
-		String editableValues = fragmentEntryLink.getEditableValues();
 		String fragmentEntryLinkNamespace = fragmentEntryLink.getNamespace();
 
 		if (editableValues.contains(fragmentEntryLinkNamespace)) {
