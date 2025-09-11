@@ -203,23 +203,23 @@ public class UserResourceTest extends BaseUserResourceTestCase {
 				"externalId eq \"" + RandomTestUtil.randomString() + "\""),
 			0, 0);
 		_assertListResponse(
+			userResource.getV2Users(5, 0, "externalId eq \"" + _PREFIX + "\""),
+			0, 0);
+		_assertListResponse(
 			userResource.getV2Users(
 				5, 0, "externalId eq \"" + user1.getExternalId() + "\""),
 			1, 1, user1);
-		_assertListResponse(
-			userResource.getV2Users(5, 0, "externalId eq \"" + _PREFIX + "\""),
-			0, 0);
 		_assertListResponse(
 			userResource.getV2Users(
 				5, 0, "userName eq \"" + RandomTestUtil.randomString() + "\""),
 			0, 0);
 		_assertListResponse(
+			userResource.getV2Users(5, 0, "userName eq \"" + _PREFIX + "\""), 0,
+			0);
+		_assertListResponse(
 			userResource.getV2Users(
 				5, 0, "userName eq \"" + user1.getUserName() + "\""),
 			1, 1, user1);
-		_assertListResponse(
-			userResource.getV2Users(5, 0, "userName eq \"" + _PREFIX + "\""), 0,
-			0);
 
 		assertHttpResponseStatusCode(
 			400,
