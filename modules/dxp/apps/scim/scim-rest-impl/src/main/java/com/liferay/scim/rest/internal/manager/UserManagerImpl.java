@@ -44,6 +44,9 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.search.document.Document;
 import com.liferay.portal.search.hits.SearchHits;
+import com.liferay.portal.search.query.BooleanQuery;
+import com.liferay.portal.search.query.Queries;
+import com.liferay.portal.search.query.Query;
 import com.liferay.portal.search.searcher.SearchRequestBuilderFactory;
 import com.liferay.portal.search.searcher.SearchResponse;
 import com.liferay.portal.search.searcher.Searcher;
@@ -87,7 +90,8 @@ public class UserManagerImpl implements UserManager {
 		ConfigurationAdmin configurationAdmin,
 		ExpandoColumnLocalService expandoColumnLocalService,
 		ExpandoTableLocalService expandoTableLocalService,
-		ExpandoValueLocalService expandoValueLocalService, Searcher searcher,
+		ExpandoValueLocalService expandoValueLocalService,
+		Queries queries, Searcher searcher,
 		SearchRequestBuilderFactory searchRequestBuilderFactory,
 		UserGroupLocalService userGroupLocalService,
 		UserGroupService userGroupService, UserLocalService userLocalService,
@@ -99,6 +103,7 @@ public class UserManagerImpl implements UserManager {
 		_expandoColumnLocalService = expandoColumnLocalService;
 		_expandoTableLocalService = expandoTableLocalService;
 		_expandoValueLocalService = expandoValueLocalService;
+		_queries = queries;
 		_searcher = searcher;
 		_searchRequestBuilderFactory = searchRequestBuilderFactory;
 		_userGroupLocalService = userGroupLocalService;
@@ -261,14 +266,6 @@ public class UserManagerImpl implements UserManager {
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
-		ScimClientOAuth2ApplicationConfiguration
-			scimClientOAuth2ApplicationConfiguration =
-				ScimUtil.getScimClientOAuth2ApplicationConfiguration(
-					serviceContext.getCompanyId(), _configurationAdmin);
-
-		String scimClientId = ScimClientUtil.generateScimClientId(
-			scimClientOAuth2ApplicationConfiguration.oAuth2ApplicationName());
-
 		com.liferay.portal.search.searcher.SearchRequest searchRequest =
 			_searchRequestBuilderFactory.builder(
 			).modelIndexerClasses(
@@ -283,29 +280,13 @@ public class UserManagerImpl implements UserManager {
 				startIndex
 			).emptySearchEnabled(
 				true
+			).query(
+				_createBooleanQuery(node)
 			).size(
 				count
 			).withSearchContext(
-				searchContext -> {
-					searchContext.setAndSearch(true);
-					searchContext.setAttribute(Field.GROUP_ID, 0L);
-					searchContext.setAttribute(
-						"expando__keyword__custom_fields__scimClientId",
-						scimClientId);
-
-					ExpressionNode expressionNode = (ExpressionNode)node;
-
-					if ((expressionNode != null) &&
-						StringUtil.contains(
-							expressionNode.getAttributeValue(), "displayName",
-							StringPool.COLON)) {
-
-						searchContext.setAttribute(
-							"name", expressionNode.getValue());
-					}
-
-					searchContext.setUserId(serviceContext.getUserId());
-				}
+				searchContext -> searchContext.setUserId(
+					serviceContext.getUserId())
 			).build();
 
 		SearchResponse searchResponse = _searcher.search(searchRequest);
@@ -355,14 +336,6 @@ public class UserManagerImpl implements UserManager {
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
-		ScimClientOAuth2ApplicationConfiguration
-			scimClientOAuth2ApplicationConfiguration =
-				ScimUtil.getScimClientOAuth2ApplicationConfiguration(
-					serviceContext.getCompanyId(), _configurationAdmin);
-
-		String scimClientId = ScimClientUtil.generateScimClientId(
-			scimClientOAuth2ApplicationConfiguration.oAuth2ApplicationName());
-
 		com.liferay.portal.search.searcher.SearchRequest searchRequest =
 			_searchRequestBuilderFactory.builder(
 			).modelIndexerClasses(
@@ -377,40 +350,15 @@ public class UserManagerImpl implements UserManager {
 				startIndex
 			).emptySearchEnabled(
 				true
+			).query(
+				_createBooleanQuery(
+					node,
+					_queries.term("status", WorkflowConstants.STATUS_APPROVED))
 			).size(
 				count
 			).withSearchContext(
-				searchContext -> {
-					searchContext.setAndSearch(true);
-					searchContext.setAttribute(Field.GROUP_ID, 0L);
-					searchContext.setAttribute(
-						Field.STATUS, WorkflowConstants.STATUS_APPROVED);
-					searchContext.setAttribute(
-						"expando__keyword__custom_fields__scimClientId",
-						scimClientId);
-
-					ExpressionNode expressionNode = (ExpressionNode)node;
-
-					if (expressionNode != null) {
-						if (StringUtil.contains(
-								expressionNode.getAttributeValue(),
-								"externalId", StringPool.COLON)) {
-
-							searchContext.setAttribute(
-								"externalReferenceCode",
-								expressionNode.getValue());
-						}
-						else if (StringUtil.contains(
-									expressionNode.getAttributeValue(),
-									"userName", StringPool.COLON)) {
-
-							searchContext.setAttribute(
-								"screenName", expressionNode.getValue());
-						}
-					}
-
-					searchContext.setUserId(serviceContext.getUserId());
-				}
+				searchContext -> searchContext.setUserId(
+					serviceContext.getUserId())
 			).build();
 
 		SearchResponse searchResponse = _searcher.search(searchRequest);
@@ -667,6 +615,58 @@ public class UserManagerImpl implements UserManager {
 					oAuth2ApplicationName()));
 
 		return portalUser;
+	}
+
+	private BooleanQuery _createBooleanQuery(Node node, Query... clauses) {
+		BooleanQuery booleanQuery = _queries.booleanQuery();
+
+		booleanQuery.addMustQueryClauses(clauses);
+
+		ServiceContext serviceContext =
+			ServiceContextThreadLocal.getServiceContext();
+
+		ScimClientOAuth2ApplicationConfiguration
+			scimClientOAuth2ApplicationConfiguration =
+				ScimUtil.getScimClientOAuth2ApplicationConfiguration(
+					serviceContext.getCompanyId(), _configurationAdmin);
+
+		booleanQuery.addMustQueryClauses(
+			_queries.match(
+				"expando__keyword__custom_fields__scimClientId",
+				ScimClientUtil.generateScimClientId(
+					scimClientOAuth2ApplicationConfiguration.
+						oAuth2ApplicationName())));
+
+		ExpressionNode expressionNode = (ExpressionNode)node;
+
+		if (expressionNode == null) {
+			return booleanQuery;
+		}
+
+		if (StringUtil.contains(
+				expressionNode.getAttributeValue(), "displayName",
+				StringPool.COLON)) {
+
+			booleanQuery.addMustQueryClauses(
+				_queries.term("name", expressionNode.getValue()));
+		}
+		else if (StringUtil.contains(
+					expressionNode.getAttributeValue(), "externalId",
+					StringPool.COLON)) {
+
+			booleanQuery.addMustQueryClauses(
+				_queries.term(
+					"externalReferenceCode", expressionNode.getValue()));
+		}
+		else if (StringUtil.contains(
+					expressionNode.getAttributeValue(), "userName",
+					StringPool.COLON)) {
+
+			booleanQuery.addMustQueryClauses(
+				_queries.term("screenName", expressionNode.getValue()));
+		}
+
+		return booleanQuery;
 	}
 
 	private com.liferay.portal.kernel.model.User _fetchPortalUser(
@@ -1037,6 +1037,7 @@ public class UserManagerImpl implements UserManager {
 	private final ExpandoColumnLocalService _expandoColumnLocalService;
 	private final ExpandoTableLocalService _expandoTableLocalService;
 	private final ExpandoValueLocalService _expandoValueLocalService;
+	private final Queries _queries;
 	private final Searcher _searcher;
 	private final SearchRequestBuilderFactory _searchRequestBuilderFactory;
 	private final UserGroupLocalService _userGroupLocalService;
