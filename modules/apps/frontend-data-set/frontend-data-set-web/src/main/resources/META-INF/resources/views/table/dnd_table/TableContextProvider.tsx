@@ -42,10 +42,6 @@ function TableContextProvider({
 	}, [modifiedFields, columnNames]);
 
 	const resizeColumn = (name: string, width: number) => {
-		if (!isFixed) {
-			return;
-		}
-
 		const resizedColumn = modifiedFields[name];
 
 		const isColumnReducing = resizedColumn.width > width;
