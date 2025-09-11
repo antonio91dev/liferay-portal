@@ -88,6 +88,38 @@ public class ImportTaskResourceTest extends BaseTaskResourceTestCase {
 			).toString(),
 			JSONCompareMode.LENIENT);
 
+		// With "createStrategy" UPSERT
+
+		objectEntry = ObjectEntryTestUtil.addObjectEntry(
+			objectDefinition, OBJECT_FIELD_NAME_TEXT_1,
+			RandomTestUtil.randomString());
+
+		waitForFinish(
+			"COMPLETED", true,
+			HTTPTestUtil.invokeToJSONObject(
+				JSONUtil.putAll(
+					JSONUtil.put(
+						OBJECT_FIELD_NAME_TEXT_2, RandomTestUtil.randomString()
+					).put(
+						"externalReferenceCode",
+						objectEntry.getExternalReferenceCode()
+					)
+				).toString(),
+				StringBundler.concat(
+					"headless-batch-engine/v1.0/import-task",
+					"/com.liferay.object.rest.dto.v1_0.ObjectEntry",
+					"?createStrategy=UPSERT&taskItemDelegateName=",
+					objectDefinition.getName()),
+				Http.Method.POST));
+
+		Assert.assertEquals(
+			StringPool.BLANK,
+			_getJSONObject(
+				objectEntry.getExternalReferenceCode()
+			).getString(
+				OBJECT_FIELD_NAME_TEXT_1
+			));
+
 		// With "permissions" and "createStrategy" INSERT
 
 		beforeImportJSONObject = JSONUtil.put(
@@ -270,6 +302,40 @@ public class ImportTaskResourceTest extends BaseTaskResourceTestCase {
 			).toString(),
 			JSONCompareMode.LENIENT);
 
+		// With "updateStrategy" PARTIAL_UPDATE
+
+		String expectedFieldValue = RandomTestUtil.randomString();
+
+		objectEntry = ObjectEntryTestUtil.addObjectEntry(
+			objectDefinition, OBJECT_FIELD_NAME_TEXT_1, expectedFieldValue);
+
+		waitForFinish(
+			"COMPLETED", true,
+			HTTPTestUtil.invokeToJSONObject(
+				JSONUtil.putAll(
+					JSONUtil.put(
+						OBJECT_FIELD_NAME_TEXT_2, RandomTestUtil.randomString()
+					).put(
+						"externalReferenceCode",
+						objectEntry.getExternalReferenceCode()
+					)
+				).toString(),
+				StringBundler.concat(
+					"headless-batch-engine/v1.0/import-task",
+					"/com.liferay.object.rest.dto.v1_0.ObjectEntry",
+					"?createStrategy=UPSERT&taskItemDelegateName=",
+					objectDefinition.getName(),
+					"&updateStrategy=PARTIAL_UPDATE"),
+				Http.Method.POST));
+
+		Assert.assertEquals(
+			expectedFieldValue,
+			_getJSONObject(
+				objectEntry.getExternalReferenceCode()
+			).getString(
+				OBJECT_FIELD_NAME_TEXT_1
+			));
+
 		// With no "permissions" and "createStrategy" INSERT
 
 		beforeImportJSONObject = JSONUtil.put(
@@ -411,72 +477,6 @@ public class ImportTaskResourceTest extends BaseTaskResourceTestCase {
 				objectEntry.getExternalReferenceCode()
 			).toString(),
 			JSONCompareMode.LENIENT);
-
-		// With "createStrategy" UPSERT
-
-		objectEntry = ObjectEntryTestUtil.addObjectEntry(
-			objectDefinition, OBJECT_FIELD_NAME_TEXT_1,
-			RandomTestUtil.randomString());
-
-		waitForFinish(
-			"COMPLETED", true,
-			HTTPTestUtil.invokeToJSONObject(
-				JSONUtil.putAll(
-					JSONUtil.put(
-						OBJECT_FIELD_NAME_TEXT_2, RandomTestUtil.randomString()
-					).put(
-						"externalReferenceCode",
-						objectEntry.getExternalReferenceCode()
-					)
-				).toString(),
-				StringBundler.concat(
-					"headless-batch-engine/v1.0/import-task",
-					"/com.liferay.object.rest.dto.v1_0.ObjectEntry",
-					"?createStrategy=UPSERT&taskItemDelegateName=",
-					objectDefinition.getName()),
-				Http.Method.POST));
-
-		Assert.assertEquals(
-			StringPool.BLANK,
-			_getJSONObject(
-				objectEntry.getExternalReferenceCode()
-			).getString(
-				OBJECT_FIELD_NAME_TEXT_1
-			));
-
-		// With "updateStrategy" PARTIAL_UPDATE
-
-		String expectedFieldValue = RandomTestUtil.randomString();
-
-		objectEntry = ObjectEntryTestUtil.addObjectEntry(
-			objectDefinition, OBJECT_FIELD_NAME_TEXT_1, expectedFieldValue);
-
-		waitForFinish(
-			"COMPLETED", true,
-			HTTPTestUtil.invokeToJSONObject(
-				JSONUtil.putAll(
-					JSONUtil.put(
-						OBJECT_FIELD_NAME_TEXT_2, RandomTestUtil.randomString()
-					).put(
-						"externalReferenceCode",
-						objectEntry.getExternalReferenceCode()
-					)
-				).toString(),
-				StringBundler.concat(
-					"headless-batch-engine/v1.0/import-task",
-					"/com.liferay.object.rest.dto.v1_0.ObjectEntry",
-					"?createStrategy=UPSERT&taskItemDelegateName=",
-					objectDefinition.getName(),
-					"&updateStrategy=PARTIAL_UPDATE"),
-				Http.Method.POST));
-
-		Assert.assertEquals(
-			expectedFieldValue,
-			_getJSONObject(
-				objectEntry.getExternalReferenceCode()
-			).getString(
-				OBJECT_FIELD_NAME_TEXT_1
-			));
 	}
 
 	private JSONObject _getJSONObject(String externalReferenceCode)
