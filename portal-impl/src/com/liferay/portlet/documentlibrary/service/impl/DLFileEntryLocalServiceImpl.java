@@ -3774,6 +3774,18 @@ public class DLFileEntryLocalServiceImpl
 				dlFileEntry = _checkOutDLFileEntryModel(
 					userId, fileEntryId, fileEntryTypeId, serviceContext);
 			}
+			else if (!CTCollectionThreadLocal.isProductionMode()) {
+				DLFileVersion oldDLFileVersion =
+					_dlFileVersionLocalService.getLatestFileVersion(
+						fileEntryId, false);
+
+				dlFileEntry = _checkOutDLFileEntryModel(
+					userId, fileEntryId, fileEntryTypeId, serviceContext);
+
+				_copyFileVersion(
+					dlFileEntry, oldDLFileVersion,
+					dlFileEntry.getLatestFileVersion(true));
+			}
 			else {
 				dlFileEntry = checkOutFileEntry(
 					userId, fileEntryId, fileEntryTypeId, serviceContext);
