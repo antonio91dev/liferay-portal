@@ -108,7 +108,7 @@ public class ObjectEntryResourceImpl extends BaseObjectEntryResourceImpl {
 			if (objectEntryUnsafeFunction == null) {
 				throw new NotSupportedException(
 					"Create strategy \"" + createStrategy +
-						"\" is not supported for object entry");
+						"\" is not supported");
 			}
 
 			contextBatchUnsafeBiConsumer.accept(
@@ -150,7 +150,7 @@ public class ObjectEntryResourceImpl extends BaseObjectEntryResourceImpl {
 			if (objectEntryUnsafeFunction == null) {
 				throw new NotSupportedException(
 					"Create strategy \"" + createStrategy +
-						"\" is not supported for ObjectEntry");
+						"\" is not supported");
 			}
 
 			if (contextBatchUnsafeBiConsumer != null) {
