@@ -1983,6 +1983,20 @@ public class ObjectDefinitionLocalServiceImpl
 
 		_updateDescendantNodeObjectDefinitions(objectDefinition);
 
+		for (ObjectField objectField : objectFields) {
+			if (objectField.isSystem() ||
+				Objects.equals(
+					objectField.getDBTableName(),
+					objectDefinition.getDBTableName())) {
+
+				continue;
+			}
+
+			objectField.setDBTableName(objectDefinition.getDBTableName());
+
+			_objectFieldPersistence.update(objectField);
+		}
+
 		_createLocalizationTable(
 			DynamicObjectDefinitionLocalizationTableFactory.create(
 				objectDefinition, _objectFieldLocalService));
