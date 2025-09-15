@@ -123,12 +123,11 @@ public class DropZoneDocumentFragmentEntryProcessor
 
 					_log.error(
 						StringBundler.concat(
-							"Dropzone UUID missing for friendly URL ",
-							layout.getFriendlyURL(),
-							" on layout structure item ID ",
-							layoutStructureItem.getItemId(),
-							" and fragment entry link ID ",
+							"Dropzone UUID missing for fragment entry link ID ",
 							fragmentEntryLink.getFragmentEntryLinkId(),
+							", friendly URL ", layout.getFriendlyURL(),
+							", and layout structure item ID ",
+							layoutStructureItem.getItemId(),
 							" because it is expected to have ", elements.size(),
 							" dropzone elements but found ",
 							dropZoneItemIds.size()));
