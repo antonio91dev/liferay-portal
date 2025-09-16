@@ -81,6 +81,10 @@ else if (Liferay.FeatureFlags['LPD-37927']) {
 		}
 
 		if (editorEvent.editor.name === editorName) {
+			editorEvent.editor.on('change', () => {
+				updateCKEditorRequired(editorEvent.editor.getData());
+			});
+
 			Liferay.on('localizationSelect:localeChanged', (event) => {
 				const isDefaultLanguage =
 					event.languageId === themeDisplay.getDefaultLanguageId();
@@ -145,4 +149,13 @@ function validateInput() {
 			.querySelector('iframe')
 			.contentDocument.body.focus();
 	});
+}
+
+function updateCKEditorRequired(value) {
+	CKEditorRequiredInput.value = value;
+
+	if (value) {
+		errorMessage.classList.add('d-none');
+		errorMessageText.textContent = '';
+	}
 }
