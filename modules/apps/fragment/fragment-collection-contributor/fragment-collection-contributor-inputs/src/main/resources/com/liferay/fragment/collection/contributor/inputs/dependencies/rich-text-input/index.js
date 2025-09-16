@@ -1,6 +1,14 @@
 const inputElement = document.getElementById(
 	`${fragmentNamespace}-rich-text-input`
 );
+const CKEditorRequiredInput = document.getElementById(
+	`${fragmentEntryLinkNamespace}-ckeditor-required`
+);
+const errorMessage = document.getElementById(
+	`${fragmentEntryLinkNamespace}-error-message`
+);
+const errorMessageTextId = `${fragmentEntryLinkNamespace}-error-message-text`;
+const errorMessageText = document.getElementById(errorMessageTextId);
 
 const inputLabelElement = document.getElementById(
 	`${fragmentEntryLinkNamespace}-rich-text-input-label`
@@ -24,6 +32,10 @@ else if (layoutMode === 'edit') {
 }
 else if (layoutMode !== 'edit' && input.localizable) {
 	CKEDITOR.on('instanceReady', (editorEvent) => {
+		if (input.required) {
+			validateInput();
+		}
+
 		if (editorEvent.editor.name === editorName) {
 			editorEvent.editor.on('change', () => {
 				const value = editorEvent.editor.getData();
@@ -64,6 +76,10 @@ else if (layoutMode !== 'edit' && input.localizable) {
 }
 else if (Liferay.FeatureFlags['LPD-37927']) {
 	CKEDITOR.on('instanceReady', (editorEvent) => {
+		if (input.required) {
+			validateInput();
+		}
+
 		if (editorEvent.editor.name === editorName) {
 			Liferay.on('localizationSelect:localeChanged', (event) => {
 				const isDefaultLanguage =
@@ -111,4 +127,22 @@ function getOrCreateTranslationInput(languageId) {
 	}
 
 	return translationInput;
+}
+
+// Whenever the field is required, we validate if the CKEditorRequiredInput
+// is valid on submit. If it is not valid, the error message will be shown
+// and the field will be focused.
+
+function validateInput() {
+	CKEditorRequiredInput.addEventListener('invalid', (event) => {
+		event.preventDefault();
+
+		errorMessage.classList.remove('d-none');
+		errorMessageText.textContent = errorMessageText.dataset.requiredError;
+
+		document
+			.getElementById(`cke_${editorName}`)
+			.querySelector('iframe')
+			.contentDocument.body.focus();
+	});
 }
