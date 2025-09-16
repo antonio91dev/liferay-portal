@@ -91,6 +91,7 @@ export default function EditObjectDetails({
 	sites,
 	storageTypes,
 }: EditObjectDetailsProps) {
+	const [loading, setLoading] = useState(true);
 	const [objectFields, setObjectFields] = useState<ObjectField[]>([]);
 
 	const {errors, handleChange, handleValidate, setValues, values} =
@@ -110,6 +111,7 @@ export default function EditObjectDetails({
 		const validationErrors = handleValidate();
 
 		if (!Object.keys(validationErrors).length) {
+			setLoading(true);
 			let objectDefinition = values;
 
 			if (values.accountEntryRestricted) {
@@ -131,6 +133,8 @@ export default function EditObjectDetails({
 					message: title,
 					type: 'danger',
 				});
+
+				setLoading(false);
 
 				return;
 			}
@@ -161,7 +165,9 @@ export default function EditObjectDetails({
 					type: 'success',
 				});
 
-				setTimeout(() => window.location.reload(), 1000);
+						setTimeout(() => window.location.reload(), 1000);
+
+						setLoading(false);
 
 				return;
 			}
@@ -190,6 +196,7 @@ export default function EditObjectDetails({
 
 			setValues(objectDefinitionResponse);
 			setObjectFields(objectFieldsResponse);
+			setLoading(false);
 		};
 
 		makeFetch();
@@ -214,6 +221,7 @@ export default function EditObjectDetails({
 						values.label,
 						values.name
 					)}
+					loading={loading}
 					objectDefinitionExternalReferenceCode={
 						objectDefinitionExternalReferenceCode
 					}
