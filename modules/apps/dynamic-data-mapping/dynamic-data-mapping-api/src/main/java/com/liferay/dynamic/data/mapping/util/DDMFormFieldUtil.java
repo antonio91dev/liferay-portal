@@ -89,6 +89,10 @@ public class DDMFormFieldUtil {
 						DDMFormField nestedDDMFormField =
 							nestedDDMFormFieldsMap.get(fieldName);
 
+						if (nestedDDMFormField == null) {
+							continue;
+						}
+
 						if (StringUtil.equals(
 								nestedDDMFormField.getType(),
 								DDMFormFieldTypeConstants.FIELDSET)) {
