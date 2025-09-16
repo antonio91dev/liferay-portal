@@ -298,11 +298,10 @@ public class AddFragmentEntryLinkMVCActionCommandTest {
 
 		return _fragmentEntryLocalService.addFragmentEntry(
 			null, TestPropsValues.getUserId(), _group.getGroupId(),
-			fragmentCollection.getFragmentCollectionId(),
-			fragmentEntryKey, StringUtil.randomString(),
-			RandomTestUtil.randomString(), html, RandomTestUtil.randomString(),
-			false, "{fieldSets: []}", null, 0, false,
-			FragmentConstants.TYPE_COMPONENT, null,
+			fragmentCollection.getFragmentCollectionId(), fragmentEntryKey,
+			StringUtil.randomString(), RandomTestUtil.randomString(), html,
+			RandomTestUtil.randomString(), false, "{fieldSets: []}", null, 0,
+			false, FragmentConstants.TYPE_COMPONENT, null,
 			WorkflowConstants.STATUS_APPROVED, serviceContext);
 	}
 

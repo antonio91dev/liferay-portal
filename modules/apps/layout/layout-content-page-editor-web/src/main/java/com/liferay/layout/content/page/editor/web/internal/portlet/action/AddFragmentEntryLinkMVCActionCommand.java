@@ -87,7 +87,8 @@ public class AddFragmentEntryLinkMVCActionCommand
 				null, serviceContext.getScopeGroupId(), 0, 0,
 				segmentsExperienceId, serviceContext.getPlid(),
 				StringPool.BLANK, StringPool.BLANK, StringPool.BLANK,
-				fragmentRenderer.getConfiguration(defaultFragmentRendererContext),
+				fragmentRenderer.getConfiguration(
+					defaultFragmentRendererContext),
 				StringPool.BLANK, StringPool.BLANK, 0, fragmentEntryKey,
 				fragmentRenderer.getType(), serviceContext);
 		}
