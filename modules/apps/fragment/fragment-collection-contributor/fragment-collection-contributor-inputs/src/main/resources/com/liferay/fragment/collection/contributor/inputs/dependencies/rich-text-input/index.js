@@ -48,6 +48,10 @@ else if (layoutMode !== 'edit' && input.localizable) {
 				Liferay.fire('localizationSelect:updateTranslationStatus', {
 					languageId: currentLanguageId,
 				});
+
+				if (currentLanguageId === themeDisplay.getDefaultLanguageId()) {
+					updateCKEditorRequired(value);
+				}
 			});
 
 			Liferay.on('localizationSelect:localeChanged', (event) => {
