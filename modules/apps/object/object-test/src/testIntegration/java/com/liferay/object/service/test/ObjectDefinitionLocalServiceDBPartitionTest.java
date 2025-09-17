@@ -60,8 +60,8 @@ public class ObjectDefinitionLocalServiceDBPartitionTest {
 
 	@Test
 	public void testGetClassName() throws Exception {
-		ObjectDefinition objectDefinition1;
-		ObjectDefinition objectDefinition2;
+		ObjectDefinition objectDefinition1 = null;
+		ObjectDefinition objectDefinition2 = null;
 
 		try (SafeCloseable safeCloseable =
 				CompanyThreadLocal.setCompanyIdWithSafeCloseable(
