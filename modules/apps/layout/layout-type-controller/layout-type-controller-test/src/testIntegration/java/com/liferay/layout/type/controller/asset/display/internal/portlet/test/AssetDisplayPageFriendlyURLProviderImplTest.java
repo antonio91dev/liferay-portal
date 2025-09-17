@@ -19,6 +19,7 @@ import com.liferay.journal.test.util.JournalTestUtil;
 import com.liferay.layout.page.template.constants.LayoutPageTemplateEntryTypeConstants;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalService;
+import com.liferay.layout.page.template.test.util.DisplayPageTemplateTestUtil;
 import com.liferay.layout.test.util.ContentLayoutTestUtil;
 import com.liferay.layout.test.util.LayoutTestUtil;
 import com.liferay.petra.string.StringBundler;
@@ -43,6 +44,7 @@ import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
@@ -108,6 +110,33 @@ public class AssetDisplayPageFriendlyURLProviderImplTest {
 
 		_assertGetFriendlyURL(
 			FriendlyURLResolverConstants.URL_SEPARATOR_JOURNAL_ARTICLE);
+	}
+
+	@Test
+	public void testGetFriendlyURLPreventsCrossSiteCircularCall()
+		throws Exception {
+
+		Group group = GroupTestUtil.addGroup();
+
+		JournalArticle journalArticle = JournalTestUtil.addArticle(
+			group.getGroupId(),
+			JournalFolderConstants.DEFAULT_PARENT_FOLDER_ID);
+
+		DisplayPageTemplateTestUtil.addDisplayPageTemplate(
+			_group.getGroupId(),
+			_portal.getClassNameId(JournalArticle.class.getName()),
+			journalArticle.getDDMStructureId(), true,
+			WorkflowConstants.STATUS_APPROVED);
+
+		_setUpThemeDisplay(
+			_layoutLocalService.getLayout(_assetDisplayPageEntry.getPlid()));
+
+		Assert.assertNull(
+			_assetDisplayPageFriendlyURLProvider.getFriendlyURL(
+				new InfoItemReference(
+					JournalArticle.class.getName(),
+					journalArticle.getResourcePrimKey()),
+				LocaleUtil.getSiteDefault(), _themeDisplay));
 	}
 
 	@Test
