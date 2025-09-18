@@ -753,8 +753,8 @@ public class DDMFormEvaluatorHelper {
 
 	private void _resetInvisibleFieldValue() {
 		if ((_ddmFormEvaluatorEvaluateRequest.getDDMFormInstanceId() == 0) ||
-			!_ddmFormEvaluatorEvaluateRequest.isViewMode() ||
-			!_ddmFormEvaluatorEvaluateRequest.isEditingFieldValue()) {
+			!_ddmFormEvaluatorEvaluateRequest.isEditingFieldValue() ||
+			!_ddmFormEvaluatorEvaluateRequest.isViewMode()) {
 
 			return;
 		}
