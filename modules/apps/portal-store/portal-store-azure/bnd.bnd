@@ -23,6 +23,7 @@ Import-Package:\
 	\
 	!io.netty.handler.codec.haproxy,\
 	!io.netty.incubator.channel.uring,\
+	!io.netty.incubator.codec.quic,\
 	\
 	!jakarta.servlet.*,\
 	\
@@ -63,6 +64,8 @@ Import-Package:\
 	!org.slf4j.*,\
 	\
 	!reactor.blockhound.*,\
+	\
+	!reactor.netty.observability,\
 	\
 	!sun.security.x509,\
 	\
