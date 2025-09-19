@@ -23,7 +23,7 @@ dependencies {
 	compileInclude group: "com.nimbusds", name: "nimbus-jose-jwt", version: "10.4"
 	compileInclude group: "com.nimbusds", name: "oauth2-oidc-sdk", version: "11.9.1"
 	compileInclude group: "io.projectreactor", name: "reactor-core", version: "3.4.38"
-	compileInclude group: "io.projectreactor.netty", name: "reactor-netty-http", version: "1.0.45"
+	compileInclude group: "io.projectreactor.netty", name: "reactor-netty-http", version: "1.2.10"
 	compileInclude group: "net.java.dev.jna", name: "jna", version: "5.13.0"
 	compileInclude group: "net.java.dev.jna", name: "jna-platform", version: "5.13.0"
 	compileInclude group: "net.jcip", name: "jcip-annotations", version: "1.0"
