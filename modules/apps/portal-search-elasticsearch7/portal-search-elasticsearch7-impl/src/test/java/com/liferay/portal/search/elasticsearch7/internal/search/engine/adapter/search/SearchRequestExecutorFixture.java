@@ -21,11 +21,11 @@ import com.liferay.portal.search.elasticsearch7.internal.facet.RangeFacetProcess
 import com.liferay.portal.search.elasticsearch7.internal.filter.ElasticsearchFilterTranslatorFixture;
 import com.liferay.portal.search.elasticsearch7.internal.groupby.DefaultGroupByTranslator;
 import com.liferay.portal.search.elasticsearch7.internal.highlight.DefaultHighlighterTranslator;
+import com.liferay.portal.search.elasticsearch7.internal.legacy.sort.DefaultSortTranslator;
 import com.liferay.portal.search.elasticsearch7.internal.query.ElasticsearchQueryTranslator;
 import com.liferay.portal.search.elasticsearch7.internal.query.ElasticsearchQueryTranslatorFixture;
 import com.liferay.portal.search.elasticsearch7.internal.search.response.DefaultSearchResponseTranslator;
 import com.liferay.portal.search.elasticsearch7.internal.search.response.SearchResponseTranslator;
-import com.liferay.portal.search.elasticsearch7.internal.sort.DefaultSortTranslator;
 import com.liferay.portal.search.elasticsearch7.internal.sort.ElasticsearchSortFieldTranslator;
 import com.liferay.portal.search.elasticsearch7.internal.sort.ElasticsearchSortFieldTranslatorFixture;
 import com.liferay.portal.search.elasticsearch7.internal.stats.DefaultStatsTranslator;

@@ -98,6 +98,6 @@ public class SortTranslatorTest {
 		Assert.assertEquals(expectedSortOrder, fieldSortBuilder.order());
 	}
 
-	private final SortTranslator _sortTranslator = new SortTranslator();
+	private final SortTranslator _sortTranslator = new DefaultSortTranslator();
 
 }
