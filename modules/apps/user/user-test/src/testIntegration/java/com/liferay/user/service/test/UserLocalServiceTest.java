@@ -90,6 +90,7 @@ import com.liferay.portal.kernel.util.LinkedHashMapBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PortletKeys;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -1917,6 +1918,9 @@ public class UserLocalServiceTest {
 
 	@Inject
 	private PasswordPolicyLocalService _passwordPolicyLocalService;
+
+	@Inject
+	private Portal _portal;
 
 	@Inject
 	private PortalPreferencesLocalService _portalPreferencesLocalService;
