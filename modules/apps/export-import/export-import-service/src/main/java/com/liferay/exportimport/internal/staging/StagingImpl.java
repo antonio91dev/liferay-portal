@@ -1693,6 +1693,8 @@ public class StagingImpl implements Staging {
 			errorType = ServletResponseConstants.SC_FILE_SIZE_EXCEPTION;
 		}
 		else {
+			_log.error("Unexpected error: " + exception.getMessage());
+
 			errorMessage = exception.getLocalizedMessage();
 			errorType = ServletResponseConstants.SC_FILE_CUSTOM_EXCEPTION;
 		}
