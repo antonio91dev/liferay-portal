@@ -6,20 +6,24 @@
 import {Locator, expect, mergeTests} from '@playwright/test';
 
 import {dataApiHelpersTest} from '../../fixtures/dataApiHelpersTest';
-import {featureFlagsTest} from '../../../fixtures/featureFlagsTest';
+import {featureFlagsTest} from '../../fixtures/featureFlagsTest';
 import {isolatedLayoutTest} from '../../fixtures/isolatedLayoutTest';
+import {isolatedSiteTest} from '../../fixtures/isolatedSiteTest';
 import {loginTest} from '../../fixtures/loginTest';
+import {pageEditorPagesTest} from '../../fixtures/pageEditorPagesTest';
 import {searchPageTest} from '../../fixtures/searchPageTest';
 import getRandomString from '../../utils/getRandomString';
 
 export const test = mergeTests(
 	isolatedLayoutTest({type: 'portlet'}),
+	isolatedSiteTest,
 	loginTest(),
 	searchPageTest,
-	dataApiHelpersTest
-		featureFlagsTest({
+	dataApiHelpersTest,
+	featureFlagsTest({
 		'LPS-178052': {enabled: true},
 	}),
+	pageEditorPagesTest
 );
 
 test.describe('Category facet configuration for vocabularies', () => {
