@@ -3431,7 +3431,7 @@
 			</library>
 			<library>
 				<file-name>com.liferay.portal.store.azure.jar!reactor-netty-http.jar</file-name>
-				<version>1.0.45</version>
+				<version>1.2.10</version>
 				<project-name>HTTP functionality for the Reactor Netty library</project-name>
 				<project-url>https://github.com/reactor/reactor-netty</project-url>
 				<licenses>
@@ -5603,6 +5603,18 @@
 					<license>
 						<license-name>Apache License, Version 2.0</license-name>
 						<license-url>https://www.apache.org/licenses/LICENSE-2.0.txt</license-url>
+					</license>
+				</licenses>
+			</library>
+			<library>
+				<file-name>com.liferay.shared.dependencies.poi.jar!curvesapi.jar</file-name>
+				<version>1.08</version>
+				<project-name>curvesapi</project-name>
+				<project-url>https://github.com/virtuald/curvesapi</project-url>
+				<licenses>
+					<license>
+						<license-name>BSD License</license-name>
+						<license-url>http://opensource.org/licenses/BSD-3-Clause</license-url>
 					</license>
 				</licenses>
 			</library>
