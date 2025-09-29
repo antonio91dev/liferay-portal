@@ -545,9 +545,9 @@ public class FragmentEntryProcessorHelperImpl
 				}
 			}
 			else if (infoField.getInfoFieldType() instanceof
-						TextInfoFieldType ||
+						LongTextInfoFieldType ||
 					 infoField.getInfoFieldType() instanceof
-						 LongTextInfoFieldType) {
+						 TextInfoFieldType) {
 
 				URI uri = null;
 
