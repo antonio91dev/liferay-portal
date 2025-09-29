@@ -155,9 +155,15 @@ export default function ObjectRelationship({
 		objectRelationships?: ObjectMap<number>;
 	}>();
 
+	const onChangeRef = useRef(onChange);
+
 	const parameterObjectFieldId = parameterObjectFieldName
 		? objectRelationships?.[parameterObjectFieldName]
 		: null;
+
+	useEffect(() => {
+		onChangeRef.current = onChange;
+	}, [onChange]);
 
 	/**
 	 * Provides selected value for dependant relationships
@@ -221,7 +227,7 @@ export default function ObjectRelationship({
 						state.selected = selected;
 					}
 					else {
-						onChange({target: {value: null}});
+						onChangeRef.current({target: {value: null}});
 					}
 				}
 				setState(({active, searchTerm}) => ({
@@ -245,7 +251,6 @@ export default function ObjectRelationship({
 	}, [
 		apiURL,
 		objectEntryId,
-		onChange,
 		parameterObjectFieldId,
 		parameterObjectFieldName,
 		searchTerm,
@@ -343,7 +348,7 @@ export default function ObjectRelationship({
 							return null;
 						};
 
-						onChange({
+						onChangeRef.current({
 							target: {
 								value: getValue(),
 							},
@@ -381,7 +386,7 @@ export default function ObjectRelationship({
 									objectFieldBusinessType
 								}
 								onSelect={(selected) => {
-									onChange({
+									onChangeRef.current({
 										target: {
 											value: String(selected[valueKey]),
 										},
