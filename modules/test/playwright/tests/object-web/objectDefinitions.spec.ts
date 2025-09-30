@@ -6,7 +6,6 @@
 import {
 	ObjectDefinitionApi,
 	ObjectFolderApi,
-	ObjectRelationship,
 	ObjectRelationshipApi,
 } from '@liferay/object-admin-rest-client-js';
 import {expect, mergeTests} from '@playwright/test';
@@ -366,7 +365,7 @@ test.describe('Manage object definitions through Model Builder', () => {
 				objectDefinitionId1: objectDefinition1.id,
 				objectDefinitionId2: objectDefinition2.id,
 				objectDefinitionName2: objectDefinition2.name,
-				type: "oneToMany",
+				type: 'oneToMany',
 			}
 		);
 
@@ -752,6 +751,47 @@ test.describe('Manage object definitions through View Object Definitions', () =>
 		await expect(saveButton).not.toBeEnabled();
 
 		await expect(saveButton).toBeEnabled();
+	});
+
+	test('publish button is enabled after error', async ({
+		apiHelpers,
+		editObjectDetailsPage,
+		page,
+	}) => {
+		const objectDefinitionAPIClient =
+			await apiHelpers.buildRestClient(ObjectDefinitionApi);
+
+		const {body: objectDefinition} =
+			await objectDefinitionAPIClient.postObjectDefinition({
+				label: {
+					en_US: 'ObjectDefinitionLabel' + getRandomInt(),
+				},
+				name: 'ObjectDefinitionName' + getRandomInt(),
+				pluralLabel: {
+					en_US: 'ObjectDefinitionPluralLabel' + getRandomInt(),
+				},
+				scope: 'company',
+				status: {code: 2},
+			});
+
+		apiHelpers.data.push({
+			id: objectDefinition.id,
+			type: 'objectDefinition',
+		});
+
+		await editObjectDetailsPage.goto(objectDefinition.label['en_US']);
+
+		await editObjectDetailsPage.publishButton.click();
+
+		await expect(editObjectDetailsPage.publishButton).toBeDisabled();
+
+		await waitForAlert(
+			page,
+			'Error:At least one object field must be added.',
+			{type: 'danger'}
+		);
+
+		await expect(editObjectDetailsPage.publishButton).toBeEnabled();
 	});
 });
 
