@@ -155,6 +155,8 @@ export default function EditObjectDetails({
 						type: 'danger',
 					});
 
+					setLoading(false);
+
 					return;
 				}
 
@@ -165,9 +167,7 @@ export default function EditObjectDetails({
 					type: 'success',
 				});
 
-						setTimeout(() => window.location.reload(), 1000);
-
-						setLoading(false);
+				setTimeout(() => window.location.reload(), 1000);
 
 				return;
 			}
