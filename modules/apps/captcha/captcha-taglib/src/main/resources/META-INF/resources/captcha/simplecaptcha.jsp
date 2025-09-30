@@ -8,11 +8,11 @@
 <%@ include file="/captcha/init.jsp" %>
 
 <%
-String errorMessage = (String)request.getAttribute("liferay-captcha:captcha:errorMessage");
-String url = (String)request.getAttribute("liferay-captcha:captcha:url");
-
 String captchaId = PortalUtil.generateRandomKey(request, "captchaId");
 String refreshCaptchaId = PortalUtil.generateRandomKey(request, "refreshCaptchaId");
+
+String errorMessage = (String)request.getAttribute("liferay-captcha:captcha:errorMessage");
+String url = (String)request.getAttribute("liferay-captcha:captcha:url");
 %>
 
 <c:if test="<%= captchaEnabled %>">
