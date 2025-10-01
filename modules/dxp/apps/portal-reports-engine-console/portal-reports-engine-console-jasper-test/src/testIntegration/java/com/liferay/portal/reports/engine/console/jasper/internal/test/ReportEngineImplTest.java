@@ -114,9 +114,9 @@ public class ReportEngineImplTest extends TestCase {
 	@Test
 	public void testExportXls() throws Exception {
 		try (LogCapture logCapture1 = LoggerTestUtil.configureLog4JLogger(
-				"org.apache.poi.hpsf.Section", LoggerTestUtil.WARN);
+				"org.apache.poi.POIDocument", LoggerTestUtil.WARN);
 			LogCapture logCapture2 = LoggerTestUtil.configureLog4JLogger(
-				"org.apache.poi.POIDocument", LoggerTestUtil.WARN)) {
+				"org.apache.poi.hpsf.Section", LoggerTestUtil.WARN)) {
 
 			_export(ReportFormat.XLS);
 		}
