@@ -112,8 +112,7 @@ public class TemplateNotificationMessageGenerator
 
 		return TemplateManagerUtil.getTemplate(
 			templateManagerName,
-			new StringTemplateResource(templateId, notificationTemplate),
-			!PropsValues.NOTIFICATION_EMAIL_TEMPLATE_ENABLED);
+			new StringTemplateResource(templateId, notificationTemplate), true);
 	}
 
 	private void _populateContextVariables(
