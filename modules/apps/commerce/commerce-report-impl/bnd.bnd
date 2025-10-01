@@ -123,3 +123,4 @@ Import-Package:\
 	org.tukaani.*;resolution:=optional,\
 	\
 	*
+-fixupmessages "Classes found in the wrong directory"; restrict:=error; is:=ignore
