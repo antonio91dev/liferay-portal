@@ -22,6 +22,7 @@ page import="com.liferay.portal.configuration.module.configuration.Configuration
 page import="com.liferay.portal.kernel.util.HtmlUtil" %><%@
 page import="com.liferay.portal.kernel.util.HttpComponentsUtil" %><%@
 page import="com.liferay.portal.kernel.util.JavaConstants" %><%@
+page import="com.liferay.portal.kernel.util.PortalUtil" %><%@
 page import="com.liferay.portal.kernel.util.Validator" %>
 
 <%@ page import="javax.portlet.PortletRequest" %>
