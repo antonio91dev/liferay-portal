@@ -152,19 +152,6 @@ public class WebSsoProfileIntegrationTest extends BaseSamlTestCase {
 			SamlSpSessionLocalService.class);
 
 		ReflectionTestUtil.setFieldValue(
-			_webSsoProfileImpl, "_samlSpAuthRequestLocalService",
-			_samlSpAuthRequestLocalService);
-		ReflectionTestUtil.setFieldValue(
-			_webSsoProfileImpl, "_samlSpMessageLocalService",
-			getMockPortletService(
-				SamlSpMessageLocalServiceUtil.class,
-				SamlSpMessageLocalService.class));
-		ReflectionTestUtil.setFieldValue(
-			_webSsoProfileImpl, "_userLocalService",
-			getMockPortletService(
-				UserLocalServiceUtil.class, UserLocalService.class));
-
-		ReflectionTestUtil.setFieldValue(
 			_webSsoProfileImpl, "credentialResolver", credentialResolver);
 		ReflectionTestUtil.setFieldValue(
 			_webSsoProfileImpl, "localEntityManager",
@@ -183,6 +170,18 @@ public class WebSsoProfileIntegrationTest extends BaseSamlTestCase {
 		ReflectionTestUtil.setFieldValue(
 			_webSsoProfileImpl, "samlSpSessionLocalService",
 			_samlSpSessionLocalService);
+		ReflectionTestUtil.setFieldValue(
+			_webSsoProfileImpl, "_samlSpAuthRequestLocalService",
+			_samlSpAuthRequestLocalService);
+		ReflectionTestUtil.setFieldValue(
+			_webSsoProfileImpl, "_samlSpMessageLocalService",
+			getMockPortletService(
+				SamlSpMessageLocalServiceUtil.class,
+				SamlSpMessageLocalService.class));
+		ReflectionTestUtil.setFieldValue(
+			_webSsoProfileImpl, "_userLocalService",
+			getMockPortletService(
+				UserLocalServiceUtil.class, UserLocalService.class));
 
 		_webSsoProfileImpl.activate(
 			SystemBundleUtil.getBundleContext(), new HashMap<String, Object>());
@@ -745,7 +744,6 @@ public class WebSsoProfileIntegrationTest extends BaseSamlTestCase {
 		SamlSpIdpConnection samlSpIdpConnection = new SamlSpIdpConnectionImpl();
 
 		samlSpIdpConnection.setForceAuthn(false);
-
 		samlSpIdpConnection.setSamlIdpEntityId(IDP_ENTITY_ID);
 
 		_setUpWebSsoProfilerImpl(samlSpIdpConnection);
