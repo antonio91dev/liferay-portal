@@ -128,7 +128,8 @@ public class ObjectEntryUtil {
 						false, modelClass.getName(),
 						GetterUtil.getLong(
 							originalBaseModel.getPrimaryKeyObj()),
-						objectDefinition.getCompanyId(), ObjectEntryThreadLocal.getExpandoBridgeAttributes(),
+						objectDefinition.getCompanyId(),
+						ObjectEntryThreadLocal.getExpandoBridgeAttributes(),
 						user.getLocale()));
 
 				return originalDTOMap;
