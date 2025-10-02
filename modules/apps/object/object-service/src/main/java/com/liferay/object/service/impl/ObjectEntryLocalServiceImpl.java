@@ -804,7 +804,7 @@ public class ObjectEntryLocalServiceImpl
 				Predicate.withParentheses(predicate)
 			).and(
 				_getPermissionWherePredicate(
-					dynamicObjectDefinitionTable, groupId)
+					groupId, dynamicObjectDefinitionTable.getObjectDefinition())
 			)
 		).groupBy(
 			table.getColumn(objectField.getDBColumnName())
@@ -1107,7 +1107,7 @@ public class ObjectEntryLocalServiceImpl
 					_fillPredicate(objectDefinitionId, predicate, search))
 			).and(
 				_getPermissionWherePredicate(
-					dynamicObjectDefinitionTable, groupId)
+					groupId, dynamicObjectDefinitionTable.getObjectDefinition())
 			)
 		).limit(
 			start, end
@@ -1426,7 +1426,7 @@ public class ObjectEntryLocalServiceImpl
 					_fillPredicate(objectDefinitionId, predicate, search))
 			).and(
 				_getPermissionWherePredicate(
-					dynamicObjectDefinitionTable, groupId)
+					groupId, dynamicObjectDefinitionTable.getObjectDefinition())
 			)
 		);
 
@@ -3069,7 +3069,8 @@ public class ObjectEntryLocalServiceImpl
 					}
 
 					return _getPermissionWherePredicate(
-						dynamicObjectDefinitionTable, groupId);
+						groupId,
+						dynamicObjectDefinitionTable.getObjectDefinition());
 				}
 			).and(
 				() -> {
@@ -3206,7 +3207,8 @@ public class ObjectEntryLocalServiceImpl
 					}
 
 					return _getPermissionWherePredicate(
-						dynamicObjectDefinitionTable, groupId);
+						groupId,
+						dynamicObjectDefinitionTable.getObjectDefinition());
 				}
 			).and(
 				ObjectEntrySearchUtil.getRelatedModelsPredicate(
@@ -3219,12 +3221,8 @@ public class ObjectEntryLocalServiceImpl
 	}
 
 	private Predicate _getPermissionWherePredicate(
-			DynamicObjectDefinitionTable dynamicObjectDefinitionTable,
-			long groupId)
+			long groupId, ObjectDefinition objectDefinition)
 		throws PortalException {
-
-		ObjectDefinition objectDefinition =
-			dynamicObjectDefinitionTable.getObjectDefinition();
 
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
@@ -3237,7 +3235,7 @@ public class ObjectEntryLocalServiceImpl
 		}
 
 		Column<?, Long> primaryKeyColumn =
-			dynamicObjectDefinitionTable.getPrimaryKeyColumn();
+			ObjectEntryTable.INSTANCE.objectEntryId;
 
 		if (objectDefinition.isRootDescendantNode()) {
 			objectDefinition = _objectDefinitionPersistence.findByPrimaryKey(
