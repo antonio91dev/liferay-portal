@@ -1066,7 +1066,7 @@ public class ObjectEntryLocalServiceImpl
 		DynamicObjectDefinitionTable extensionDynamicObjectDefinitionTable =
 			_getExtensionDynamicObjectDefinitionTable(objectDefinitionId);
 		DynamicObjectDefinitionTable rootDynamicObjectDefinitionTable =
-			_getRootDynamicObjectDefinitionTable(objectDefinitionId);
+			_getRootDynamicObjectDefinitionTable(groupId, objectDefinitionId);
 
 		DSLQuery dslQuery = DSLQueryFactoryUtil.select(
 			ObjectEntryTable.INSTANCE.objectEntryId
@@ -1385,7 +1385,7 @@ public class ObjectEntryLocalServiceImpl
 		DynamicObjectDefinitionTable extensionDynamicObjectDefinitionTable =
 			_getExtensionDynamicObjectDefinitionTable(objectDefinitionId);
 		DynamicObjectDefinitionTable rootDynamicObjectDefinitionTable =
-			_getRootDynamicObjectDefinitionTable(objectDefinitionId);
+			_getRootDynamicObjectDefinitionTable(groupId, objectDefinitionId);
 
 		DSLQuery dslQuery = DSLQueryFactoryUtil.countDistinct(
 			ObjectEntryTable.INSTANCE.objectEntryId
@@ -3059,19 +3059,8 @@ public class ObjectEntryLocalServiceImpl
 				ObjectEntryTable.INSTANCE.objectDefinitionId.eq(
 					objectDefinitionId2)
 			).and(
-				() -> {
-					if (ObjectEntryThreadLocal.
-							isSkipObjectEntryResourcePermission() ||
-						(PermissionThreadLocal.getPermissionChecker() ==
-							null)) {
-
-						return null;
-					}
-
-					return _getPermissionWherePredicate(
-						groupId,
-						dynamicObjectDefinitionTable.getObjectDefinition());
-				}
+				_getPermissionWherePredicate(
+					groupId, dynamicObjectDefinitionTable.getObjectDefinition())
 			).and(
 				() -> {
 					if (related) {
@@ -3131,7 +3120,7 @@ public class ObjectEntryLocalServiceImpl
 			objectRelationship.getObjectFieldId2());
 		DynamicObjectDefinitionTable rootDynamicObjectDefinitionTable =
 			_getRootDynamicObjectDefinitionTable(
-				objectRelationship.getObjectDefinitionId2());
+				groupId, objectRelationship.getObjectDefinitionId2());
 
 		Column<DynamicObjectDefinitionTable, Long> primaryKeyColumn =
 			dynamicObjectDefinitionTable.getPrimaryKeyColumn();
@@ -3197,19 +3186,8 @@ public class ObjectEntryLocalServiceImpl
 					objectRelationship.isSelf() ?
 						primaryKeyColumn.neq(primaryKey) : null
 			).and(
-				() -> {
-					if (ObjectEntryThreadLocal.
-							isSkipObjectEntryResourcePermission() ||
-						(PermissionThreadLocal.getPermissionChecker() ==
-							null)) {
-
-						return null;
-					}
-
-					return _getPermissionWherePredicate(
-						groupId,
-						dynamicObjectDefinitionTable.getObjectDefinition());
-				}
+				_getPermissionWherePredicate(
+					groupId, dynamicObjectDefinitionTable.getObjectDefinition())
 			).and(
 				ObjectEntrySearchUtil.getRelatedModelsPredicate(
 					_objectDefinitionPersistence.fetchByPrimaryKey(
@@ -3224,11 +3202,7 @@ public class ObjectEntryLocalServiceImpl
 			long groupId, ObjectDefinition objectDefinition)
 		throws PortalException {
 
-		PermissionChecker permissionChecker =
-			PermissionThreadLocal.getPermissionChecker();
-
-		if ((permissionChecker == null) ||
-			!_inlineSQLHelper.isEnabled(
+		if (_skipObjectEntryResourcePermission(
 				objectDefinition.getCompanyId(), groupId)) {
 
 			return null;
@@ -3264,6 +3238,9 @@ public class ObjectEntryLocalServiceImpl
 
 		Column<?, Long> column = (Column<?, Long>)table.getColumn(
 			objectField.getDBColumnName());
+
+		PermissionChecker permissionChecker =
+			PermissionThreadLocal.getPermissionChecker();
 
 		return individualScopePredicate.or(
 			column.in(
@@ -3492,13 +3469,16 @@ public class ObjectEntryLocalServiceImpl
 	}
 
 	private DynamicObjectDefinitionTable _getRootDynamicObjectDefinitionTable(
-			long objectDefinitionId)
+			long groupId, long objectDefinitionId)
 		throws PortalException {
 
 		ObjectDefinition objectDefinition =
 			_objectDefinitionPersistence.findByPrimaryKey(objectDefinitionId);
 
-		if (!objectDefinition.isRootDescendantNode()) {
+		if (_skipObjectEntryResourcePermission(
+				objectDefinition.getCompanyId(), groupId) ||
+			!objectDefinition.isRootDescendantNode()) {
+
 			return null;
 		}
 
@@ -4675,6 +4655,22 @@ public class ObjectEntryLocalServiceImpl
 
 		objectEntry.setRootObjectEntryId(
 			parentObjectEntry.getRootObjectEntryId());
+	}
+
+	private boolean _skipObjectEntryResourcePermission(
+		long companyId, long groupId) {
+
+		PermissionChecker permissionChecker =
+			PermissionThreadLocal.getPermissionChecker();
+
+		if (ObjectEntryThreadLocal.isSkipObjectEntryResourcePermission() ||
+			(permissionChecker == null) ||
+			!_inlineSQLHelper.isEnabled(companyId, groupId)) {
+
+			return true;
+		}
+
+		return false;
 	}
 
 	private void _startWorkflowInstance(
