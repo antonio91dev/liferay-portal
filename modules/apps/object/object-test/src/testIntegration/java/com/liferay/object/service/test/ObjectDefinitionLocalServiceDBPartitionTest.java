@@ -81,21 +81,19 @@ public class ObjectDefinitionLocalServiceDBPartitionTest {
 			objectDefinition2 =
 				_objectDefinitionLocalService.addCustomObjectDefinition(
 					user.getUserId(), 0, objectDefinition1.getClassName(),
-					false, false, true, false, false, true, true, true, null,
+					false, false, true, false, true,
 					RandomTestUtil.randomLocaleStringMap(),
 					objectDefinition1.getShortName(), null, null,
 					RandomTestUtil.randomLocaleStringMap(), true,
 					ObjectDefinitionConstants.SCOPE_COMPANY,
 					ObjectDefinitionConstants.STORAGE_TYPE_DEFAULT,
-					Collections.emptyList(),
 					Collections.singletonList(
 						new TextObjectFieldBuilder(
 						).labelMap(
 							RandomTestUtil.randomLocaleStringMap()
 						).name(
 							StringUtil.randomId()
-						).build()),
-					Collections.emptyList());
+						).build()));
 		}
 
 		Assert.assertNotEquals(
