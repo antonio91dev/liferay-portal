@@ -10,12 +10,22 @@
 	position: relative;
 
 	.panel-notifications-count {
-		display: block;
-		margin: 0;
-		max-width: none;
+		align-items: center;
+		border-radius: 999px; 
+		display: flex;        
+		height: 1.2rem;
+		justify-content: center;
+		min-width: 1.2rem;
+		padding: 0 4px;
 		position: absolute;
-		right: calc(100% - 0.7rem);
+		right: calc(100% - 0.5rem);
 		top: -0.4rem;
+
+		&:focus {
+			border-radius: 999px;
+			outline: 2px solid; 
+			outline-offset: 2px;
+		}
 	}
 
 	.text-default {
