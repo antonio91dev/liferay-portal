@@ -10,9 +10,14 @@
 	position: relative;
 
 	.panel-notifications-count {
-		display: block;
+		align-items: center;
+		display: flex;
+		justify-content: center;
 		margin: 0;
 		max-width: none;
+		min-height: 2rem;
+		min-width: 2rem;
+		padding: 0.25rem;
 		position: absolute;
 		right: calc(100% - 0.7rem);
 		top: -0.4rem;
