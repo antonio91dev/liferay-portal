@@ -171,6 +171,11 @@ public class TaxonomyVocabularyResourceImpl
 				return ExportImportVulcanBatchEngineTaskItemDelegate.Scope.SITE;
 			}
 
+			@Override
+			public boolean isStagingSupported() {
+				return true;
+			}
+
 		};
 	}
 
@@ -206,10 +211,6 @@ public class TaxonomyVocabularyResourceImpl
 				assetVocabulary.getGroupId());
 		}
 
-		boolean internalVisibilityType =
-			TaxonomyVocabulary.VisibilityType.INTERNAL.equals(
-				taxonomyVocabulary.getVisibilityType());
-
 		assetVocabulary = _assetVocabularyService.updateVocabulary(
 			taxonomyVocabulary.getExternalReferenceCode(),
 			assetVocabulary.getVocabularyId(), null,
@@ -227,9 +228,7 @@ public class TaxonomyVocabularyResourceImpl
 				assetTypes, assetVocabulary.getGroupId(),
 				GetterUtil.getBoolean(
 					taxonomyVocabulary.getMultiValued(), true)),
-			internalVisibilityType ?
-				AssetVocabularyConstants.VISIBILITY_TYPE_INTERNAL :
-					AssetVocabularyConstants.VISIBILITY_TYPE_PUBLIC,
+			_getVisibilityType(taxonomyVocabulary.getVisibilityType()),
 			ServiceContextBuilder.create(
 				assetVocabulary.getGroupId(), contextHttpServletRequest,
 				taxonomyVocabulary.getViewableByAsString()
@@ -398,10 +397,14 @@ public class TaxonomyVocabularyResourceImpl
 
 		Group group = _groupLocalService.getGroup(siteId);
 
-		if (FeatureFlagManagerUtil.isEnabled("LPD-17564") && group.isCMS()) {
+		if (FeatureFlagManagerUtil.isEnabled(
+				group.getCompanyId(), "LPD-17564") &&
+			group.isCMS()) {
+
 			_assetVocabularyGroupRelLocalService.setAssetVocabularyGroupRels(
 				assetVocabulary.getVocabularyId(),
-				_getAssetLibraryGroupIds(taxonomyVocabulary));
+				_getAssetLibraryGroupIds(
+					group.getCompanyId(), taxonomyVocabulary));
 		}
 
 		return _toTaxonomyVocabulary(assetVocabulary);
@@ -421,7 +424,9 @@ public class TaxonomyVocabularyResourceImpl
 
 		if (assetVocabulary != null) {
 			return _toTaxonomyVocabulary(
-				_updateVocabulary(assetVocabulary, taxonomyVocabulary));
+				_updateVocabulary(
+					assetVocabulary, assetVocabulary.getCompanyId(),
+					taxonomyVocabulary));
 		}
 
 		return _toTaxonomyVocabulary(
@@ -443,7 +448,9 @@ public class TaxonomyVocabularyResourceImpl
 
 		if (assetVocabulary != null) {
 			return _toTaxonomyVocabulary(
-				_updateVocabulary(assetVocabulary, taxonomyVocabulary));
+				_updateVocabulary(
+					assetVocabulary, assetVocabulary.getCompanyId(),
+					taxonomyVocabulary));
 		}
 
 		return _toTaxonomyVocabulary(
@@ -460,7 +467,9 @@ public class TaxonomyVocabularyResourceImpl
 			taxonomyVocabularyId);
 
 		return _toTaxonomyVocabulary(
-			_updateVocabulary(assetVocabulary, taxonomyVocabulary));
+			_updateVocabulary(
+				assetVocabulary, assetVocabulary.getCompanyId(),
+				taxonomyVocabulary));
 	}
 
 	@Override
@@ -503,10 +512,6 @@ public class TaxonomyVocabularyResourceImpl
 			true, LocaleUtil.getSiteDefault(), "Taxonomy vocabulary", titleMap,
 			new HashSet<>(descriptionMap.keySet()));
 
-		boolean internalVisibilityType =
-			TaxonomyVocabulary.VisibilityType.INTERNAL.equals(
-				taxonomyVocabulary.getVisibilityType());
-
 		return _assetVocabularyService.addVocabulary(
 			externalReferenceCode, siteId,
 			titleMap.get(LocaleUtil.getSiteDefault()), null, titleMap,
@@ -515,9 +520,7 @@ public class TaxonomyVocabularyResourceImpl
 				taxonomyVocabulary.getAssetTypes(), siteId,
 				GetterUtil.getBoolean(
 					taxonomyVocabulary.getMultiValued(), true)),
-			internalVisibilityType ?
-				AssetVocabularyConstants.VISIBILITY_TYPE_INTERNAL :
-					AssetVocabularyConstants.VISIBILITY_TYPE_PUBLIC,
+			_getVisibilityType(taxonomyVocabulary.getVisibilityType()),
 			ServiceContextBuilder.create(
 				siteId, contextHttpServletRequest,
 				taxonomyVocabulary.getViewableByAsString()
@@ -563,6 +566,14 @@ public class TaxonomyVocabularyResourceImpl
 										isAcceptAllLanguages(),
 									group.getNameMap());
 							});
+						setScopeKey(
+							() -> {
+								if (group == null) {
+									return null;
+								}
+
+								return group.getGroupKey();
+							});
 					}
 				};
 			},
@@ -570,11 +581,10 @@ public class TaxonomyVocabularyResourceImpl
 	}
 
 	private long[] _getAssetLibraryGroupIds(
-			TaxonomyVocabulary taxonomyVocabulary)
-		throws Exception {
+		long companyId, TaxonomyVocabulary taxonomyVocabulary) {
 
 		return TaxonomyGroupUtil.getAssetLibraryGroupIds(
-			taxonomyVocabulary.getAssetLibraries());
+			taxonomyVocabulary.getAssetLibraries(), companyId);
 	}
 
 	private AssetType _getAssetType(
@@ -859,7 +869,8 @@ public class TaxonomyVocabularyResourceImpl
 
 				Group group = _groupLocalService.getGroup(groupId);
 
-				if (FeatureFlagManagerUtil.isEnabled("LPD-17564") &&
+				if (FeatureFlagManagerUtil.isEnabled(
+						group.getCompanyId(), "LPD-17564") &&
 					group.isCMS()) {
 
 					BooleanFilter booleanFilter = new BooleanFilter();
@@ -897,6 +908,20 @@ public class TaxonomyVocabularyResourceImpl
 				_assetVocabularyService.getVocabulary(
 					GetterUtil.getLong(
 						document.get(Field.ASSET_VOCABULARY_ID)))));
+	}
+
+	private int _getVisibilityType(
+		TaxonomyVocabulary.VisibilityType visibilityType) {
+
+		if (TaxonomyVocabulary.VisibilityType.EMPTY.equals(visibilityType)) {
+			return AssetVocabularyConstants.VISIBILITY_TYPE_EMPTY;
+		}
+
+		if (TaxonomyVocabulary.VisibilityType.INTERNAL.equals(visibilityType)) {
+			return AssetVocabularyConstants.VISIBILITY_TYPE_INTERNAL;
+		}
+
+		return AssetVocabularyConstants.VISIBILITY_TYPE_PUBLIC;
 	}
 
 	private TaxonomyVocabulary _toTaxonomyVocabulary(
@@ -974,15 +999,32 @@ public class TaxonomyVocabularyResourceImpl
 						return GroupUtil.getSiteId(group);
 					});
 				setVisibilityType(
-					() -> (assetVocabulary.getVisibilityType() == 1) ?
-						TaxonomyVocabulary.VisibilityType.INTERNAL :
-							TaxonomyVocabulary.VisibilityType.PUBLIC);
+					() -> {
+						int visibilityType =
+							assetVocabulary.getVisibilityType();
+
+						if (visibilityType ==
+								AssetVocabularyConstants.
+									VISIBILITY_TYPE_EMPTY) {
+
+							return TaxonomyVocabulary.VisibilityType.EMPTY;
+						}
+
+						if (visibilityType ==
+								AssetVocabularyConstants.
+									VISIBILITY_TYPE_INTERNAL) {
+
+							return TaxonomyVocabulary.VisibilityType.INTERNAL;
+						}
+
+						return TaxonomyVocabulary.VisibilityType.PUBLIC;
+					});
 			}
 		};
 	}
 
 	private AssetVocabulary _updateVocabulary(
-			AssetVocabulary assetVocabulary,
+			AssetVocabulary assetVocabulary, long companyId,
 			TaxonomyVocabulary taxonomyVocabulary)
 		throws Exception {
 
@@ -1000,17 +1042,11 @@ public class TaxonomyVocabularyResourceImpl
 			false, LocaleUtil.getSiteDefault(), "Taxonomy vocabulary", titleMap,
 			new HashSet<>(descriptionMap.keySet()));
 
-		if (FeatureFlagManagerUtil.isEnabled("LPD-17564") &&
-			ArrayUtil.isNotEmpty(taxonomyVocabulary.getAssetLibraries())) {
-
+		if (FeatureFlagManagerUtil.isEnabled(companyId, "LPD-17564")) {
 			_assetVocabularyGroupRelLocalService.setAssetVocabularyGroupRels(
 				assetVocabulary.getVocabularyId(),
-				_getAssetLibraryGroupIds(taxonomyVocabulary));
+				_getAssetLibraryGroupIds(companyId, taxonomyVocabulary));
 		}
-
-		boolean internalVisibilityType =
-			TaxonomyVocabulary.VisibilityType.INTERNAL.equals(
-				taxonomyVocabulary.getVisibilityType());
 
 		return _assetVocabularyService.updateVocabulary(
 			taxonomyVocabulary.getExternalReferenceCode(),
@@ -1019,9 +1055,7 @@ public class TaxonomyVocabularyResourceImpl
 				taxonomyVocabulary.getAssetTypes(),
 				assetVocabulary.getGroupId(),
 				taxonomyVocabulary.getMultiValued()),
-			internalVisibilityType ?
-				AssetVocabularyConstants.VISIBILITY_TYPE_INTERNAL :
-					AssetVocabularyConstants.VISIBILITY_TYPE_PUBLIC,
+			_getVisibilityType(taxonomyVocabulary.getVisibilityType()),
 			ServiceContextBuilder.create(
 				assetVocabulary.getGroupId(), contextHttpServletRequest,
 				taxonomyVocabulary.getViewableByAsString()

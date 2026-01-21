@@ -35,14 +35,14 @@ List<Map<String, Object>> classTypesList = new ArrayList<>();
 
 			<%
 			for (long classNameId : editAssetListDisplayContext.getAvailableClassNameIds()) {
-				ClassName className = ClassNameLocalServiceUtil.getClassName(classNameId);
+				String label = _getLabel(ClassNameLocalServiceUtil.getClassName(classNameId), locale, company);
 
 				if (Arrays.binarySearch(classNameIds, classNameId) < 0) {
-					typesLeftList.add(new KeyValuePair(String.valueOf(classNameId), ResourceActionsUtil.getModelResource(locale, className.getValue())));
+					typesLeftList.add(new KeyValuePair(String.valueOf(classNameId), label));
 				}
 			%>
 
-				<aui:option label="<%= ResourceActionsUtil.getModelResource(locale, className.getValue()) %>" selected="<%= (classNameIds.length == 1) && (classNameId == classNameIds[0]) %>" value="<%= classNameId %>" />
+				<aui:option label="<%= label %>" selected="<%= (classNameIds.length == 1) && (classNameId == classNameIds[0]) %>" value="<%= classNameId %>" />
 
 			<%
 			}
@@ -66,7 +66,7 @@ List<Map<String, Object>> classTypesList = new ArrayList<>();
 	List<KeyValuePair> typesRightList = new ArrayList<KeyValuePair>();
 
 	for (long classNameId : editAssetListDisplayContext.getClassNameIds()) {
-		typesRightList.add(new KeyValuePair(String.valueOf(classNameId), ResourceActionsUtil.getModelResource(locale, PortalUtil.getClassName(classNameId))));
+		typesRightList.add(new KeyValuePair(String.valueOf(classNameId), _getLabel(ClassNameLocalServiceUtil.getClassName(classNameId), locale, company)));
 	}
 	%>
 
@@ -321,3 +321,17 @@ List<Map<String, Object>> classTypesList = new ArrayList<>();
 	%>'
 	module="{Source} from asset-list-web"
 />
+
+<%!
+private String _getLabel(ClassName className, Locale locale, Company company) {
+	String label = ResourceActionsUtil.getModelResource(locale, className.getValue());
+
+	ObjectDefinition objectDefinition = ObjectDefinitionLocalServiceUtil.fetchObjectDefinitionByClassName(company.getCompanyId(), className.getValue());
+
+	if ((objectDefinition != null) && objectDefinition.isCMS()) {
+		label = StringUtil.appendParentheticalSuffix(label, "CMS");
+	}
+
+	return label;
+}
+%>

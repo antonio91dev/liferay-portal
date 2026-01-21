@@ -17,7 +17,6 @@ import com.liferay.layout.helper.structure.LayoutStructureRulesHelper;
 import com.liferay.layout.internal.util.AdvancedLayoutStructureRuleEvaluator;
 import com.liferay.layout.util.structure.LayoutStructure;
 import com.liferay.layout.util.structure.LayoutStructureRule;
-import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
@@ -308,6 +307,8 @@ public class LayoutStructureRulesHelperImpl
 					conditionsJSONArray.getJSONObject(i);
 
 				if (Objects.equals(
+						conditionJSONObject.getString("type"), "field") ||
+					Objects.equals(
 						conditionJSONObject.getString("type"), "user")) {
 
 					continue;
@@ -340,7 +341,9 @@ public class LayoutStructureRulesHelperImpl
 			value = optionsJSONObject.get("value");
 		}
 
-		if (Objects.equals(conditionJSONObject.getString("type"), "form")) {
+		if (Objects.equals(conditionJSONObject.getString("type"), "field") ||
+			Objects.equals(conditionJSONObject.getString("type"), "form")) {
+
 			if (negated) {
 				return !Objects.equals(
 					fieldValuesMap.get(conditionJSONObject.getString("field")),
@@ -412,45 +415,36 @@ public class LayoutStructureRulesHelperImpl
 			else if (infoField.getInfoFieldType() ==
 						PicklistMultiselectInfoFieldType.INSTANCE) {
 
-				if (!(value instanceof List)) {
-					value = StringPool.BLANK;
-				}
+				if (value instanceof List) {
+					List<KeyLocalizedLabelPair> keyLocalizedLabelPairs =
+						(List<KeyLocalizedLabelPair>)value;
 
-				List<KeyLocalizedLabelPair> keyLocalizedLabelPairs =
-					(List<KeyLocalizedLabelPair>)value;
-
-				if (ListUtil.isEmpty(keyLocalizedLabelPairs)) {
-					value = StringPool.BLANK;
-				}
-
-				try {
-					value = JSONUtil.toJSONArray(
-						keyLocalizedLabelPairs, KeyLocalizedLabelPair::getKey);
-				}
-				catch (Exception exception) {
-					if (_log.isDebugEnabled()) {
-						_log.debug(exception);
+					try {
+						value = JSONUtil.toJSONArray(
+							keyLocalizedLabelPairs,
+							KeyLocalizedLabelPair::getKey);
+					}
+					catch (Exception exception) {
+						if (_log.isDebugEnabled()) {
+							_log.debug(exception);
+						}
 					}
 				}
 			}
 			else if (infoField.getInfoFieldType() ==
 						PicklistSelectInfoFieldType.INSTANCE) {
 
-				if (!(value instanceof List)) {
-					value = StringPool.BLANK;
+				if (value instanceof List) {
+					List<KeyLocalizedLabelPair> keyLocalizedLabelPairs =
+						(List<KeyLocalizedLabelPair>)value;
+
+					if (ListUtil.isNotEmpty(keyLocalizedLabelPairs)) {
+						KeyLocalizedLabelPair keyLocalizedLabelPair =
+							keyLocalizedLabelPairs.get(0);
+
+						value = keyLocalizedLabelPair.getKey();
+					}
 				}
-
-				List<KeyLocalizedLabelPair> keyLocalizedLabelPairs =
-					(List<KeyLocalizedLabelPair>)value;
-
-				if (ListUtil.isEmpty(keyLocalizedLabelPairs)) {
-					value = StringPool.BLANK;
-				}
-
-				KeyLocalizedLabelPair keyLocalizedLabelPair =
-					keyLocalizedLabelPairs.get(0);
-
-				value = keyLocalizedLabelPair.getKey();
 			}
 
 			map.put(infoField.getUniqueId(), String.valueOf(value));

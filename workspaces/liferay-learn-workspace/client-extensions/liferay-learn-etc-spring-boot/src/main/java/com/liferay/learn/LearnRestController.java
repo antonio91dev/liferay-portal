@@ -5,6 +5,7 @@
 
 package com.liferay.learn;
 
+import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.GoogleCredentials;
 
 import com.liferay.client.extension.util.spring.boot3.BaseRestController;
@@ -177,7 +178,7 @@ public class LearnRestController extends BaseRestController {
 						"/o/c/p2s3quizquestions"
 					).queryParam(
 						"filter",
-						"r_p2s3QuizToP2S3QuizQuestions_c_p2s3QuizId '" +
+						"r_p2s3QuizToP2S3QuizQuestions_c_p2s3QuizId eq '" +
 							quizId + "'"
 					).queryParam(
 						"fields",
@@ -278,10 +279,9 @@ public class LearnRestController extends BaseRestController {
 
 		googleCredentials.refresh();
 
-		String accessTokenValue = googleCredentials.getAccessToken(
-		).getTokenValue();
+		AccessToken accessToken = googleCredentials.getAccessToken();
 
-		return "Bearer " + accessTokenValue;
+		return "Bearer " + accessToken.getTokenValue();
 	}
 
 	private int _getQuizQuestionScore(
@@ -289,7 +289,7 @@ public class LearnRestController extends BaseRestController {
 		JSONObject scoreSheetJSONObject) {
 
 		JSONArray quizAnswersJSONArray = quizQuestionJSONObject.getJSONArray(
-			"quizAnswers");
+			"p2s3QuizQuestionToP2S3QuizAnswers");
 
 		scoreSheetJSONObject.put("questionsAnswers", quizAnswersJSONArray);
 
@@ -327,7 +327,7 @@ public class LearnRestController extends BaseRestController {
 		JSONObject quizAnswersJSONObject, JSONObject quizJSONObject) {
 
 		JSONArray quizQuestionsJSONArray = quizJSONObject.getJSONArray(
-			"quizQuestions");
+			"p2s3QuizToP2S3QuizQuestions");
 
 		Map<String, Object> map = HashMapBuilder.<String, Object>put(
 			"isKnowledgeCheck", false

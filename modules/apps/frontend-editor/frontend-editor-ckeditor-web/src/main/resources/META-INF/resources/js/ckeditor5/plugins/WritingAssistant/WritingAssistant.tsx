@@ -11,7 +11,7 @@ import {cancelDebounce, debounce} from 'frontend-js-web';
 import React from 'react';
 import {Root, createRoot} from 'react-dom/client';
 
-import {createEventSource, postByExternalReferenceCodeTask} from './api';
+import {createEventSource, postTask} from './api';
 import WritingAssistantActions from './components/WritingAssistantActions';
 import WritingAssistantConfirmationAction from './components/WritingAssistantConfimationAction';
 import {EActionType} from './types';
@@ -41,17 +41,21 @@ export default class WritingAssistant extends Plugin {
 	}
 
 	_addEventListeners() {
-		const eventSource = createEventSource();
+		createEventSource().then((eventSource) => {
+			if (!eventSource) {
+				return;
+			}
 
-		eventSource.addEventListener('Subscribe', (event) => {
-			this.eventSourceReference = event.data;
-		});
+			eventSource.addEventListener('Subscribe', (event) => {
+				this.eventSourceReference = event.data;
+			});
 
-		Object.values(EActionType).forEach((type) => {
-			eventSource.addEventListener(type, (event) => {
-				const dataJSON = JSON.parse(event.data);
+			Object.values(EActionType).forEach((type) => {
+				eventSource.addEventListener(type, (event) => {
+					const dataJSON = JSON.parse(event.data);
 
-				this._changeContent(dataJSON['data']);
+					this._changeContent(dataJSON['data']);
+				});
 			});
 		});
 	}
@@ -219,7 +223,7 @@ export default class WritingAssistant extends Plugin {
 				<WritingAssistantActions
 					containerRef={reactView.element}
 					handleActionClick={async (type: EActionType) => {
-						await postByExternalReferenceCodeTask(
+						await postTask(
 							this.contentSelection,
 							this.eventSourceReference,
 							type

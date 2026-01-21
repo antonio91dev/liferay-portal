@@ -120,6 +120,12 @@ components:
                     type: object
         ObjectDefinitionBrief:
             properties:
+                classNameId:
+                    description:
+                        The object definition class name ID.
+                    format: int64
+                    readOnly: true
+                    type: integer
                 externalReferenceCode:
                     description:
                         The object definition's external reference code.
@@ -152,6 +158,13 @@ components:
                     items:
                         $ref: "#/components/schemas/AuditEvent"
                     readOnly: true
+                    type: array
+                comments:
+                    description:
+                        Optional field with the comments associated with this object entry, can be embedded with
+                        nestedFields
+                    items:
+                        $ref: ../../headless/headless-delivery/headless-delivery-impl/rest-openapi.yaml#Comment
                     type: array
                 creator:
                     $ref: ../../headless/headless-delivery/headless-delivery-impl/rest-openapi.yaml#Creator
@@ -997,6 +1010,25 @@ paths:
                             schema:
                                 $ref: "#/components/schemas/Comment"
             tags: ["Comment"]
+    "/by-external-reference-code/{externalReferenceCode}/expire":
+        post:
+            operationId: postByExternalReferenceCodeExpire
+            parameters:
+                -   in: path
+                    name: externalReferenceCode
+                    required: true
+                    schema:
+                        type: string
+            responses:
+                200:
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ObjectEntry"
+                        application/xml:
+                            schema:
+                                $ref: "#/components/schemas/ObjectEntry"
+            tags: ["ObjectEntry"]
     "/by-external-reference-code/{externalReferenceCode}/object-actions/{objectActionName}":
         put:
             operationId: putByExternalReferenceCodeObjectActionObjectActionName
@@ -2402,133 +2434,6 @@ paths:
                             schema:
                                 $ref: "#/components/schemas/ObjectEntry"
             tags: ["ObjectEntry"]
-    "/{objectEntryId}/by-version/{version}":
-        delete:
-            operationId: deleteObjectEntryByVersion
-            parameters:
-                -   in: path
-                    name: objectEntryId
-                    required: true
-                    schema:
-                        format: int64
-                        type: integer
-                -   in: path
-                    name: version
-                    required: true
-                    schema:
-                        format: int32
-                        type: integer
-            responses:
-                204:
-                    content:
-                        application/json: {}
-                        application/xml: {}
-            tags: ["ObjectEntry"]
-        get:
-            operationId: getObjectEntryByVersion
-            parameters:
-                -   in: path
-                    name: objectEntryId
-                    required: true
-                    schema:
-                        format: int64
-                        type: integer
-                -   in: path
-                    name: version
-                    required: true
-                    schema:
-                        format: int32
-                        type: integer
-            responses:
-                200:
-                    content:
-                        application/json:
-                            schema:
-                                $ref: "#/components/schemas/ObjectEntry"
-                        application/xml:
-                            schema:
-                                $ref: "#/components/schemas/ObjectEntry"
-            tags: ["ObjectEntry"]
-    "/{objectEntryId}/by-version/{version}/copy":
-        post:
-            operationId: postObjectEntryByVersionCopy
-            parameters:
-                -   in: path
-                    name: objectEntryId
-                    required: true
-                    schema:
-                        format: int64
-                        type: integer
-                -   in: path
-                    name: version
-                    required: true
-                    schema:
-                        format: int32
-                        type: integer
-            responses:
-                200:
-                    content:
-                        application/json:
-                            schema:
-                                $ref: "#/components/schemas/ObjectEntry"
-                        application/xml:
-                            schema:
-                                items:
-                                    $ref: "#/components/schemas/ObjectEntry"
-            tags: ["ObjectEntry"]
-    "/{objectEntryId}/by-version/{version}/expire":
-        post:
-            operationId: postObjectEntryByVersionExpire
-            parameters:
-                -   in: path
-                    name: objectEntryId
-                    required: true
-                    schema:
-                        format: int64
-                        type: integer
-                -   in: path
-                    name: version
-                    required: true
-                    schema:
-                        format: int32
-                        type: integer
-            responses:
-                200:
-                    content:
-                        application/json:
-                            schema:
-                                $ref: "#/components/schemas/ObjectEntry"
-                        application/xml:
-                            schema:
-                                items:
-                                    $ref: "#/components/schemas/ObjectEntry"
-            tags: ["ObjectEntry"]
-    "/{objectEntryId}/by-version/{version}/restore":
-        put:
-            operationId: putObjectEntryByVersionRestore
-            parameters:
-                -   in: path
-                    name: objectEntryId
-                    required: true
-                    schema:
-                        format: int64
-                        type: integer
-                -   in: path
-                    name: version
-                    required: true
-                    schema:
-                        format: int32
-                        type: integer
-            responses:
-                200:
-                    content:
-                        application/json:
-                            schema:
-                                $ref: "#/components/schemas/ObjectEntry"
-                        application/xml:
-                            schema:
-                                $ref: "#/components/schemas/ObjectEntry"
-            tags: ["ObjectEntry"]
     "/{objectEntryId}/collaborators":
         get:
             description:
@@ -2726,26 +2631,6 @@ paths:
                             schema:
                                 $ref: ../../headless/headless-object/headless-object-impl/rest-openapi.yaml#Collaborator
             tags: ["Collaborator"]
-    "/{objectEntryId}/expire":
-        post:
-            operationId: postObjectEntryExpire
-            parameters:
-                -   in: path
-                    name: objectEntryId
-                    required: true
-                    schema:
-                        format: int64
-                        type: integer
-            responses:
-                200:
-                    content:
-                        application/json:
-                            schema:
-                                $ref: "#/components/schemas/ObjectEntry"
-                        application/xml:
-                            schema:
-                                $ref: "#/components/schemas/ObjectEntry"
-            tags: ["ObjectEntry"]
     "/{objectEntryId}/object-actions/{objectActionName}":
         put:
             operationId: putObjectEntryObjectActionObjectActionName
@@ -2894,46 +2779,6 @@ paths:
                             schema:
                                 format: binary
                                 type: string
-            tags: ["ObjectEntry"]
-    "/{objectEntryId}/versions":
-        get:
-            operationId: getObjectEntriesVersionsPage
-            parameters:
-                -   in: path
-                    name: objectEntryId
-                    required: true
-                    schema:
-                        format: int64
-                        type: integer
-                -   in: query
-                    name: nestedFields
-                    schema:
-                        type: string
-                -   in: query
-                    name: page
-                    schema:
-                        type: integer
-                -   in: query
-                    name: pageSize
-                    schema:
-                        type: integer
-                -   in: query
-                    name: sort
-                    schema:
-                        type: string
-            responses:
-                200:
-                    content:
-                        application/json:
-                            schema:
-                                items:
-                                    $ref: "#/components/schemas/ObjectEntry"
-                                type: array
-                        application/xml:
-                            schema:
-                                items:
-                                    $ref: "#/components/schemas/ObjectEntry"
-                                type: array
             tags: ["ObjectEntry"]
     /scopes/{scopeKey}:
         get:

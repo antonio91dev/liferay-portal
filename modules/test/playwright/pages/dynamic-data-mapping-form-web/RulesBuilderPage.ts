@@ -16,6 +16,7 @@ export class RulesBuilderPage {
 	readonly conditionOperatorValueSourceSelect: Locator;
 	readonly conditionRightFormFieldInput: Locator;
 	readonly conditionRightFormFieldSelect: Locator;
+	readonly dataProviderInputSelect: Locator;
 	readonly dataProviderOutputSelect: Locator;
 	readonly page: Page;
 	readonly rulesTab: Locator;
@@ -47,11 +48,14 @@ export class RulesBuilderPage {
 		);
 		this.conditionRightFormFieldInput = page.locator('#field-right-id');
 		this.conditionRightFormFieldSelect = page.getByTestId('field-right-id');
+		this.dataProviderInputSelect = page
+			.locator('div.data-provider-parameter-container')
+			.nth(0)
+			.getByRole('combobox');
 		this.dataProviderOutputSelect = page
-			.locator('li')
-			.filter({hasText: 'DoAutofillFrom Data'})
-			.getByRole('combobox')
-			.nth(2);
+			.locator('div.data-provider-parameter-container')
+			.nth(1)
+			.getByRole('combobox');
 		this.page = page;
 		this.rulesTab = page.getByRole('button', {name: 'Rules'});
 		this.saveButton = page.getByRole('button', {name: 'Save'});
@@ -84,6 +88,11 @@ export class RulesBuilderPage {
 
 	async selectConditionRightFormField(fieldName: string) {
 		await this.conditionRightFormFieldSelect.click();
+		await this.page.getByRole('option', {name: fieldName}).click();
+	}
+
+	async selectDataProviderInput(fieldName: string) {
+		await this.dataProviderInputSelect.click();
 		await this.page.getByRole('option', {name: fieldName}).click();
 	}
 

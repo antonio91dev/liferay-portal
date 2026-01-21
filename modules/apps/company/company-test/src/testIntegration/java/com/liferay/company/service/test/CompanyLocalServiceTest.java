@@ -22,6 +22,7 @@ import com.liferay.dynamic.data.mapping.storage.StorageType;
 import com.liferay.exportimport.kernel.service.StagingLocalService;
 import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.petra.sql.dsl.DSLQueryFactoryUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.db.partition.db.DBPartitionDB;
 import com.liferay.portal.db.partition.util.DBPartitionUtil;
@@ -108,6 +109,7 @@ import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.UnicodePropertiesBuilder;
+import com.liferay.portal.model.impl.CompanyImpl;
 import com.liferay.portal.test.rule.FeatureFlag;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
@@ -994,6 +996,56 @@ public class CompanyLocalServiceTest {
 	}
 
 	@Test
+	public void testForEachCompanyIdWithInvalidCompanyId() {
+		long invalidCompanyId = RandomTestUtil.nextLong();
+
+		try (SafeCloseable safeCloseable = CompanyThreadLocal.lock(
+				PortalInstancePool.getDefaultCompanyId())) {
+
+			_companyLocalService.forEachCompanyId(
+				null, new long[] {invalidCompanyId});
+
+			Assert.fail();
+		}
+		catch (UnsupportedOperationException unsupportedOperationException) {
+			Assert.assertEquals(
+				StringBundler.concat(
+					"Unable to iterate over the following company IDs [",
+					invalidCompanyId, "] because company ID ",
+					PortalInstancePool.getDefaultCompanyId(), " is locked"),
+				unsupportedOperationException.getMessage());
+		}
+	}
+
+	@Test
+	public void testForEachCompanyWithInvalidCompany() {
+		long invalidCompanyId = RandomTestUtil.nextLong();
+
+		try (SafeCloseable safeCloseable = CompanyThreadLocal.lock(
+				PortalInstancePool.getDefaultCompanyId())) {
+
+			_companyLocalService.forEachCompany(
+				null,
+				Collections.singletonList(
+					new CompanyImpl() {
+						{
+							setCompanyId(invalidCompanyId);
+						}
+					}));
+
+			Assert.fail();
+		}
+		catch (UnsupportedOperationException unsupportedOperationException) {
+			Assert.assertEquals(
+				StringBundler.concat(
+					"Unable to iterate over the following company IDs [",
+					invalidCompanyId, "] because company ID ",
+					PortalInstancePool.getDefaultCompanyId(), " is locked"),
+				unsupportedOperationException.getMessage());
+		}
+	}
+
+	@Test
 	public void testGetCompanyByVirtualHost() throws Exception {
 		Company company = _addCompany("::1");
 
@@ -1497,15 +1549,15 @@ public class CompanyLocalServiceTest {
 	}
 
 	private int _getTablesCount(long companyId) throws Exception {
-		return _getTableNames(
-			"TABLE", companyId
-		).size();
+		List<String> tableNames = _getTableNames("TABLE", companyId);
+
+		return tableNames.size();
 	}
 
 	private int _getViewsCount(long companyId) throws Exception {
-		return _getTableNames(
-			"VIEW", companyId
-		).size();
+		List<String> tableNames = _getTableNames("VIEW", companyId);
+
+		return tableNames.size();
 	}
 
 	private void _resetCompanyLocales(long companyId) throws Exception {

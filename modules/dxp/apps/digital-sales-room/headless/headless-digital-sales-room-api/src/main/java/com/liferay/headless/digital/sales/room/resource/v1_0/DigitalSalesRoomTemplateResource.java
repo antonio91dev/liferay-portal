@@ -46,21 +46,42 @@ public interface DigitalSalesRoomTemplateResource {
 	public void deleteDigitalSalesRoomTemplate(Long digitalSalesRoomTemplateId)
 		throws Exception;
 
+	public Page<DigitalSalesRoomTemplate>
+			getDigitalSalesRoomDigitalSalesRoomTemplatesPage(
+				Long digitalSalesRoomId)
+		throws Exception;
+
 	public DigitalSalesRoomTemplate getDigitalSalesRoomTemplate(
 			Long digitalSalesRoomTemplateId)
+		throws Exception;
+
+	public Page<DigitalSalesRoomTemplate>
+			getDigitalSalesRoomTemplateDigitalSalesRoomTemplatesPage(
+				Long parentDigitalSalesRoomTemplateId)
 		throws Exception;
 
 	public Page<DigitalSalesRoomTemplate> getDigitalSalesRoomTemplatesPage(
 			String search, Pagination pagination)
 		throws Exception;
 
+	public DigitalSalesRoomTemplate patchDigitalSalesRoomTemplate(
+			Long digitalSalesRoomTemplateId,
+			DigitalSalesRoomTemplate digitalSalesRoomTemplate)
+		throws Exception;
+
 	public DigitalSalesRoomTemplate
 			postDigitalSalesRoomDigitalSalesRoomTemplate(
-				Long digitalSalesRoomId)
+				Long digitalSalesRoomId,
+				DigitalSalesRoomTemplate digitalSalesRoomTemplate)
 		throws Exception;
 
 	public DigitalSalesRoomTemplate postDigitalSalesRoomTemplate(
 			DigitalSalesRoomTemplate digitalSalesRoomTemplate)
+		throws Exception;
+
+	public DigitalSalesRoomTemplate
+			postDigitalSalesRoomTemplateDigitalSalesRoomTemplate(
+				Long parentDigitalSalesRoomTemplateId)
 		throws Exception;
 
 	public default void setContextAcceptLanguage(

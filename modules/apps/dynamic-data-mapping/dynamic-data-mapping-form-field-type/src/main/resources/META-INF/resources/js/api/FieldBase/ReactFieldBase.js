@@ -4,7 +4,6 @@
  */
 
 import ClayButton, {ClayButtonWithIcon} from '@clayui/button';
-import ClayForm from '@clayui/form';
 import ClayIcon from '@clayui/icon';
 import ClayLabel from '@clayui/label';
 import ClayPopover from '@clayui/popover';
@@ -296,10 +295,23 @@ export default function FieldBase({
 	const hasFieldDetails =
 		accessible && fieldDetails && readFieldDetails && type !== 'select';
 
+	const isGroup = type === 'fieldset';
+
+	const hasFormGroup =
+		errorMessage ||
+		typeof tip === 'string' ||
+		warningMessage ||
+		renderLabel ||
+		isGroup;
+
 	const accessiblePropsGroup = {
-		...(!renderLabel &&
-			hasFieldDetails && {'aria-labelledby': fieldDetailsId}),
-		...(type === 'fieldset' && {role: 'group'}),
+		...(isGroup && {
+			role: 'group',
+			...(!renderLabel &&
+				hasFieldDetails && {
+					'aria-labelledby': fieldDetailsId,
+				}),
+		}),
 	};
 
 	const accessiblePropsFields = {
@@ -502,9 +514,10 @@ export default function FieldBase({
 	}, [resetTranslations, markAsTranslated, translationFilterChange]);
 
 	return (
-		<ClayForm.Group
+		<div
 			{...accessiblePropsGroup}
 			className={classNames({
+				'form-group': hasFormGroup,
 				'has-error': hasError,
 				'has-warning': warningMessage && !hasError,
 				'hide': !visible,
@@ -714,6 +727,6 @@ export default function FieldBase({
 			)}
 
 			{defaultRows && <Layout itemPath={itemPath} rows={defaultRows} />}
-		</ClayForm.Group>
+		</div>
 	);
 }

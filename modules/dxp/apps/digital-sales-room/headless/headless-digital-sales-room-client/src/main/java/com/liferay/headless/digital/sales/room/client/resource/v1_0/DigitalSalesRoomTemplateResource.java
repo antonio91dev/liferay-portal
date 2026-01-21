@@ -41,12 +41,32 @@ public interface DigitalSalesRoomTemplateResource {
 			Long digitalSalesRoomTemplateId)
 		throws Exception;
 
+	public Page<DigitalSalesRoomTemplate>
+			getDigitalSalesRoomDigitalSalesRoomTemplatesPage(
+				Long digitalSalesRoomId)
+		throws Exception;
+
+	public HttpInvoker.HttpResponse
+			getDigitalSalesRoomDigitalSalesRoomTemplatesPageHttpResponse(
+				Long digitalSalesRoomId)
+		throws Exception;
+
 	public DigitalSalesRoomTemplate getDigitalSalesRoomTemplate(
 			Long digitalSalesRoomTemplateId)
 		throws Exception;
 
 	public HttpInvoker.HttpResponse getDigitalSalesRoomTemplateHttpResponse(
 			Long digitalSalesRoomTemplateId)
+		throws Exception;
+
+	public Page<DigitalSalesRoomTemplate>
+			getDigitalSalesRoomTemplateDigitalSalesRoomTemplatesPage(
+				Long parentDigitalSalesRoomTemplateId)
+		throws Exception;
+
+	public HttpInvoker.HttpResponse
+			getDigitalSalesRoomTemplateDigitalSalesRoomTemplatesPageHttpResponse(
+				Long parentDigitalSalesRoomTemplateId)
 		throws Exception;
 
 	public Page<DigitalSalesRoomTemplate> getDigitalSalesRoomTemplatesPage(
@@ -58,14 +78,26 @@ public interface DigitalSalesRoomTemplateResource {
 				String search, Pagination pagination)
 		throws Exception;
 
+	public DigitalSalesRoomTemplate patchDigitalSalesRoomTemplate(
+			Long digitalSalesRoomTemplateId,
+			DigitalSalesRoomTemplate digitalSalesRoomTemplate)
+		throws Exception;
+
+	public HttpInvoker.HttpResponse patchDigitalSalesRoomTemplateHttpResponse(
+			Long digitalSalesRoomTemplateId,
+			DigitalSalesRoomTemplate digitalSalesRoomTemplate)
+		throws Exception;
+
 	public DigitalSalesRoomTemplate
 			postDigitalSalesRoomDigitalSalesRoomTemplate(
-				Long digitalSalesRoomId)
+				Long digitalSalesRoomId,
+				DigitalSalesRoomTemplate digitalSalesRoomTemplate)
 		throws Exception;
 
 	public HttpInvoker.HttpResponse
 			postDigitalSalesRoomDigitalSalesRoomTemplateHttpResponse(
-				Long digitalSalesRoomId)
+				Long digitalSalesRoomId,
+				DigitalSalesRoomTemplate digitalSalesRoomTemplate)
 		throws Exception;
 
 	public DigitalSalesRoomTemplate postDigitalSalesRoomTemplate(
@@ -74,6 +106,16 @@ public interface DigitalSalesRoomTemplateResource {
 
 	public HttpInvoker.HttpResponse postDigitalSalesRoomTemplateHttpResponse(
 			DigitalSalesRoomTemplate digitalSalesRoomTemplate)
+		throws Exception;
+
+	public DigitalSalesRoomTemplate
+			postDigitalSalesRoomTemplateDigitalSalesRoomTemplate(
+				Long parentDigitalSalesRoomTemplateId)
+		throws Exception;
+
+	public HttpInvoker.HttpResponse
+			postDigitalSalesRoomTemplateDigitalSalesRoomTemplateHttpResponse(
+				Long parentDigitalSalesRoomTemplateId)
 		throws Exception;
 
 	public static class Builder {
@@ -294,6 +336,115 @@ public interface DigitalSalesRoomTemplateResource {
 			return httpInvoker.invoke();
 		}
 
+		public Page<DigitalSalesRoomTemplate>
+				getDigitalSalesRoomDigitalSalesRoomTemplatesPage(
+					Long digitalSalesRoomId)
+			throws Exception {
+
+			HttpInvoker.HttpResponse httpResponse =
+				getDigitalSalesRoomDigitalSalesRoomTemplatesPageHttpResponse(
+					digitalSalesRoomId);
+
+			String content = httpResponse.getContent();
+
+			if ((httpResponse.getStatusCode() / 100) != 2) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response content: " + content);
+				_logger.log(
+					Level.WARNING,
+					"HTTP response message: " + httpResponse.getMessage());
+				_logger.log(
+					Level.WARNING,
+					"HTTP response status code: " +
+						httpResponse.getStatusCode());
+
+				Problem.ProblemException problemException = null;
+
+				if (Objects.equals(
+						httpResponse.getContentType(), "application/json")) {
+
+					problemException = new Problem.ProblemException(
+						Problem.toDTO(content));
+				}
+				else {
+					_logger.log(
+						Level.WARNING,
+						"Unable to process content type: " +
+							httpResponse.getContentType());
+
+					Problem problem = new Problem();
+
+					problem.setStatus(
+						String.valueOf(httpResponse.getStatusCode()));
+
+					problemException = new Problem.ProblemException(problem);
+				}
+
+				throw problemException;
+			}
+			else {
+				_logger.fine("HTTP response content: " + content);
+				_logger.fine(
+					"HTTP response message: " + httpResponse.getMessage());
+				_logger.fine(
+					"HTTP response status code: " +
+						httpResponse.getStatusCode());
+			}
+
+			try {
+				return Page.of(content, DigitalSalesRoomTemplateSerDes::toDTO);
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
+		}
+
+		public HttpInvoker.HttpResponse
+				getDigitalSalesRoomDigitalSalesRoomTemplatesPageHttpResponse(
+					Long digitalSalesRoomId)
+			throws Exception {
+
+			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			if (_builder._locale != null) {
+				httpInvoker.header(
+					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
+			httpInvoker.httpMethod(HttpInvoker.HttpMethod.GET);
+
+			httpInvoker.path(
+				_builder._scheme + "://" + _builder._host + ":" +
+					_builder._port + _builder._contextPath +
+						"/o/headless-digital-sales-room/v1.0/digital-sales-rooms/{digitalSalesRoomId}/digital-sales-room-templates");
+
+			httpInvoker.path("digitalSalesRoomId", digitalSalesRoomId);
+
+			if ((_builder._login != null) && (_builder._password != null)) {
+				httpInvoker.userNameAndPassword(
+					_builder._login + ":" + _builder._password);
+			}
+
+			return httpInvoker.invoke();
+		}
+
 		public DigitalSalesRoomTemplate getDigitalSalesRoomTemplate(
 				Long digitalSalesRoomTemplateId)
 			throws Exception {
@@ -393,6 +544,117 @@ public interface DigitalSalesRoomTemplateResource {
 
 			httpInvoker.path(
 				"digitalSalesRoomTemplateId", digitalSalesRoomTemplateId);
+
+			if ((_builder._login != null) && (_builder._password != null)) {
+				httpInvoker.userNameAndPassword(
+					_builder._login + ":" + _builder._password);
+			}
+
+			return httpInvoker.invoke();
+		}
+
+		public Page<DigitalSalesRoomTemplate>
+				getDigitalSalesRoomTemplateDigitalSalesRoomTemplatesPage(
+					Long parentDigitalSalesRoomTemplateId)
+			throws Exception {
+
+			HttpInvoker.HttpResponse httpResponse =
+				getDigitalSalesRoomTemplateDigitalSalesRoomTemplatesPageHttpResponse(
+					parentDigitalSalesRoomTemplateId);
+
+			String content = httpResponse.getContent();
+
+			if ((httpResponse.getStatusCode() / 100) != 2) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response content: " + content);
+				_logger.log(
+					Level.WARNING,
+					"HTTP response message: " + httpResponse.getMessage());
+				_logger.log(
+					Level.WARNING,
+					"HTTP response status code: " +
+						httpResponse.getStatusCode());
+
+				Problem.ProblemException problemException = null;
+
+				if (Objects.equals(
+						httpResponse.getContentType(), "application/json")) {
+
+					problemException = new Problem.ProblemException(
+						Problem.toDTO(content));
+				}
+				else {
+					_logger.log(
+						Level.WARNING,
+						"Unable to process content type: " +
+							httpResponse.getContentType());
+
+					Problem problem = new Problem();
+
+					problem.setStatus(
+						String.valueOf(httpResponse.getStatusCode()));
+
+					problemException = new Problem.ProblemException(problem);
+				}
+
+				throw problemException;
+			}
+			else {
+				_logger.fine("HTTP response content: " + content);
+				_logger.fine(
+					"HTTP response message: " + httpResponse.getMessage());
+				_logger.fine(
+					"HTTP response status code: " +
+						httpResponse.getStatusCode());
+			}
+
+			try {
+				return Page.of(content, DigitalSalesRoomTemplateSerDes::toDTO);
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
+		}
+
+		public HttpInvoker.HttpResponse
+				getDigitalSalesRoomTemplateDigitalSalesRoomTemplatesPageHttpResponse(
+					Long parentDigitalSalesRoomTemplateId)
+			throws Exception {
+
+			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			if (_builder._locale != null) {
+				httpInvoker.header(
+					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
+			httpInvoker.httpMethod(HttpInvoker.HttpMethod.GET);
+
+			httpInvoker.path(
+				_builder._scheme + "://" + _builder._host + ":" +
+					_builder._port + _builder._contextPath +
+						"/o/headless-digital-sales-room/v1.0/digital-sales-room-templates/{parentDigitalSalesRoomTemplateId}/digital-sales-room-templates");
+
+			httpInvoker.path(
+				"parentDigitalSalesRoomTemplateId",
+				parentDigitalSalesRoomTemplateId);
 
 			if ((_builder._login != null) && (_builder._password != null)) {
 				httpInvoker.userNameAndPassword(
@@ -519,14 +781,129 @@ public interface DigitalSalesRoomTemplateResource {
 			return httpInvoker.invoke();
 		}
 
+		public DigitalSalesRoomTemplate patchDigitalSalesRoomTemplate(
+				Long digitalSalesRoomTemplateId,
+				DigitalSalesRoomTemplate digitalSalesRoomTemplate)
+			throws Exception {
+
+			HttpInvoker.HttpResponse httpResponse =
+				patchDigitalSalesRoomTemplateHttpResponse(
+					digitalSalesRoomTemplateId, digitalSalesRoomTemplate);
+
+			String content = httpResponse.getContent();
+
+			if ((httpResponse.getStatusCode() / 100) != 2) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response content: " + content);
+				_logger.log(
+					Level.WARNING,
+					"HTTP response message: " + httpResponse.getMessage());
+				_logger.log(
+					Level.WARNING,
+					"HTTP response status code: " +
+						httpResponse.getStatusCode());
+
+				Problem.ProblemException problemException = null;
+
+				if (Objects.equals(
+						httpResponse.getContentType(), "application/json")) {
+
+					problemException = new Problem.ProblemException(
+						Problem.toDTO(content));
+				}
+				else {
+					_logger.log(
+						Level.WARNING,
+						"Unable to process content type: " +
+							httpResponse.getContentType());
+
+					Problem problem = new Problem();
+
+					problem.setStatus(
+						String.valueOf(httpResponse.getStatusCode()));
+
+					problemException = new Problem.ProblemException(problem);
+				}
+
+				throw problemException;
+			}
+			else {
+				_logger.fine("HTTP response content: " + content);
+				_logger.fine(
+					"HTTP response message: " + httpResponse.getMessage());
+				_logger.fine(
+					"HTTP response status code: " +
+						httpResponse.getStatusCode());
+			}
+
+			try {
+				return DigitalSalesRoomTemplateSerDes.toDTO(content);
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
+		}
+
+		public HttpInvoker.HttpResponse
+				patchDigitalSalesRoomTemplateHttpResponse(
+					Long digitalSalesRoomTemplateId,
+					DigitalSalesRoomTemplate digitalSalesRoomTemplate)
+			throws Exception {
+
+			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			httpInvoker.body(
+				digitalSalesRoomTemplate.toString(), "application/json");
+
+			if (_builder._locale != null) {
+				httpInvoker.header(
+					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
+			httpInvoker.httpMethod(HttpInvoker.HttpMethod.PATCH);
+
+			httpInvoker.path(
+				_builder._scheme + "://" + _builder._host + ":" +
+					_builder._port + _builder._contextPath +
+						"/o/headless-digital-sales-room/v1.0/digital-sales-room-templates/{digitalSalesRoomTemplateId}");
+
+			httpInvoker.path(
+				"digitalSalesRoomTemplateId", digitalSalesRoomTemplateId);
+
+			if ((_builder._login != null) && (_builder._password != null)) {
+				httpInvoker.userNameAndPassword(
+					_builder._login + ":" + _builder._password);
+			}
+
+			return httpInvoker.invoke();
+		}
+
 		public DigitalSalesRoomTemplate
 				postDigitalSalesRoomDigitalSalesRoomTemplate(
-					Long digitalSalesRoomId)
+					Long digitalSalesRoomId,
+					DigitalSalesRoomTemplate digitalSalesRoomTemplate)
 			throws Exception {
 
 			HttpInvoker.HttpResponse httpResponse =
 				postDigitalSalesRoomDigitalSalesRoomTemplateHttpResponse(
-					digitalSalesRoomId);
+					digitalSalesRoomId, digitalSalesRoomTemplate);
 
 			String content = httpResponse.getContent();
 
@@ -589,12 +966,14 @@ public interface DigitalSalesRoomTemplateResource {
 
 		public HttpInvoker.HttpResponse
 				postDigitalSalesRoomDigitalSalesRoomTemplateHttpResponse(
-					Long digitalSalesRoomId)
+					Long digitalSalesRoomId,
+					DigitalSalesRoomTemplate digitalSalesRoomTemplate)
 			throws Exception {
 
 			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
 
-			httpInvoker.body("[]", "application/json");
+			httpInvoker.body(
+				digitalSalesRoomTemplate.toString(), "application/json");
 
 			if (_builder._locale != null) {
 				httpInvoker.header(
@@ -618,7 +997,7 @@ public interface DigitalSalesRoomTemplateResource {
 			httpInvoker.path(
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port + _builder._contextPath +
-						"/o/headless-digital-sales-room/v1.0/digital-sales-rooms/{digitalSalesRoomId}/digital-sales-room-template");
+						"/o/headless-digital-sales-room/v1.0/digital-sales-rooms/{digitalSalesRoomId}/digital-sales-room-templates");
 
 			httpInvoker.path("digitalSalesRoomId", digitalSalesRoomId);
 
@@ -730,6 +1109,119 @@ public interface DigitalSalesRoomTemplateResource {
 				_builder._scheme + "://" + _builder._host + ":" +
 					_builder._port + _builder._contextPath +
 						"/o/headless-digital-sales-room/v1.0/digital-sales-room-templates");
+
+			if ((_builder._login != null) && (_builder._password != null)) {
+				httpInvoker.userNameAndPassword(
+					_builder._login + ":" + _builder._password);
+			}
+
+			return httpInvoker.invoke();
+		}
+
+		public DigitalSalesRoomTemplate
+				postDigitalSalesRoomTemplateDigitalSalesRoomTemplate(
+					Long parentDigitalSalesRoomTemplateId)
+			throws Exception {
+
+			HttpInvoker.HttpResponse httpResponse =
+				postDigitalSalesRoomTemplateDigitalSalesRoomTemplateHttpResponse(
+					parentDigitalSalesRoomTemplateId);
+
+			String content = httpResponse.getContent();
+
+			if ((httpResponse.getStatusCode() / 100) != 2) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response content: " + content);
+				_logger.log(
+					Level.WARNING,
+					"HTTP response message: " + httpResponse.getMessage());
+				_logger.log(
+					Level.WARNING,
+					"HTTP response status code: " +
+						httpResponse.getStatusCode());
+
+				Problem.ProblemException problemException = null;
+
+				if (Objects.equals(
+						httpResponse.getContentType(), "application/json")) {
+
+					problemException = new Problem.ProblemException(
+						Problem.toDTO(content));
+				}
+				else {
+					_logger.log(
+						Level.WARNING,
+						"Unable to process content type: " +
+							httpResponse.getContentType());
+
+					Problem problem = new Problem();
+
+					problem.setStatus(
+						String.valueOf(httpResponse.getStatusCode()));
+
+					problemException = new Problem.ProblemException(problem);
+				}
+
+				throw problemException;
+			}
+			else {
+				_logger.fine("HTTP response content: " + content);
+				_logger.fine(
+					"HTTP response message: " + httpResponse.getMessage());
+				_logger.fine(
+					"HTTP response status code: " +
+						httpResponse.getStatusCode());
+			}
+
+			try {
+				return DigitalSalesRoomTemplateSerDes.toDTO(content);
+			}
+			catch (Exception e) {
+				_logger.log(
+					Level.WARNING,
+					"Unable to process HTTP response: " + content, e);
+
+				throw new Problem.ProblemException(Problem.toDTO(content));
+			}
+		}
+
+		public HttpInvoker.HttpResponse
+				postDigitalSalesRoomTemplateDigitalSalesRoomTemplateHttpResponse(
+					Long parentDigitalSalesRoomTemplateId)
+			throws Exception {
+
+			HttpInvoker httpInvoker = HttpInvoker.newHttpInvoker();
+
+			httpInvoker.body("[]", "application/json");
+
+			if (_builder._locale != null) {
+				httpInvoker.header(
+					"Accept-Language", _builder._locale.toLanguageTag());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._headers.entrySet()) {
+
+				httpInvoker.header(entry.getKey(), entry.getValue());
+			}
+
+			for (Map.Entry<String, String> entry :
+					_builder._parameters.entrySet()) {
+
+				httpInvoker.parameter(entry.getKey(), entry.getValue());
+			}
+
+			httpInvoker.httpMethod(HttpInvoker.HttpMethod.POST);
+
+			httpInvoker.path(
+				_builder._scheme + "://" + _builder._host + ":" +
+					_builder._port + _builder._contextPath +
+						"/o/headless-digital-sales-room/v1.0/digital-sales-room-templates/{parentDigitalSalesRoomTemplateId}/digital-sales-room-templates");
+
+			httpInvoker.path(
+				"parentDigitalSalesRoomTemplateId",
+				parentDigitalSalesRoomTemplateId);
 
 			if ((_builder._login != null) && (_builder._password != null)) {
 				httpInvoker.userNameAndPassword(

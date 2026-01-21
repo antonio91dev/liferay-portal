@@ -88,7 +88,9 @@ import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -104,6 +106,8 @@ import org.eclipse.jgit.treewalk.CanonicalTreeParser;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+
+import org.jsoup.Jsoup;
 
 import org.yaml.snakeyaml.Yaml;
 
@@ -405,6 +409,8 @@ public class Main {
 							_getPermissions(
 								fileName, importedStructuredContent.getId()));
 
+					_putRAGDocument(importedStructuredContent);
+
 					updatedStructuredContentCount++;
 				}
 				else {
@@ -435,6 +441,8 @@ public class Main {
 						System.out.println(
 							"Deleting structured content " +
 								structuredContent.getFriendlyUrlPath());
+
+						_deleteRAGDocument(structuredContent.getId());
 
 						_structuredContentResource.deleteStructuredContent(
 							siteStructuredContent.getId());
@@ -469,12 +477,16 @@ public class Main {
 									getStructuredContentFolderId(),
 								structuredContent);
 
+					_putRAGDocument(importedStructuredContent);
+
 					addedStructuredContentCount++;
 				}
 
 				if (!Objects.equals(
 						importedStructuredContent.getFriendlyUrlPath(),
 						structuredContent.getFriendlyUrlPath())) {
+
+					_deleteRAGDocument(importedStructuredContent.getId());
 
 					_structuredContentResource.deleteStructuredContent(
 						importedStructuredContent.getId());
@@ -499,6 +511,8 @@ public class Main {
 				System.out.println(
 					"Deleting orphaned structured content " +
 						structuredContent.getFriendlyUrlPath());
+
+				_deleteRAGDocument(existingStructuredContentId);
 
 				_structuredContentResource.deleteStructuredContent(
 					existingStructuredContentId);
@@ -553,6 +567,30 @@ public class Main {
 		}
 
 		_fileNames.add(fileName);
+	}
+
+	private void _deleteRAGDocument(long id) throws Exception {
+		HttpDelete httpDelete = new HttpDelete(
+			System.getenv("LIFERAY_LEARN_ETC_SPRING_BOOT_SERVER_URL") +
+				"/rag/document/" + id);
+
+		HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
+
+		try (CloseableHttpClient closeableHttpClient =
+				httpClientBuilder.build();
+			CloseableHttpResponse closeableHttpResponse =
+				closeableHttpClient.execute(httpDelete)) {
+
+			StatusLine statusLine = closeableHttpResponse.getStatusLine();
+
+			if (statusLine.getStatusCode() != HttpStatus.SC_OK) {
+				System.out.println(
+					"Unable to delete existing RAG document " + id);
+			}
+		}
+		catch (Exception exception) {
+			_error(exception.getMessage());
+		}
 	}
 
 	private void _error(String errorMessage) {
@@ -1463,6 +1501,66 @@ public class Main {
 			_loadTaxonomyCategories(
 				existingTaxonomyCategories, taxonomyVocabularyJSONObject, null,
 				taxonomyVocabularyId);
+		}
+	}
+
+	private void _putRAGDocument(StructuredContent structuredContent)
+		throws Exception {
+
+		ContentField contentField = structuredContent.getContentFields()[0];
+
+		ContentFieldValue contentFieldValue =
+			contentField.getContentFieldValue();
+
+		String content = Jsoup.parse(
+			contentFieldValue.getData()
+		).text();
+
+		if (content.length() <= 250) {
+			_deleteRAGDocument(structuredContent.getId());
+
+			return;
+		}
+
+		HttpPut httpPut = new HttpPut(
+			System.getenv("LIFERAY_LEARN_ETC_SPRING_BOOT_SERVER_URL") +
+				"/rag/document");
+
+		httpPut.setEntity(
+			new StringEntity(
+				new JSONObject(
+				).put(
+					"assetEntryId", structuredContent.getId()
+				).put(
+					"assetEntryType", "Journal Article"
+				).put(
+					"content", content
+				).put(
+					"description", structuredContent.getDescription()
+				).put(
+					"friendlyUrlPath",
+					"/w/" + structuredContent.getFriendlyUrlPath()
+				).put(
+					"name", structuredContent.getTitle()
+				).toString()));
+
+		HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
+
+		try (CloseableHttpClient closeableHttpClient =
+				httpClientBuilder.build();
+			CloseableHttpResponse closeableHttpResponse =
+				closeableHttpClient.execute(httpPut)) {
+
+			StatusLine statusLine = closeableHttpResponse.getStatusLine();
+
+			if (statusLine.getStatusCode() != HttpStatus.SC_NO_CONTENT) {
+				System.out.println(
+					"Unable to update RAG document " +
+						structuredContent.getId());
+			}
+		}
+		catch (Exception exception) {
+			_error(exception.getMessage());
 		}
 	}
 

@@ -5,6 +5,11 @@
 
 package com.liferay.osb.faro.engine.client.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * @author Marcos Martins
  */
@@ -22,7 +27,12 @@ public class IndividualSegmentRealTimeMembership {
 		return _emailAddress;
 	}
 
-	public long getFirstActivityTime() {
+	@JsonProperty("_embedded")
+	public Map<String, Object> getEmbeddedResources() {
+		return _embeddedResources;
+	}
+
+	public long getFirstSeenTime() {
 		return _firstSeenTime;
 	}
 
@@ -46,6 +56,10 @@ public class IndividualSegmentRealTimeMembership {
 		return _profileType;
 	}
 
+	public String getType() {
+		return _type;
+	}
+
 	public void setAccountId(String accountId) {
 		_accountId = accountId;
 	}
@@ -58,8 +72,12 @@ public class IndividualSegmentRealTimeMembership {
 		_emailAddress = emailAddress;
 	}
 
-	public void setFirstActivityTime(long firstActivityTime) {
-		_firstSeenTime = firstActivityTime;
+	public void setEmbeddedResources(Map<String, Object> embeddedResources) {
+		_embeddedResources = embeddedResources;
+	}
+
+	public void setFirstSeenTime(long firstSeenTime) {
+		_firstSeenTime = firstSeenTime;
 	}
 
 	public void setIdentityId(String identityId) {
@@ -82,14 +100,20 @@ public class IndividualSegmentRealTimeMembership {
 		_profileType = profileType;
 	}
 
+	public void setType(String type) {
+		_type = type;
+	}
+
 	private String _accountId;
 	private String _accountName;
 	private String _emailAddress;
+	private Map<String, Object> _embeddedResources = new HashMap<>();
 	private long _firstSeenTime;
 	private String _identityId;
 	private String _individualId;
 	private long _lastActivityTime;
 	private String _name;
 	private String _profileType;
+	private String _type;
 
 }

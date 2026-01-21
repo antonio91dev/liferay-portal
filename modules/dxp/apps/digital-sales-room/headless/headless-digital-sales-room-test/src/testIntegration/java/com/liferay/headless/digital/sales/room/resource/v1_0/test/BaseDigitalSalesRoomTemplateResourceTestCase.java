@@ -207,6 +207,7 @@ public abstract class BaseDigitalSalesRoomTemplateResourceTestCase {
 		digitalSalesRoomTemplate.setExternalReferenceCode(regex);
 		digitalSalesRoomTemplate.setFriendlyUrlPath(regex);
 		digitalSalesRoomTemplate.setName(regex);
+		digitalSalesRoomTemplate.setOwnerName(regex);
 		digitalSalesRoomTemplate.setPrimaryColor(regex);
 		digitalSalesRoomTemplate.setSecondaryColor(regex);
 
@@ -224,6 +225,7 @@ public abstract class BaseDigitalSalesRoomTemplateResourceTestCase {
 		Assert.assertEquals(
 			regex, digitalSalesRoomTemplate.getFriendlyUrlPath());
 		Assert.assertEquals(regex, digitalSalesRoomTemplate.getName());
+		Assert.assertEquals(regex, digitalSalesRoomTemplate.getOwnerName());
 		Assert.assertEquals(regex, digitalSalesRoomTemplate.getPrimaryColor());
 		Assert.assertEquals(
 			regex, digitalSalesRoomTemplate.getSecondaryColor());
@@ -258,6 +260,113 @@ public abstract class BaseDigitalSalesRoomTemplateResourceTestCase {
 
 		throw new UnsupportedOperationException(
 			"This method needs to be implemented");
+	}
+
+	@Test
+	public void testGetDigitalSalesRoomDigitalSalesRoomTemplatesPage()
+		throws Exception {
+
+		Long digitalSalesRoomId =
+			testGetDigitalSalesRoomDigitalSalesRoomTemplatesPage_getDigitalSalesRoomId();
+		Long irrelevantDigitalSalesRoomId =
+			testGetDigitalSalesRoomDigitalSalesRoomTemplatesPage_getIrrelevantDigitalSalesRoomId();
+
+		Page<DigitalSalesRoomTemplate> page =
+			digitalSalesRoomTemplateResource.
+				getDigitalSalesRoomDigitalSalesRoomTemplatesPage(
+					digitalSalesRoomId);
+
+		long totalCount = page.getTotalCount();
+
+		if (irrelevantDigitalSalesRoomId != null) {
+			DigitalSalesRoomTemplate irrelevantDigitalSalesRoomTemplate =
+				testGetDigitalSalesRoomDigitalSalesRoomTemplatesPage_addDigitalSalesRoomTemplate(
+					irrelevantDigitalSalesRoomId,
+					randomIrrelevantDigitalSalesRoomTemplate());
+
+			page =
+				digitalSalesRoomTemplateResource.
+					getDigitalSalesRoomDigitalSalesRoomTemplatesPage(
+						irrelevantDigitalSalesRoomId);
+
+			Assert.assertEquals(totalCount + 1, page.getTotalCount());
+
+			assertContains(
+				irrelevantDigitalSalesRoomTemplate,
+				(List<DigitalSalesRoomTemplate>)page.getItems());
+			assertValid(
+				page,
+				testGetDigitalSalesRoomDigitalSalesRoomTemplatesPage_getExpectedActions(
+					irrelevantDigitalSalesRoomId));
+		}
+
+		DigitalSalesRoomTemplate digitalSalesRoomTemplate1 =
+			testGetDigitalSalesRoomDigitalSalesRoomTemplatesPage_addDigitalSalesRoomTemplate(
+				digitalSalesRoomId, randomDigitalSalesRoomTemplate());
+
+		DigitalSalesRoomTemplate digitalSalesRoomTemplate2 =
+			testGetDigitalSalesRoomDigitalSalesRoomTemplatesPage_addDigitalSalesRoomTemplate(
+				digitalSalesRoomId, randomDigitalSalesRoomTemplate());
+
+		page =
+			digitalSalesRoomTemplateResource.
+				getDigitalSalesRoomDigitalSalesRoomTemplatesPage(
+					digitalSalesRoomId);
+
+		Assert.assertEquals(totalCount + 2, page.getTotalCount());
+
+		assertContains(
+			digitalSalesRoomTemplate1,
+			(List<DigitalSalesRoomTemplate>)page.getItems());
+		assertContains(
+			digitalSalesRoomTemplate2,
+			(List<DigitalSalesRoomTemplate>)page.getItems());
+		assertValid(
+			page,
+			testGetDigitalSalesRoomDigitalSalesRoomTemplatesPage_getExpectedActions(
+				digitalSalesRoomId));
+
+		digitalSalesRoomTemplateResource.deleteDigitalSalesRoomTemplate(
+			digitalSalesRoomTemplate1.getId());
+
+		digitalSalesRoomTemplateResource.deleteDigitalSalesRoomTemplate(
+			digitalSalesRoomTemplate2.getId());
+	}
+
+	protected Map<String, Map<String, String>>
+			testGetDigitalSalesRoomDigitalSalesRoomTemplatesPage_getExpectedActions(
+				Long digitalSalesRoomId)
+		throws Exception {
+
+		Map<String, Map<String, String>> expectedActions = new HashMap<>();
+
+		return expectedActions;
+	}
+
+	protected DigitalSalesRoomTemplate
+			testGetDigitalSalesRoomDigitalSalesRoomTemplatesPage_addDigitalSalesRoomTemplate(
+				Long digitalSalesRoomId,
+				DigitalSalesRoomTemplate digitalSalesRoomTemplate)
+		throws Exception {
+
+		return digitalSalesRoomTemplateResource.
+			postDigitalSalesRoomDigitalSalesRoomTemplate(
+				digitalSalesRoomId, digitalSalesRoomTemplate);
+	}
+
+	protected Long
+			testGetDigitalSalesRoomDigitalSalesRoomTemplatesPage_getDigitalSalesRoomId()
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	protected Long
+			testGetDigitalSalesRoomDigitalSalesRoomTemplatesPage_getIrrelevantDigitalSalesRoomId()
+		throws Exception {
+
+		return null;
 	}
 
 	@Test
@@ -475,6 +584,114 @@ public abstract class BaseDigitalSalesRoomTemplateResourceTestCase {
 	}
 
 	@Test
+	public void testGetDigitalSalesRoomTemplateDigitalSalesRoomTemplatesPage()
+		throws Exception {
+
+		Long parentDigitalSalesRoomTemplateId =
+			testGetDigitalSalesRoomTemplateDigitalSalesRoomTemplatesPage_getParentDigitalSalesRoomTemplateId();
+		Long irrelevantParentDigitalSalesRoomTemplateId =
+			testGetDigitalSalesRoomTemplateDigitalSalesRoomTemplatesPage_getIrrelevantParentDigitalSalesRoomTemplateId();
+
+		Page<DigitalSalesRoomTemplate> page =
+			digitalSalesRoomTemplateResource.
+				getDigitalSalesRoomTemplateDigitalSalesRoomTemplatesPage(
+					parentDigitalSalesRoomTemplateId);
+
+		long totalCount = page.getTotalCount();
+
+		if (irrelevantParentDigitalSalesRoomTemplateId != null) {
+			DigitalSalesRoomTemplate irrelevantDigitalSalesRoomTemplate =
+				testGetDigitalSalesRoomTemplateDigitalSalesRoomTemplatesPage_addDigitalSalesRoomTemplate(
+					irrelevantParentDigitalSalesRoomTemplateId,
+					randomIrrelevantDigitalSalesRoomTemplate());
+
+			page =
+				digitalSalesRoomTemplateResource.
+					getDigitalSalesRoomTemplateDigitalSalesRoomTemplatesPage(
+						irrelevantParentDigitalSalesRoomTemplateId);
+
+			Assert.assertEquals(totalCount + 1, page.getTotalCount());
+
+			assertContains(
+				irrelevantDigitalSalesRoomTemplate,
+				(List<DigitalSalesRoomTemplate>)page.getItems());
+			assertValid(
+				page,
+				testGetDigitalSalesRoomTemplateDigitalSalesRoomTemplatesPage_getExpectedActions(
+					irrelevantParentDigitalSalesRoomTemplateId));
+		}
+
+		DigitalSalesRoomTemplate digitalSalesRoomTemplate1 =
+			testGetDigitalSalesRoomTemplateDigitalSalesRoomTemplatesPage_addDigitalSalesRoomTemplate(
+				parentDigitalSalesRoomTemplateId,
+				randomDigitalSalesRoomTemplate());
+
+		DigitalSalesRoomTemplate digitalSalesRoomTemplate2 =
+			testGetDigitalSalesRoomTemplateDigitalSalesRoomTemplatesPage_addDigitalSalesRoomTemplate(
+				parentDigitalSalesRoomTemplateId,
+				randomDigitalSalesRoomTemplate());
+
+		page =
+			digitalSalesRoomTemplateResource.
+				getDigitalSalesRoomTemplateDigitalSalesRoomTemplatesPage(
+					parentDigitalSalesRoomTemplateId);
+
+		Assert.assertEquals(totalCount + 2, page.getTotalCount());
+
+		assertContains(
+			digitalSalesRoomTemplate1,
+			(List<DigitalSalesRoomTemplate>)page.getItems());
+		assertContains(
+			digitalSalesRoomTemplate2,
+			(List<DigitalSalesRoomTemplate>)page.getItems());
+		assertValid(
+			page,
+			testGetDigitalSalesRoomTemplateDigitalSalesRoomTemplatesPage_getExpectedActions(
+				parentDigitalSalesRoomTemplateId));
+
+		digitalSalesRoomTemplateResource.deleteDigitalSalesRoomTemplate(
+			digitalSalesRoomTemplate1.getId());
+
+		digitalSalesRoomTemplateResource.deleteDigitalSalesRoomTemplate(
+			digitalSalesRoomTemplate2.getId());
+	}
+
+	protected Map<String, Map<String, String>>
+			testGetDigitalSalesRoomTemplateDigitalSalesRoomTemplatesPage_getExpectedActions(
+				Long parentDigitalSalesRoomTemplateId)
+		throws Exception {
+
+		Map<String, Map<String, String>> expectedActions = new HashMap<>();
+
+		return expectedActions;
+	}
+
+	protected DigitalSalesRoomTemplate
+			testGetDigitalSalesRoomTemplateDigitalSalesRoomTemplatesPage_addDigitalSalesRoomTemplate(
+				Long parentDigitalSalesRoomTemplateId,
+				DigitalSalesRoomTemplate digitalSalesRoomTemplate)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	protected Long
+			testGetDigitalSalesRoomTemplateDigitalSalesRoomTemplatesPage_getParentDigitalSalesRoomTemplateId()
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	protected Long
+			testGetDigitalSalesRoomTemplateDigitalSalesRoomTemplatesPage_getIrrelevantParentDigitalSalesRoomTemplateId()
+		throws Exception {
+
+		return null;
+	}
+
+	@Test
 	public void testGetDigitalSalesRoomTemplatesPage() throws Exception {
 		Page<DigitalSalesRoomTemplate> page =
 			digitalSalesRoomTemplateResource.getDigitalSalesRoomTemplatesPage(
@@ -641,6 +858,44 @@ public abstract class BaseDigitalSalesRoomTemplateResourceTestCase {
 	}
 
 	@Test
+	public void testPatchDigitalSalesRoomTemplate() throws Exception {
+		DigitalSalesRoomTemplate postDigitalSalesRoomTemplate =
+			testPatchDigitalSalesRoomTemplate_addDigitalSalesRoomTemplate();
+
+		DigitalSalesRoomTemplate randomPatchDigitalSalesRoomTemplate =
+			randomPatchDigitalSalesRoomTemplate();
+
+		@SuppressWarnings("PMD.UnusedLocalVariable")
+		DigitalSalesRoomTemplate patchDigitalSalesRoomTemplate =
+			digitalSalesRoomTemplateResource.patchDigitalSalesRoomTemplate(
+				postDigitalSalesRoomTemplate.getId(),
+				randomPatchDigitalSalesRoomTemplate);
+
+		DigitalSalesRoomTemplate expectedPatchDigitalSalesRoomTemplate =
+			postDigitalSalesRoomTemplate.clone();
+
+		BeanTestUtil.copyProperties(
+			randomPatchDigitalSalesRoomTemplate,
+			expectedPatchDigitalSalesRoomTemplate);
+
+		DigitalSalesRoomTemplate getDigitalSalesRoomTemplate =
+			digitalSalesRoomTemplateResource.getDigitalSalesRoomTemplate(
+				patchDigitalSalesRoomTemplate.getId());
+
+		assertEquals(
+			expectedPatchDigitalSalesRoomTemplate, getDigitalSalesRoomTemplate);
+		assertValid(getDigitalSalesRoomTemplate);
+	}
+
+	protected DigitalSalesRoomTemplate
+			testPatchDigitalSalesRoomTemplate_addDigitalSalesRoomTemplate()
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
 	public void testPostDigitalSalesRoomDigitalSalesRoomTemplate()
 		throws Exception {
 
@@ -661,8 +916,10 @@ public abstract class BaseDigitalSalesRoomTemplateResourceTestCase {
 				DigitalSalesRoomTemplate digitalSalesRoomTemplate)
 		throws Exception {
 
-		throw new UnsupportedOperationException(
-			"This method needs to be implemented");
+		return digitalSalesRoomTemplateResource.
+			postDigitalSalesRoomDigitalSalesRoomTemplate(
+				testGetDigitalSalesRoomDigitalSalesRoomTemplatesPage_getDigitalSalesRoomId(),
+				digitalSalesRoomTemplate);
 	}
 
 	@Test
@@ -681,6 +938,31 @@ public abstract class BaseDigitalSalesRoomTemplateResourceTestCase {
 
 	protected DigitalSalesRoomTemplate
 			testPostDigitalSalesRoomTemplate_addDigitalSalesRoomTemplate(
+				DigitalSalesRoomTemplate digitalSalesRoomTemplate)
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	@Test
+	public void testPostDigitalSalesRoomTemplateDigitalSalesRoomTemplate()
+		throws Exception {
+
+		DigitalSalesRoomTemplate randomDigitalSalesRoomTemplate =
+			randomDigitalSalesRoomTemplate();
+
+		DigitalSalesRoomTemplate postDigitalSalesRoomTemplate =
+			testPostDigitalSalesRoomTemplateDigitalSalesRoomTemplate_addDigitalSalesRoomTemplate(
+				randomDigitalSalesRoomTemplate);
+
+		assertEquals(
+			randomDigitalSalesRoomTemplate, postDigitalSalesRoomTemplate);
+		assertValid(postDigitalSalesRoomTemplate);
+	}
+
+	protected DigitalSalesRoomTemplate
+			testPostDigitalSalesRoomTemplateDigitalSalesRoomTemplate_addDigitalSalesRoomTemplate(
 				DigitalSalesRoomTemplate digitalSalesRoomTemplate)
 		throws Exception {
 
@@ -873,6 +1155,22 @@ public abstract class BaseDigitalSalesRoomTemplateResourceTestCase {
 				continue;
 			}
 
+			if (Objects.equals("ownerId", additionalAssertFieldName)) {
+				if (digitalSalesRoomTemplate.getOwnerId() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("ownerName", additionalAssertFieldName)) {
+				if (digitalSalesRoomTemplate.getOwnerName() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
 			if (Objects.equals("primaryColor", additionalAssertFieldName)) {
 				if (digitalSalesRoomTemplate.getPrimaryColor() == null) {
 					valid = false;
@@ -883,6 +1181,14 @@ public abstract class BaseDigitalSalesRoomTemplateResourceTestCase {
 
 			if (Objects.equals("secondaryColor", additionalAssertFieldName)) {
 				if (digitalSalesRoomTemplate.getSecondaryColor() == null) {
+					valid = false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("usages", additionalAssertFieldName)) {
+				if (digitalSalesRoomTemplate.getUsages() == null) {
 					valid = false;
 				}
 
@@ -1137,6 +1443,28 @@ public abstract class BaseDigitalSalesRoomTemplateResourceTestCase {
 				continue;
 			}
 
+			if (Objects.equals("ownerId", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						digitalSalesRoomTemplate1.getOwnerId(),
+						digitalSalesRoomTemplate2.getOwnerId())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("ownerName", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						digitalSalesRoomTemplate1.getOwnerName(),
+						digitalSalesRoomTemplate2.getOwnerName())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
 			if (Objects.equals("primaryColor", additionalAssertFieldName)) {
 				if (!Objects.deepEquals(
 						digitalSalesRoomTemplate1.getPrimaryColor(),
@@ -1152,6 +1480,17 @@ public abstract class BaseDigitalSalesRoomTemplateResourceTestCase {
 				if (!Objects.deepEquals(
 						digitalSalesRoomTemplate1.getSecondaryColor(),
 						digitalSalesRoomTemplate2.getSecondaryColor())) {
+
+					return false;
+				}
+
+				continue;
+			}
+
+			if (Objects.equals("usages", additionalAssertFieldName)) {
+				if (!Objects.deepEquals(
+						digitalSalesRoomTemplate1.getUsages(),
+						digitalSalesRoomTemplate2.getUsages())) {
 
 					return false;
 				}
@@ -1579,6 +1918,57 @@ public abstract class BaseDigitalSalesRoomTemplateResourceTestCase {
 			return sb.toString();
 		}
 
+		if (entityFieldName.equals("ownerId")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
+		}
+
+		if (entityFieldName.equals("ownerName")) {
+			Object object = digitalSalesRoomTemplate.getOwnerName();
+
+			String value = String.valueOf(object);
+
+			if (operator.equals("contains")) {
+				sb = new StringBundler();
+
+				sb.append("contains(");
+				sb.append(entityFieldName);
+				sb.append(",'");
+
+				if ((object != null) && (value.length() > 2)) {
+					sb.append(value.substring(1, value.length() - 1));
+				}
+				else {
+					sb.append(value);
+				}
+
+				sb.append("')");
+			}
+			else if (operator.equals("startswith")) {
+				sb = new StringBundler();
+
+				sb.append("startswith(");
+				sb.append(entityFieldName);
+				sb.append(",'");
+
+				if ((object != null) && (value.length() > 1)) {
+					sb.append(value.substring(0, value.length() - 1));
+				}
+				else {
+					sb.append(value);
+				}
+
+				sb.append("')");
+			}
+			else {
+				sb.append("'");
+				sb.append(value);
+				sb.append("'");
+			}
+
+			return sb.toString();
+		}
+
 		if (entityFieldName.equals("primaryColor")) {
 			Object object = digitalSalesRoomTemplate.getPrimaryColor();
 
@@ -1671,6 +2061,11 @@ public abstract class BaseDigitalSalesRoomTemplateResourceTestCase {
 			return sb.toString();
 		}
 
+		if (entityFieldName.equals("usages")) {
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
+		}
+
 		throw new IllegalArgumentException(
 			"Invalid entity field " + entityFieldName);
 	}
@@ -1730,10 +2125,14 @@ public abstract class BaseDigitalSalesRoomTemplateResourceTestCase {
 				id = RandomTestUtil.randomLong();
 				modifiedDate = RandomTestUtil.nextDate();
 				name = StringUtil.toLowerCase(RandomTestUtil.randomString());
+				ownerId = RandomTestUtil.randomLong();
+				ownerName = StringUtil.toLowerCase(
+					RandomTestUtil.randomString());
 				primaryColor = StringUtil.toLowerCase(
 					RandomTestUtil.randomString());
 				secondaryColor = StringUtil.toLowerCase(
 					RandomTestUtil.randomString());
+				usages = RandomTestUtil.randomLong();
 			}
 		};
 	}

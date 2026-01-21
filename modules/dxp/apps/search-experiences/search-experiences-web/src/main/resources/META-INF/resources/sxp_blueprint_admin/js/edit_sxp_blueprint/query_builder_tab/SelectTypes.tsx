@@ -13,14 +13,12 @@ import React, {useContext, useState} from 'react';
 // @ts-ignore
 
 import ThemeContext from '../../shared/ThemeContext';
-import {ISelectedItem, ISelectedSubtype} from '../../utils/types';
-
-// @ts-ignore
-
+import {
+	ISearchableType,
+	ISelectedItem,
+	ISelectedSubtype,
+} from '../../utils/types';
 import SearchableTypesModal from './SearchableTypesModal';
-
-// @ts-ignore
-
 import SelectSubtypes from './SelectSubtypes';
 
 /**
@@ -125,18 +123,10 @@ function SelectTypes({
 	initialSelectedTypes?: string[];
 	onAssetSubtypesMapChange: (subtypes: ISelectedSubtype[]) => void;
 	onFetchSearchableTypes: () => Promise<{
-		searchableTypes: {
-			className: string;
-			displayName: string;
-			hasSubtype?: boolean;
-		}[];
+		searchableTypes: ISearchableType[];
 	}>;
 	onFrameworkConfigChange: (config: {searchableAssetTypes: string[]}) => void;
-	searchableTypes?: {
-		className: string;
-		displayName: string;
-		hasSubtype?: boolean;
-	}[];
+	searchableTypes?: ISearchableType[];
 }) {
 	const {locale}: {locale: string} = useContext(ThemeContext);
 
@@ -228,9 +218,9 @@ function SelectTypes({
 				searchableTypes={mainSearchableTypesSorted}
 			>
 				<ClayButton
-					className="select-types-button"
+					className="c-mb-4"
 					displayType="secondary"
-					small
+					size="sm"
 				>
 					{Liferay.Language.get('select-asset-types')}
 				</ClayButton>

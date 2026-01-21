@@ -179,24 +179,20 @@ public class PageExperienceResourceImpl extends BasePageExperienceResourceImpl {
 			return _addPageExperience(groupId, pageExperience);
 		}
 
-		if ((pageExperience.getPriority() != null) &&
-			(segmentsExperience.getPriority() !=
-				pageExperience.getPriority())) {
-
-			segmentsExperience =
-				_segmentsExperienceService.updateSegmentsExperiencePriority(
-					segmentsExperience.getSegmentsExperienceId(),
-					GetterUtil.getInteger(pageExperience.getPriority()));
-		}
-
 		try (AutoCloseable autoCloseable =
 				LayoutServiceContextHelperUtil.getServiceContextAutoCloseable(
 					layout, contextUser)) {
 
+			int priority = segmentsExperience.getPriority();
+
+			if (pageExperience.getPriority() != null) {
+				priority = pageExperience.getPriority();
+			}
+
 			return _toPageExperience(
 				SegmentsExperienceUtil.updateSegmentsExperience(
 					_fragmentEntryProcessorRegistry, _infoItemServiceRegistry,
-					layout, pageExperience, segmentsExperience,
+					layout, pageExperience, priority, segmentsExperience,
 					ServiceContextUtil.createServiceContext(
 						groupId, contextHttpServletRequest,
 						contextUser.getUserId())));
@@ -229,10 +225,13 @@ public class PageExperienceResourceImpl extends BasePageExperienceResourceImpl {
 				LayoutServiceContextHelperUtil.getServiceContextAutoCloseable(
 					layout, contextUser)) {
 
+			SegmentsExperienceUtil.validateSegmentsExperienceLayout(layout);
+
 			return _toPageExperience(
 				SegmentsExperienceUtil.addSegmentsExperience(
 					_fragmentEntryProcessorRegistry, _infoItemServiceRegistry,
 					layout, pageExperience,
+					GetterUtil.getInteger(pageExperience.getPriority()),
 					ServiceContextUtil.createServiceContext(
 						groupId, contextHttpServletRequest,
 						contextUser.getUserId())));

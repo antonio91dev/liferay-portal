@@ -11,6 +11,7 @@ import com.liferay.asset.kernel.service.AssetCategoryLocalServiceUtil;
 import com.liferay.asset.kernel.service.AssetVocabularyLocalServiceUtil;
 import com.liferay.fragment.util.configuration.FragmentConfigurationField;
 import com.liferay.fragment.util.configuration.FragmentEntryConfigurationParserUtil;
+import com.liferay.headless.admin.site.dto.v1_0.BasicFragmentInstancePageElementDefinition;
 import com.liferay.headless.admin.site.dto.v1_0.CategoryFragmentConfigurationFieldValue;
 import com.liferay.headless.admin.site.dto.v1_0.CheckboxFragmentConfigurationFieldValue;
 import com.liferay.headless.admin.site.dto.v1_0.CollectionFragmentConfigurationFieldValue;
@@ -18,7 +19,9 @@ import com.liferay.headless.admin.site.dto.v1_0.ColorPaletteFragmentConfiguratio
 import com.liferay.headless.admin.site.dto.v1_0.ColorPaletteValue;
 import com.liferay.headless.admin.site.dto.v1_0.ColorPickerFragmentConfigurationFieldValue;
 import com.liferay.headless.admin.site.dto.v1_0.ContextualMenuNavigationMenuValue;
+import com.liferay.headless.admin.site.dto.v1_0.FormFragmentInstancePageElementDefinition;
 import com.liferay.headless.admin.site.dto.v1_0.FragmentConfigurationFieldValue;
+import com.liferay.headless.admin.site.dto.v1_0.FragmentInstance;
 import com.liferay.headless.admin.site.dto.v1_0.HrefURLValue;
 import com.liferay.headless.admin.site.dto.v1_0.ItemExternalReference;
 import com.liferay.headless.admin.site.dto.v1_0.ItemFragmentConfigurationFieldValue;
@@ -26,6 +29,7 @@ import com.liferay.headless.admin.site.dto.v1_0.ItemValue;
 import com.liferay.headless.admin.site.dto.v1_0.LengthFragmentConfigurationFieldValue;
 import com.liferay.headless.admin.site.dto.v1_0.NavigationMenuFragmentConfigurationFieldValue;
 import com.liferay.headless.admin.site.dto.v1_0.NavigationMenuValue;
+import com.liferay.headless.admin.site.dto.v1_0.PageElementDefinition;
 import com.liferay.headless.admin.site.dto.v1_0.SelectFragmentConfigurationFieldValue;
 import com.liferay.headless.admin.site.dto.v1_0.SiteMenuNavigationMenuValue;
 import com.liferay.headless.admin.site.dto.v1_0.SitePageURLValue;
@@ -73,54 +77,75 @@ import java.util.Objects;
 public class FragmentConfigurationFieldValuesUtil {
 
 	public static JSONObject getFreeMarkerFragmentEntryProcessorJSONObject(
-			String configuration,
-			Map<String, FragmentConfigurationFieldValue>
-				fragmentConfigurationFieldValuesMap,
+			PageElementDefinition pageElementDefinition,
 			LayoutStructureItemImporterContext
 				layoutStructureItemImporterContext)
 		throws Exception {
 
-		if (fragmentConfigurationFieldValuesMap == null) {
-			return null;
+		if (pageElementDefinition instanceof
+				BasicFragmentInstancePageElementDefinition) {
+
+			BasicFragmentInstancePageElementDefinition
+				basicFragmentInstancePageElementDefinition =
+					(BasicFragmentInstancePageElementDefinition)
+						pageElementDefinition;
+
+			FragmentInstance fragmentInstance =
+				basicFragmentInstancePageElementDefinition.
+					getFragmentInstance();
+
+			return _getFreeMarkerFragmentEntryProcessorJSONObject(
+				fragmentInstance.getConfiguration(),
+				fragmentInstance.getFragmentConfigurationFieldValues(),
+				layoutStructureItemImporterContext);
 		}
 
-		JSONObject jsonObject = JSONFactoryUtil.createJSONObject();
+		if (!(pageElementDefinition instanceof
+				FormFragmentInstancePageElementDefinition)) {
 
-		JSONObject configurationJSONObject = JSONFactoryUtil.createJSONObject(
-			configuration);
-
-		for (FragmentConfigurationField fragmentConfigurationField :
-				FragmentEntryConfigurationParserUtil.
-					getFragmentConfigurationFields(configurationJSONObject)) {
-
-			FragmentConfigurationFieldValue fragmentConfigurationFieldValue =
-				fragmentConfigurationFieldValuesMap.get(
-					fragmentConfigurationField.getName());
-
-			if (fragmentConfigurationFieldValue == null) {
-				continue;
-			}
-
-			if (!Objects.equals(
-					fragmentConfigurationFieldValue.getType(),
-					FragmentConfigurationFieldValueTypeUtil.toExternalType(
-						fragmentConfigurationField.getType()))) {
-
-				throw new UnsupportedOperationException();
-			}
-
-			jsonObject.put(
-				fragmentConfigurationField.getName(),
-				_fromFragmentConfigurationFieldValue(
-					fragmentConfigurationFieldValue, fragmentConfigurationField,
-					layoutStructureItemImporterContext));
+			throw new UnsupportedOperationException();
 		}
 
-		if (jsonObject.length() == 0) {
-			return null;
-		}
+		FormFragmentInstancePageElementDefinition
+			formFragmentInstancePageElementDefinition =
+				(FormFragmentInstancePageElementDefinition)
+					pageElementDefinition;
 
-		return jsonObject;
+		FragmentInstance fragmentInstance =
+			formFragmentInstancePageElementDefinition.getFragmentInstance();
+
+		return JSONUtil.merge(
+			_getFreeMarkerFragmentEntryProcessorJSONObject(
+				fragmentInstance.getConfiguration(),
+				fragmentInstance.getFragmentConfigurationFieldValues(),
+				layoutStructureItemImporterContext),
+			JSONUtil.put(
+				"inputFieldId",
+				formFragmentInstancePageElementDefinition.getFieldKey()
+			).put(
+				"inputHelpText",
+				LocalizedValueUtil.toJSONObject(
+					formFragmentInstancePageElementDefinition.
+						getHelpText_i18n(),
+					value -> value)
+			).put(
+				"inputLabel",
+				LocalizedValueUtil.toJSONObject(
+					formFragmentInstancePageElementDefinition.getLabel_i18n(),
+					value -> value)
+			).put(
+				"inputReadOnly",
+				formFragmentInstancePageElementDefinition.getReadOnlyField()
+			).put(
+				"inputRequired",
+				formFragmentInstancePageElementDefinition.getMarkAsRequired()
+			).put(
+				"inputShowHelpText",
+				formFragmentInstancePageElementDefinition.getShowHelpText()
+			).put(
+				"inputShowLabel",
+				formFragmentInstancePageElementDefinition.getShowLabel()
+			));
 	}
 
 	private static Object _fromFragmentConfigurationFieldValue(
@@ -356,7 +381,7 @@ public class FragmentConfigurationFieldValuesUtil {
 			return null;
 		}
 
-		Long groupId = ItemScopeUtil.getGroupId(
+		Long groupId = ItemScopeUtil.getItemGroupId(
 			layoutStructureItemImporterContext.getCompanyId(),
 			itemExternalReference.getScope(),
 			layoutStructureItemImporterContext.getGroupId());
@@ -499,6 +524,57 @@ public class FragmentConfigurationFieldValuesUtil {
 		}
 
 		return LocalizedValueUtil.toJSONObject(valuesMap, unsafeFunction);
+	}
+
+	private static JSONObject _getFreeMarkerFragmentEntryProcessorJSONObject(
+			String configuration,
+			Map<String, FragmentConfigurationFieldValue>
+				fragmentConfigurationFieldValuesMap,
+			LayoutStructureItemImporterContext
+				layoutStructureItemImporterContext)
+		throws Exception {
+
+		if (fragmentConfigurationFieldValuesMap == null) {
+			return null;
+		}
+
+		JSONObject jsonObject = JSONFactoryUtil.createJSONObject();
+
+		JSONObject configurationJSONObject = JSONFactoryUtil.createJSONObject(
+			configuration);
+
+		for (FragmentConfigurationField fragmentConfigurationField :
+				FragmentEntryConfigurationParserUtil.
+					getFragmentConfigurationFields(configurationJSONObject)) {
+
+			FragmentConfigurationFieldValue fragmentConfigurationFieldValue =
+				fragmentConfigurationFieldValuesMap.get(
+					fragmentConfigurationField.getName());
+
+			if (fragmentConfigurationFieldValue == null) {
+				continue;
+			}
+
+			if (!Objects.equals(
+					fragmentConfigurationFieldValue.getType(),
+					FragmentConfigurationFieldValueTypeUtil.toExternalType(
+						fragmentConfigurationField.getType()))) {
+
+				throw new UnsupportedOperationException();
+			}
+
+			jsonObject.put(
+				fragmentConfigurationField.getName(),
+				_fromFragmentConfigurationFieldValue(
+					fragmentConfigurationFieldValue, fragmentConfigurationField,
+					layoutStructureItemImporterContext));
+		}
+
+		if (jsonObject.length() == 0) {
+			return null;
+		}
+
+		return jsonObject;
 	}
 
 	private static JSONObject _getItemJSONObject(

@@ -37,7 +37,7 @@ buildIBMS3StoreTest {
 	filter {
 		String line ->
 
-		line.replace "s3Store", "ibmS3Store"
+		line.replace "s3Store.", "ibmS3Store."
 	}
 
 	from new File("src/test/java/com/liferay/portal/store/s3/S3StoreTest.java")

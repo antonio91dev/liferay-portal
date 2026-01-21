@@ -28,6 +28,7 @@ import com.liferay.asset.list.model.AssetListEntry;
 import com.liferay.asset.list.service.AssetListEntryLocalService;
 import com.liferay.asset.list.util.comparator.ClassNameModelResourceComparator;
 import com.liferay.asset.util.AssetRendererFactoryWrapper;
+import com.liferay.batch.engine.unit.BatchEngineUnitThreadLocal;
 import com.liferay.blogs.model.BlogsEntry;
 import com.liferay.client.extension.constants.ClientExtensionEntryConstants;
 import com.liferay.client.extension.service.ClientExtensionEntryLocalService;
@@ -260,6 +261,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
 import org.osgi.framework.wiring.BundleWiring;
 
 /**
@@ -1017,21 +1019,23 @@ public class BundleSiteInitializer implements SiteInitializer {
 				Keyword existingKeyword = null;
 
 				if (groupId != 0) {
-					existingKeyword =
+					Page<Keyword> page =
 						keywordResource.getAssetLibraryKeywordsPage(
 							groupId, null, null,
 							keywordResource.toFilter(
 								"name eq '" + keyword.getName() + "'"),
-							null, null
-						).fetchFirstItem();
+							null, null);
+
+					existingKeyword = page.fetchFirstItem();
 				}
 				else {
-					existingKeyword = keywordResource.getSiteKeywordsPage(
+					Page<Keyword> page = keywordResource.getSiteKeywordsPage(
 						groupId, null, null,
 						keywordResource.toFilter(
 							"name eq '" + keyword.getName() + "'"),
-						null, null
-					).fetchFirstItem();
+						null, null);
+
+					existingKeyword = page.fetchFirstItem();
 
 					groupId = serviceContext.getScopeGroupId();
 				}
@@ -1264,29 +1268,39 @@ public class BundleSiteInitializer implements SiteInitializer {
 			ObjectDefinition existingObjectDefinition =
 				objectDefinitionsPage.fetchFirstItem();
 
-			if (existingObjectDefinition == null) {
-				if (GetterUtil.getBoolean(
-						objectDefinition.getAccountEntryRestricted())) {
+			try {
+				BundleContext bundleContext = _siteBundle.getBundleContext();
 
-					accountEntryRestrictedObjectDefinitions.put(
-						objectDefinition.getName(), objectDefinition);
+				BatchEngineUnitThreadLocal.setFileName(
+					String.valueOf(bundleContext.getBundle()));
+
+				if (existingObjectDefinition == null) {
+					if (GetterUtil.getBoolean(
+							objectDefinition.getAccountEntryRestricted())) {
+
+						accountEntryRestrictedObjectDefinitions.put(
+							objectDefinition.getName(), objectDefinition);
+					}
+
+					objectDefinition =
+						objectDefinitionResource.postObjectDefinition(
+							objectDefinition);
+
+					objectDefinitionIds.add(objectDefinition.getId());
+				}
+				else {
+					objectDefinition =
+						objectDefinitionResource.patchObjectDefinition(
+							existingObjectDefinition.getId(), objectDefinition);
 				}
 
-				objectDefinition =
-					objectDefinitionResource.postObjectDefinition(
-						objectDefinition);
-
-				objectDefinitionIds.add(objectDefinition.getId());
+				_replaceObjectDefinitionValues(
+					objectDefinition.getClassName(), objectDefinition.getName(),
+					objectDefinition.getId(), stringUtilReplaceValues);
 			}
-			else {
-				objectDefinition =
-					objectDefinitionResource.patchObjectDefinition(
-						existingObjectDefinition.getId(), objectDefinition);
+			finally {
+				BatchEngineUnitThreadLocal.setFileName(StringPool.BLANK);
 			}
-
-			_replaceObjectDefinitionValues(
-				objectDefinition.getClassName(), objectDefinition.getName(),
-				objectDefinition.getId(), stringUtilReplaceValues);
 		}
 	}
 
@@ -1369,11 +1383,13 @@ public class BundleSiteInitializer implements SiteInitializer {
 					_objectDefinitionLocalService.fetchObjectDefinition(
 						serviceContext.getCompanyId(), "C_" + entry.getKey());
 
+			ObjectDefinition objectDefinition = entry.getValue();
+
 			com.liferay.object.model.ObjectField serviceBuilderObjectField =
 				_objectFieldLocalService.fetchObjectField(
 					serviceBuilderObjectDefinition.getObjectDefinitionId(),
-					entry.getValue(
-					).getAccountEntryRestrictedObjectFieldName());
+					objectDefinition.
+						getAccountEntryRestrictedObjectFieldName());
 
 			if (serviceBuilderObjectDefinition.isDefaultStorageType()) {
 				_objectDefinitionLocalService.enableAccountEntryRestricted(

@@ -380,7 +380,10 @@ export class StructureBuilderPage {
 		}).toPass();
 	}
 
-	async deleteFields(fields: Field[]) {
+	async deleteFields(
+		fields: Field[],
+		{confirm}: {confirm?: boolean} = {confirm: true}
+	) {
 
 		// Deleting one field
 
@@ -413,6 +416,21 @@ export class StructureBuilderPage {
 				autoClick: true,
 				target: this.page.getByRole('menuitem', {name: 'Delete'}),
 				trigger: this.page.getByLabel('Selection Options'),
+			});
+		}
+
+		// Wait some time in case deletion modal is shown
+
+		await this.page.waitForTimeout(2500);
+
+		const modal = this.page.locator('.modal-content', {
+			hasText: 'Delete Fields',
+		});
+
+		if ((await modal.isVisible()) && confirm) {
+			await clickAndExpectToBeHidden({
+				target: modal,
+				trigger: modal.getByText('Delete', {exact: true}),
 			});
 		}
 	}
@@ -464,7 +482,7 @@ export class StructureBuilderPage {
 			await this.publishButton.click();
 
 			await waitForAlert(this.page, 'published successfully', {
-				timeout: 5000,
+				timeout: 10000,
 			});
 		};
 
@@ -473,7 +491,7 @@ export class StructureBuilderPage {
 				(response) =>
 					response.url().includes('object-definitions') &&
 					response.status() === 200,
-				{timeout: 5000}
+				{timeout: 10000}
 			),
 			await publish(),
 		]);
@@ -591,6 +609,18 @@ export class StructureBuilderPage {
 				await row.getByLabel('Select Workflow').selectOption(workflow);
 			}
 		}
+	}
+
+	async switchLanguage(languageId: string) {
+		const trigger = this.page.getByLabel('Open Localizations');
+
+		await clickAndExpectToBeVisible({
+			autoClick: true,
+			target: this.page.locator('.dropdown-item', {hasText: languageId}),
+			trigger,
+		});
+
+		await expect(trigger).toHaveAttribute('title', languageId);
 	}
 
 	async switchTab(name: 'General' | 'Search' | 'Workflow') {

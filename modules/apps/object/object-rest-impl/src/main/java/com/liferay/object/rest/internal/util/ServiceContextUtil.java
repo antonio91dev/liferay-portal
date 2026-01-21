@@ -7,6 +7,7 @@ package com.liferay.object.rest.internal.util;
 
 import com.liferay.asset.kernel.model.AssetCategory;
 import com.liferay.asset.kernel.service.AssetCategoryLocalServiceUtil;
+import com.liferay.object.comment.ObjectEntryComment;
 import com.liferay.object.rest.dto.v1_0.ObjectEntry;
 import com.liferay.object.rest.dto.v1_0.Status;
 import com.liferay.object.rest.dto.v1_0.TaxonomyCategoryBrief;
@@ -30,6 +31,7 @@ import com.liferay.portal.vulcan.util.LocalizedMapUtil;
 import java.io.Serializable;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
@@ -61,7 +63,7 @@ public class ServiceContextUtil {
 	public static ServiceContext createServiceContext(
 		long companyId, long groupId, Locale locale,
 		ModelPermissions modelPermissions, ObjectEntry objectEntry,
-		long userId) {
+		List<ObjectEntryComment> objectEntryComments, long userId) {
 
 		ServiceContext serviceContext = createServiceContext(
 			companyId, groupId, objectEntry, userId);
@@ -72,6 +74,8 @@ public class ServiceContextUtil {
 				LocaleUtil.toLanguageId(locale),
 				objectEntry.getFriendlyUrlPath_i18n(),
 				objectEntry.getFriendlyUrlPath()));
+		serviceContext.setAttribute(
+			"objectEntryComments", (Serializable)objectEntryComments);
 		serviceContext.setCompanyId(companyId);
 		serviceContext.setLanguageId(LocaleUtil.toLanguageId(locale));
 		serviceContext.setModelPermissions(modelPermissions);

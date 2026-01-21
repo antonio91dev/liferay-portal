@@ -46,29 +46,42 @@ let {result: useStateHookResult} = renderHook(() =>
 );
 
 const component = ({
+	loading = false,
 	numberOfSteps = 1,
 	setHandleStepSubmit,
-}: TDSRRoomDetailsStepProps) => {
+	showHeader = true,
+}: TDSRRoomDetailsStepProps & {loading?: boolean}) => {
 	return (
 		<DSRContext.Provider
 			value={{
 				dataContext: useStateHookResult.current[0],
+				loading,
 				setDataContext: useStateHookResult.current[1],
 			}}
 		>
 			<DSRRoomSettingsStep
 				numberOfSteps={numberOfSteps}
 				setHandleStepSubmit={setHandleStepSubmit}
+				showHeader={showHeader}
 			/>
 		</DSRContext.Provider>
 	);
 };
 
 const renderComponent = ({
+	loading = false,
 	numberOfSteps = 1,
 	setHandleStepSubmit,
-}: TDSRRoomDetailsStepProps) => {
-	return render(component({numberOfSteps, setHandleStepSubmit}));
+	showHeader = true,
+}: TDSRRoomDetailsStepProps & {loading?: boolean}) => {
+	return render(
+		component({
+			loading,
+			numberOfSteps,
+			setHandleStepSubmit,
+			showHeader,
+		})
+	);
 };
 
 describe('DSRRoomSettingsStep', () => {
@@ -107,6 +120,19 @@ describe('DSRRoomSettingsStep', () => {
 		expect(screen.getByTestId('selectChannelInput')).toBeInTheDocument();
 		expect(screen.getByTestId('stepLocator')).toBeInTheDocument();
 		expect(screen.getByTestId('stepTitle')).toBeInTheDocument();
+	});
+
+	it('hides header based on the parameter', async () => {
+		renderComponent({
+			numberOfSteps: 1,
+			setHandleStepSubmit: () => {},
+			showHeader: false,
+		});
+
+		expect(screen.getByTestId('selectAccountInput')).toBeInTheDocument();
+		expect(screen.getByTestId('selectChannelInput')).toBeInTheDocument();
+		expect(screen.queryByTestId('stepLocator')).not.toBeInTheDocument();
+		expect(screen.queryByTestId('stepTitle')).not.toBeInTheDocument();
 	});
 
 	it('loads accounts', async () => {
@@ -298,5 +324,16 @@ describe('DSRRoomSettingsStep', () => {
 			expect(state.channelId).toBe(201);
 			expect(state.channelName).toBe('channel2');
 		});
+	});
+
+	it('disables form fields when loading is true', async () => {
+		renderComponent({
+			loading: true,
+			numberOfSteps: 1,
+			setHandleStepSubmit: () => {},
+		});
+
+		expect(screen.getByTestId('selectAccountInput')).toBeDisabled();
+		expect(screen.getByTestId('selectChannelInput')).toBeDisabled();
 	});
 });

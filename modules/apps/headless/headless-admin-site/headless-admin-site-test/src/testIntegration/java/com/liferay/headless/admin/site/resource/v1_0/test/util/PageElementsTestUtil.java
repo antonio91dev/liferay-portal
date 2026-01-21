@@ -15,6 +15,7 @@ import com.liferay.fragment.renderer.FragmentRenderer;
 import com.liferay.fragment.renderer.util.FragmentRendererRegistryUtil;
 import com.liferay.fragment.service.FragmentCollectionLocalServiceUtil;
 import com.liferay.fragment.service.FragmentEntryLocalServiceUtil;
+import com.liferay.headless.admin.site.client.dto.v1_0.BasicFragmentInstancePageElementDefinition;
 import com.liferay.headless.admin.site.client.dto.v1_0.ClassNameReference;
 import com.liferay.headless.admin.site.client.dto.v1_0.CollectionDisplayListStyle;
 import com.liferay.headless.admin.site.client.dto.v1_0.CollectionDisplayPageElementDefinition;
@@ -31,7 +32,7 @@ import com.liferay.headless.admin.site.client.dto.v1_0.FormStepContainerPageElem
 import com.liferay.headless.admin.site.client.dto.v1_0.FormStepPageElementDefinition;
 import com.liferay.headless.admin.site.client.dto.v1_0.FragmentDropZonePageElementDefinition;
 import com.liferay.headless.admin.site.client.dto.v1_0.FragmentEditableElement;
-import com.liferay.headless.admin.site.client.dto.v1_0.FragmentInstancePageElementDefinition;
+import com.liferay.headless.admin.site.client.dto.v1_0.FragmentInstance;
 import com.liferay.headless.admin.site.client.dto.v1_0.FragmentItemExternalReference;
 import com.liferay.headless.admin.site.client.dto.v1_0.FragmentReference;
 import com.liferay.headless.admin.site.client.dto.v1_0.GridPageElementDefinition;
@@ -71,6 +72,81 @@ import java.util.Objects;
  */
 public class PageElementsTestUtil {
 
+	public static BasicFragmentInstancePageElementDefinition
+		getBasicFragmentInstancePageElementDefinition(
+			Map<String, Object> configurationValuesMap,
+			FragmentEditableElement[] fragmentEditableElements,
+			FragmentEntry fragmentEntry, long scopeGroupId) {
+
+		return getBasicFragmentInstancePageElementDefinition(
+			configurationValuesMap, fragmentEditableElements, fragmentEntry,
+			RandomTestUtil.randomString(), RandomTestUtil.randomString(),
+			scopeGroupId, RandomTestUtil.randomString(), null);
+	}
+
+	public static BasicFragmentInstancePageElementDefinition
+		getBasicFragmentInstancePageElementDefinition(
+			Map<String, Object> configurationValuesMap,
+			FragmentEditableElement[] fragmentEditableElements,
+			FragmentEntry fragmentEntry,
+			String fragmentInstanceExternalReferenceCode, String namespace,
+			long scopeGroupId, String uuid, WidgetInstance[] widgetInstances) {
+
+		return new BasicFragmentInstancePageElementDefinition() {
+			{
+				setFragmentInstance(
+					_getFragmentInstance(
+						configurationValuesMap, fragmentEditableElements,
+						fragmentEntry, fragmentInstanceExternalReferenceCode,
+						namespace, scopeGroupId, uuid, widgetInstances));
+				setType(() -> Type.BASIC_FRAGMENT);
+			}
+		};
+	}
+
+	public static BasicFragmentInstancePageElementDefinition
+		getBasicFragmentInstancePageElementDefinition(
+			Map<String, Object> configurationValuesMap,
+			FragmentEditableElement[] fragmentEditableElements,
+			FragmentRenderer fragmentRenderer, long scopeGroupId) {
+
+		return new BasicFragmentInstancePageElementDefinition() {
+			{
+				setFragmentInstance(
+					_getFragmentInstance(
+						configurationValuesMap, fragmentEditableElements,
+						fragmentRenderer, scopeGroupId));
+				setType(() -> Type.BASIC_FRAGMENT);
+			}
+		};
+	}
+
+	public static BasicFragmentInstancePageElementDefinition
+		getBasicFragmentInstancePageElementDefinition(
+			Map<String, Object> configurationValuesMap, String key,
+			long scopeGroupId) {
+
+		FragmentEntry fragmentEntry =
+			FragmentCollectionContributorRegistryUtil.getFragmentEntry(key);
+
+		if (fragmentEntry != null) {
+			return getBasicFragmentInstancePageElementDefinition(
+				configurationValuesMap, new FragmentEditableElement[0],
+				fragmentEntry, scopeGroupId);
+		}
+
+		FragmentRenderer fragmentRenderer =
+			FragmentRendererRegistryUtil.getFragmentRenderer(key);
+
+		if (fragmentRenderer != null) {
+			return getBasicFragmentInstancePageElementDefinition(
+				configurationValuesMap, new FragmentEditableElement[0],
+				fragmentRenderer, scopeGroupId);
+		}
+
+		return null;
+	}
+
 	public static PageElement getDropZonePageElement(
 			String externalReferenceCode, long groupId)
 		throws PortalException {
@@ -86,158 +162,6 @@ public class PageElementsTestUtil {
 
 		return _getPageElement(
 			externalReferenceCode, dropZonePageElementDefinition);
-	}
-
-	public static FragmentInstancePageElementDefinition
-		getFragmentInstancePageElementDefinition(
-			Map<String, Object> configurationValuesMap,
-			FragmentEditableElement[] fragmentEditableElements,
-			FragmentEntry fragmentEntry, long scopeGroupId) {
-
-		return getFragmentInstancePageElementDefinition(
-			configurationValuesMap, fragmentEditableElements, fragmentEntry,
-			RandomTestUtil.randomString(), scopeGroupId,
-			RandomTestUtil.randomString(), RandomTestUtil.randomString(), null);
-	}
-
-	public static FragmentInstancePageElementDefinition
-		getFragmentInstancePageElementDefinition(
-			Map<String, Object> configurationValuesMap,
-			FragmentEditableElement[] fragmentEditableElements,
-			FragmentEntry fragmentEntry,
-			String fragmentInstanceExternalReferenceCode, long scopeGroupId,
-			String namespace, String uuid, WidgetInstance[] widgetInstances) {
-
-		FragmentInstancePageElementDefinition
-			fragmentInstancePageElementDefinition =
-				new FragmentInstancePageElementDefinition();
-
-		fragmentInstancePageElementDefinition.setConfiguration(
-			fragmentEntry::getConfiguration);
-		fragmentInstancePageElementDefinition.
-			setFragmentConfigurationFieldValues(
-				() ->
-					FragmentConfigurationFieldValueTestUtil.
-						getFragmentConfigurationFieldValuesMap(
-							JSONFactoryUtil.createJSONObject(
-								fragmentEntry.getConfiguration()),
-							configurationValuesMap, scopeGroupId));
-		fragmentInstancePageElementDefinition.setFragmentEditableElements(
-			() -> fragmentEditableElements);
-		fragmentInstancePageElementDefinition.setCss(fragmentEntry::getCss);
-		fragmentInstancePageElementDefinition.setCssClasses(
-			() -> new String[] {RandomTestUtil.randomString()});
-		fragmentInstancePageElementDefinition.setDatePropagated(
-			RandomTestUtil::nextDate);
-		fragmentInstancePageElementDefinition.
-			setFragmentInstanceExternalReferenceCode(
-				fragmentInstanceExternalReferenceCode);
-		fragmentInstancePageElementDefinition.setFragmentReference(
-			() -> {
-				if (fragmentEntry.getFragmentEntryId() == 0) {
-					return _addDefaultFragmentReference(
-						fragmentEntry.getFragmentEntryKey());
-				}
-
-				return _addFragmentItemExternalReference(
-					fragmentEntry,
-					ScopeTestUtil.getItemScope(
-						fragmentEntry.getGroupId(), scopeGroupId));
-			});
-		fragmentInstancePageElementDefinition.setFragmentType(
-			FragmentInstancePageElementDefinition.FragmentType.BASIC);
-		fragmentInstancePageElementDefinition.setHtml(fragmentEntry::getHtml);
-		fragmentInstancePageElementDefinition.setFragmentViewports(
-			FragmentViewportTestUtil.getFragmentViewports());
-		fragmentInstancePageElementDefinition.setIndexed(
-			RandomTestUtil::randomBoolean);
-		fragmentInstancePageElementDefinition.setJs(fragmentEntry::getJs);
-		fragmentInstancePageElementDefinition.setName(
-			RandomTestUtil::randomString);
-		fragmentInstancePageElementDefinition.setNamespace(namespace);
-		fragmentInstancePageElementDefinition.setType(
-			PageElementDefinition.Type.FRAGMENT);
-		fragmentInstancePageElementDefinition.setUuid(uuid);
-		fragmentInstancePageElementDefinition.setWidgetInstances(
-			() -> widgetInstances);
-
-		return fragmentInstancePageElementDefinition;
-	}
-
-	public static FragmentInstancePageElementDefinition
-		getFragmentInstancePageElementDefinition(
-			Map<String, Object> configurationValuesMap,
-			FragmentEditableElement[] curFragmentEditableElements,
-			FragmentRenderer fragmentRenderer, long scopeGroupId) {
-
-		JSONObject configurationJSONObject =
-			fragmentRenderer.getConfigurationJSONObject(
-				new DefaultFragmentRendererContext(null));
-
-		return new FragmentInstancePageElementDefinition() {
-			{
-				setConfiguration(
-					() -> GetterUtil.getString(
-						JSONFactoryUtil.toString(configurationJSONObject)));
-				setCss(() -> StringPool.BLANK);
-				setCssClasses(
-					() -> new String[] {RandomTestUtil.randomString()});
-				setDatePropagated(RandomTestUtil::nextDate);
-				setFragmentConfigurationFieldValues(
-					() ->
-						FragmentConfigurationFieldValueTestUtil.
-							getFragmentConfigurationFieldValuesMap(
-								configurationJSONObject, configurationValuesMap,
-								scopeGroupId));
-				setFragmentEditableElements(() -> curFragmentEditableElements);
-				setFragmentInstanceExternalReferenceCode(
-					RandomTestUtil::randomString);
-				setFragmentReference(
-					() -> new DefaultFragmentReference() {
-						{
-							setDefaultFragmentKey(fragmentRenderer::getKey);
-							setFragmentReferenceType(
-								() ->
-									FragmentReferenceType.
-										DEFAULT_FRAGMENT_REFERENCE);
-						}
-					});
-				setFragmentType(FragmentType.BASIC);
-				setHtml(() -> StringPool.BLANK);
-				setIndexed(RandomTestUtil::randomBoolean);
-				setJs(() -> StringPool.BLANK);
-				setName(RandomTestUtil::randomString);
-				setNamespace(RandomTestUtil::randomString);
-				setType(Type.FRAGMENT);
-				setUuid(RandomTestUtil::randomString);
-			}
-		};
-	}
-
-	public static FragmentInstancePageElementDefinition
-		getFragmentInstancePageElementDefinition(
-			Map<String, Object> configurationValuesMap, String key,
-			long scopeGroupId) {
-
-		FragmentEntry fragmentEntry =
-			FragmentCollectionContributorRegistryUtil.getFragmentEntry(key);
-
-		if (fragmentEntry != null) {
-			return getFragmentInstancePageElementDefinition(
-				configurationValuesMap, new FragmentEditableElement[0],
-				fragmentEntry, scopeGroupId);
-		}
-
-		FragmentRenderer fragmentRenderer =
-			FragmentRendererRegistryUtil.getFragmentRenderer(key);
-
-		if (fragmentRenderer != null) {
-			return getFragmentInstancePageElementDefinition(
-				configurationValuesMap, new FragmentEditableElement[0],
-				fragmentRenderer, scopeGroupId);
-		}
-
-		return null;
 	}
 
 	public static PageElementDefinition getPageElementDefinition(
@@ -347,8 +271,8 @@ public class PageElementsTestUtil {
 			};
 		}
 
-		if (Objects.equals(type, PageElementDefinition.Type.FRAGMENT)) {
-			return getFragmentInstancePageElementDefinition(
+		if (Objects.equals(type, PageElementDefinition.Type.BASIC_FRAGMENT)) {
+			return getBasicFragmentInstancePageElementDefinition(
 				Collections.emptyMap(), "BASIC_COMPONENT-heading",
 				scopeGroupId);
 		}
@@ -420,6 +344,9 @@ public class PageElementsTestUtil {
 					getPageElements(
 						RandomTestUtil.randomInt(1, 2),
 						pageElement.getExternalReferenceCode(), scopeGroupId));
+			}
+			else {
+				pageElement.setPageElements(new PageElement[0]);
 			}
 
 			pageElement.setParentExternalReferenceCode(
@@ -538,6 +465,103 @@ public class PageElementsTestUtil {
 			});
 
 		return collectionDisplayPageElement;
+	}
+
+	private static FragmentInstance _getFragmentInstance(
+		Map<String, Object> configurationValuesMap,
+		FragmentEditableElement[] fragmentEditableElements,
+		FragmentEntry fragmentEntry,
+		String fragmentInstanceExternalReferenceCode, String namespace,
+		long scopeGroupId, String uuid, WidgetInstance[] widgetInstances) {
+
+		FragmentInstance fragmentInstance = new FragmentInstance();
+
+		fragmentInstance.setConfiguration(fragmentEntry::getConfiguration);
+		fragmentInstance.setCss(fragmentEntry::getCss);
+		fragmentInstance.setCssClasses(
+			() -> new String[] {RandomTestUtil.randomString()});
+		fragmentInstance.setDatePropagated(RandomTestUtil::nextDate);
+		fragmentInstance.setFragmentConfigurationFieldValues(
+			() ->
+				FragmentConfigurationFieldValueTestUtil.
+					getFragmentConfigurationFieldValuesMap(
+						JSONFactoryUtil.createJSONObject(
+							fragmentEntry.getConfiguration()),
+						configurationValuesMap, scopeGroupId));
+		fragmentInstance.setFragmentEditableElements(
+			() -> fragmentEditableElements);
+		fragmentInstance.setFragmentInstanceExternalReferenceCode(
+			fragmentInstanceExternalReferenceCode);
+		fragmentInstance.setFragmentReference(
+			() -> {
+				if (fragmentEntry.getFragmentEntryId() == 0) {
+					return _addDefaultFragmentReference(
+						fragmentEntry.getFragmentEntryKey());
+				}
+
+				return _addFragmentItemExternalReference(
+					fragmentEntry,
+					ScopeTestUtil.getItemScope(
+						fragmentEntry.getGroupId(), scopeGroupId));
+			});
+		fragmentInstance.setFragmentViewports(
+			FragmentViewportTestUtil.getFragmentViewports());
+		fragmentInstance.setHtml(fragmentEntry::getHtml);
+		fragmentInstance.setIndexed(RandomTestUtil::randomBoolean);
+		fragmentInstance.setJs(fragmentEntry::getJs);
+		fragmentInstance.setName(RandomTestUtil::randomString);
+		fragmentInstance.setNamespace(namespace);
+		fragmentInstance.setUuid(uuid);
+		fragmentInstance.setWidgetInstances(() -> widgetInstances);
+
+		return fragmentInstance;
+	}
+
+	private static FragmentInstance _getFragmentInstance(
+		Map<String, Object> configurationValuesMap,
+		FragmentEditableElement[] curFragmentEditableElements,
+		FragmentRenderer fragmentRenderer, long scopeGroupId) {
+
+		JSONObject configurationJSONObject =
+			fragmentRenderer.getConfigurationJSONObject(
+				new DefaultFragmentRendererContext(null));
+
+		return new FragmentInstance() {
+			{
+				setConfiguration(
+					() -> GetterUtil.getString(
+						JSONFactoryUtil.toString(configurationJSONObject)));
+				setCss(() -> StringPool.BLANK);
+				setCssClasses(
+					() -> new String[] {RandomTestUtil.randomString()});
+				setDatePropagated(RandomTestUtil::nextDate);
+				setFragmentConfigurationFieldValues(
+					() ->
+						FragmentConfigurationFieldValueTestUtil.
+							getFragmentConfigurationFieldValuesMap(
+								configurationJSONObject, configurationValuesMap,
+								scopeGroupId));
+				setFragmentEditableElements(() -> curFragmentEditableElements);
+				setFragmentInstanceExternalReferenceCode(
+					RandomTestUtil::randomString);
+				setFragmentReference(
+					() -> new DefaultFragmentReference() {
+						{
+							setDefaultFragmentKey(fragmentRenderer::getKey);
+							setFragmentReferenceType(
+								() ->
+									FragmentReferenceType.
+										DEFAULT_FRAGMENT_REFERENCE);
+						}
+					});
+				setHtml(() -> StringPool.BLANK);
+				setIndexed(RandomTestUtil::randomBoolean);
+				setJs(() -> StringPool.BLANK);
+				setName(RandomTestUtil::randomString);
+				setNamespace(RandomTestUtil::randomString);
+				setUuid(RandomTestUtil::randomString);
+			}
+		};
 	}
 
 	private static FragmentReference[] _getFragmentReferences(long groupId)
@@ -751,7 +775,7 @@ public class PageElementsTestUtil {
 
 	private static final List<PageElementDefinition.Type> _types =
 		Arrays.asList(
-			PageElementDefinition.Type.CONTAINER,
-			PageElementDefinition.Type.FRAGMENT);
+			PageElementDefinition.Type.BASIC_FRAGMENT,
+			PageElementDefinition.Type.CONTAINER);
 
 }

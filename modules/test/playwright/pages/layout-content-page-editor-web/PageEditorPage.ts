@@ -155,10 +155,12 @@ export class PageEditorPage {
 		actions,
 		conditions,
 		name,
+		saveRule = true,
 	}: {
 		actions: {label: string; option: string}[][];
 		conditions: {label: string; option: string}[][];
 		name: string;
+		saveRule?: boolean;
 	}) {
 		const addActionOrCondition = async ({index, label, option}) => {
 			const trigger = this.page.getByLabel(label).nth(index);
@@ -209,12 +211,16 @@ export class PageEditorPage {
 			}
 		}
 
-		await modal.getByRole('button', {exact: true, name: 'Save'}).click();
+		if (saveRule) {
+			await modal
+				.getByRole('button', {exact: true, name: 'Save'})
+				.click();
 
-		await waitForAlert(
-			this.page,
-			'Success:The rule was created successfully.'
-		);
+			await waitForAlert(
+				this.page,
+				'Success:The rule was created successfully.'
+			);
+		}
 	}
 
 	async addRandomRuleAction() {
@@ -713,13 +719,15 @@ export class PageEditorPage {
 		dropTarget,
 		force = false,
 		page,
+		timeout,
 	}: {
 		dragTarget: Locator;
 		dropTarget: Locator;
 		force?: boolean;
 		page: Page;
+		timeout?: number;
 	}) {
-		await dragTarget.hover({force});
+		await dragTarget.hover({force, timeout});
 
 		await page.mouse.down();
 
@@ -733,6 +741,7 @@ export class PageEditorPage {
 				x: boundingClientRect.width / 2,
 				y: boundingClientRect.height / 2,
 			},
+			timeout,
 		});
 
 		await page.mouse.up();
@@ -917,7 +926,7 @@ export class PageEditorPage {
 		await expect(async () => {
 			await this.page.keyboard.press('Escape');
 
-			await this.waitForChangesSaved();
+			await this.waitForChangesSaved({timeout: 2000});
 
 			await expect(editor).not.toBeVisible({
 				timeout: 1000,
@@ -1830,6 +1839,16 @@ export class PageEditorPage {
 				`.page-editor__layout-viewport--size-${VIEWPORTS_CLASSNAMES[viewport]}`
 			)
 			.waitFor({timeout});
+
+		const resizer = this.page.locator(
+			'.page-editor__layout-viewport__resizer'
+		);
+
+		const loadingIndicator = resizer.locator('.loading-animation');
+
+		if (await loadingIndicator.isVisible()) {
+			await loadingIndicator.waitFor({state: 'hidden'});
+		}
 	}
 
 	async undoAction() {

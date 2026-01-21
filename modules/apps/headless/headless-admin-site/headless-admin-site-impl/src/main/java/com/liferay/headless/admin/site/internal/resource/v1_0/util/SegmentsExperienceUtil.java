@@ -6,19 +6,21 @@
 package com.liferay.headless.admin.site.internal.resource.v1_0.util;
 
 import com.liferay.fragment.processor.FragmentEntryProcessorRegistry;
+import com.liferay.headless.admin.site.dto.v1_0.ItemExternalReference;
 import com.liferay.headless.admin.site.dto.v1_0.PageElement;
 import com.liferay.headless.admin.site.dto.v1_0.PageExperience;
+import com.liferay.headless.admin.site.internal.dto.v1_0.util.ItemScopeUtil;
 import com.liferay.headless.admin.site.internal.resource.v1_0.layout.structure.item.importer.context.LayoutStructureItemImporterContext;
 import com.liferay.info.item.InfoItemServiceRegistry;
+import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
+import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalServiceUtil;
 import com.liferay.layout.util.structure.LayoutStructure;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutConstants;
 import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.UnicodePropertiesBuilder;
-import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.vulcan.util.LocalizedMapUtil;
 import com.liferay.segments.constants.SegmentsExperienceConstants;
 import com.liferay.segments.model.SegmentsEntry;
@@ -36,26 +38,23 @@ public class SegmentsExperienceUtil {
 	public static SegmentsExperience addSegmentsExperience(
 			FragmentEntryProcessorRegistry fragmentEntryProcessorRegistry,
 			InfoItemServiceRegistry infoItemServiceRegistry, Layout layout,
-			PageExperience pageExperience, ServiceContext serviceContext)
+			PageExperience pageExperience, int priority,
+			ServiceContext serviceContext)
 		throws Exception {
-
-		if (!Objects.equals(layout.getType(), LayoutConstants.TYPE_CONTENT)) {
-			throw new UnsupportedOperationException();
-		}
 
 		SegmentsExperience segmentsExperience =
 			SegmentsExperienceServiceUtil.addSegmentsExperience(
 				pageExperience.getExternalReferenceCode(), layout.getGroupId(),
 				_getSegmentsEntryId(
-					layout.getGroupId(),
-					pageExperience.getSegmentExternalReferenceCode()),
+					layout.getCompanyId(), layout.getGroupId(),
+					pageExperience.getSegmentItemExternalReference()),
 				pageExperience.getKey(), layout.getPlid(),
 				LocalizedMapUtil.getLocalizedMap(pageExperience.getName_i18n()),
-				GetterUtil.getInteger(pageExperience.getPriority()), true,
+				priority, true,
 				UnicodePropertiesBuilder.create(
 					true
 				).build(),
-				serviceContext);
+				new ServiceContext());
 
 		LayoutLocalServiceUtil.updateLayoutContent(
 			_getData(
@@ -89,7 +88,7 @@ public class SegmentsExperienceUtil {
 	public static SegmentsExperience updateSegmentsExperience(
 			FragmentEntryProcessorRegistry fragmentEntryProcessorRegistry,
 			InfoItemServiceRegistry infoItemServiceRegistry, Layout layout,
-			PageExperience pageExperience,
+			PageExperience pageExperience, int priority,
 			SegmentsExperience segmentsExperience,
 			ServiceContext serviceContext)
 		throws Exception {
@@ -101,26 +100,42 @@ public class SegmentsExperienceUtil {
 				serviceContext),
 			layout, segmentsExperience.getSegmentsExperienceId());
 
-		if ((pageExperience.getPriority() != null) &&
-			(segmentsExperience.getPriority() !=
-				pageExperience.getPriority())) {
-
+		if (priority != segmentsExperience.getPriority()) {
 			segmentsExperience =
 				SegmentsExperienceServiceUtil.updateSegmentsExperiencePriority(
-					segmentsExperience.getSegmentsExperienceId(),
-					GetterUtil.getInteger(pageExperience.getPriority()));
+					segmentsExperience.getSegmentsExperienceId(), priority);
 		}
 
 		return SegmentsExperienceServiceUtil.updateSegmentsExperience(
 			segmentsExperience.getSegmentsExperienceId(),
 			_getSegmentsEntryId(
-				segmentsExperience.getGroupId(),
-				pageExperience.getSegmentExternalReferenceCode()),
+				layout.getCompanyId(), layout.getGroupId(),
+				pageExperience.getSegmentItemExternalReference()),
 			LocalizedMapUtil.getLocalizedMap(pageExperience.getName_i18n()),
 			true,
 			UnicodePropertiesBuilder.create(
 				true
 			).build());
+	}
+
+	public static void validateSegmentsExperienceLayout(Layout layout) {
+		if (!Objects.equals(layout.getType(), LayoutConstants.TYPE_CONTENT)) {
+			throw new UnsupportedOperationException();
+		}
+
+		long plid = layout.getPlid();
+
+		if (layout.getClassPK() > 0) {
+			plid = layout.getClassPK();
+		}
+
+		LayoutPageTemplateEntry layoutPageTemplateEntry =
+			LayoutPageTemplateEntryLocalServiceUtil.
+				fetchLayoutPageTemplateEntryByPlid(plid);
+
+		if (layoutPageTemplateEntry != null) {
+			throw new UnsupportedOperationException();
+		}
 	}
 
 	private static String _getData(
@@ -133,6 +148,10 @@ public class SegmentsExperienceUtil {
 		LayoutStructure layoutStructure = new LayoutStructure();
 
 		layoutStructure.addRootLayoutStructureItem();
+
+		if (ArrayUtil.isEmpty(pageExperience.getPageElements())) {
+			return layoutStructure.toString();
+		}
 
 		LayoutStructureItemImporterContext layoutStructureItemImporterContext =
 			new LayoutStructureItemImporterContext(
@@ -150,15 +169,25 @@ public class SegmentsExperienceUtil {
 	}
 
 	private static long _getSegmentsEntryId(
-		long groupId, String segmentExternalReferenceCode) {
+		long companyId, long scopeGroupId,
+		ItemExternalReference segmentItemExternalReference) {
 
-		if (Validator.isNull(segmentExternalReferenceCode)) {
+		if (segmentItemExternalReference == null) {
 			return 0;
 		}
 
+		Long itemGroupId = ItemScopeUtil.getItemGroupId(
+			companyId, segmentItemExternalReference.getScope(), scopeGroupId);
+
+		if (itemGroupId == null) {
+			throw new UnsupportedOperationException();
+		}
+
 		SegmentsEntry segmentsEntry =
-			SegmentsEntryLocalServiceUtil.fetchSegmentsEntry(
-				groupId, segmentExternalReferenceCode);
+			SegmentsEntryLocalServiceUtil.
+				fetchSegmentsEntryByExternalReferenceCode(
+					segmentItemExternalReference.getExternalReferenceCode(),
+					itemGroupId);
 
 		if (segmentsEntry == null) {
 			throw new UnsupportedOperationException();

@@ -23,10 +23,10 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -282,6 +282,14 @@ public class TestrayFactory {
 	}
 
 	public static TestrayRun newTestrayRun(
+		TestrayBuild testrayBuild, AxisTestClassGroup axisTestClassGroup,
+		List<File> propertiesFiles) {
+
+		return new TestrayRun(
+			testrayBuild, axisTestClassGroup, propertiesFiles);
+	}
+
+	public static TestrayRun newTestrayRun(
 		TestrayBuild testrayBuild, JSONObject jsonObject) {
 
 		return new TestrayRun(testrayBuild, jsonObject);
@@ -356,17 +364,17 @@ public class TestrayFactory {
 	}
 
 	private static final Map<Build, TestrayAttachmentRecorder>
-		_testrayAttachmentRecorders = new HashMap<>();
+		_testrayAttachmentRecorders = new ConcurrentHashMap<>();
 	private static final Map<String, TestrayAttachmentUploader>
-		_testrayAttachmentUploaders = new HashMap<>();
+		_testrayAttachmentUploaders = new ConcurrentHashMap<>();
 	private static final Map<String, TestrayRoutine> _testrayRoutines =
-		new HashMap<>();
+		new ConcurrentHashMap<>();
 	private static final Map<String, TestrayServer> _testrayServers =
-		new HashMap<>();
+		new ConcurrentHashMap<>();
 	private static final Pattern _testrayURLPattern = Pattern.compile(
 		"https://(testray\\.liferay\\.com|webserver-testray2" +
 			"(-prd\\d*|-uat\\d*)?.lfr.cloud)");
 	private static final Map<Long, TopLevelStandaloneBuildTestrayCaseResult>
-		_topLevelBuildTestrayCaseResults = new HashMap<>();
+		_topLevelBuildTestrayCaseResults = new ConcurrentHashMap<>();
 
 }

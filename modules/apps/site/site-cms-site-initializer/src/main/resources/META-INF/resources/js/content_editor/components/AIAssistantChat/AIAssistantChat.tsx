@@ -5,7 +5,7 @@
 
 import ClayButton from '@clayui/button';
 import ClayDropDown from '@clayui/drop-down';
-import ClayForm, {ClayInput} from '@clayui/form';
+import ClayForm from '@clayui/form';
 import ClayIcon from '@clayui/icon';
 import ClayLayout from '@clayui/layout';
 import ClayLoadingIndicator from '@clayui/loading-indicator';
@@ -27,15 +27,16 @@ const AIAssistantChat: React.FC = () => {
 	const [active, setActive] = useState<boolean>(false);
 	const [isGenerating, setIsGenerating] = useState<boolean>(false);
 	const [messages, setMessages] = useState<message[]>([]);
-	const [message, setMessage] = useState<message>();
+	const [message, setMessage] = useState<string>('');
 	const eventSourceRef = useRef<EventSource | null>(null);
 	const eventSourceReference = useRef<string | null>(null);
 	const messagesEndRef = useRef<HTMLDivElement | null>(null);
 	const triggerRef = useRef<HTMLButtonElement | null>(null);
+	const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
 
 	function onSubmit(event: React.FormEvent<HTMLFormElement>) {
 		event.preventDefault();
-		if (!message?.text.trim()) {
+		if (!message.trim()) {
 			return;
 		}
 		setMessages((previousMessages) => {
@@ -43,10 +44,10 @@ const AIAssistantChat: React.FC = () => {
 				messagesEndRef.current?.scrollIntoView({behavior: 'smooth'});
 			}, 0);
 
-			return [...previousMessages, message];
+			return [...previousMessages, {sender: 'user', text: message}];
 		});
 
-		setMessage({sender: '', text: ''});
+		setMessage('');
 
 		setIsGenerating(true);
 
@@ -59,8 +60,64 @@ const AIAssistantChat: React.FC = () => {
 			postChatByExternalReferenceCodeMessage(
 				content?.value,
 				eventSourceReference.current,
-				message.text,
+				message,
 				title.value
+			);
+		}
+	}
+
+	function adjustTextAreaHeight(element: HTMLTextAreaElement) {
+		const textArea = element ?? textAreaRef.current;
+
+		if (!textArea) {
+			return;
+		}
+
+		const style = window.getComputedStyle(textArea);
+		const lineHeight =
+			parseFloat(style.lineHeight) || parseFloat(style.fontSize) * 1.2;
+		const maxHeight = lineHeight * 4;
+
+		textArea.style.height = 'auto';
+		const newHeight = Math.min(textArea.scrollHeight, maxHeight);
+		textArea.style.height = `${newHeight}px`;
+		textArea.style.overflowY =
+			textArea.scrollHeight > maxHeight ? 'auto' : 'hidden';
+	}
+
+	function handleTextAreaKeyDown(
+		event: React.KeyboardEvent<HTMLTextAreaElement>
+	) {
+		if (event.key !== 'Enter') {
+			event.stopPropagation();
+
+			return;
+		}
+
+		if (event.shiftKey) {
+			setTimeout(
+				() => adjustTextAreaHeight(event.target as HTMLTextAreaElement),
+				0
+			);
+
+			return;
+		}
+
+		event.preventDefault();
+
+		const form = (event.target as HTMLElement).closest(
+			'form'
+		) as HTMLFormElement | null;
+
+		if (form?.requestSubmit) {
+			form.requestSubmit();
+		}
+		else {
+			form?.dispatchEvent(
+				new Event('submit', {
+					bubbles: true,
+					cancelable: true,
+				})
 			);
 		}
 	}
@@ -88,37 +145,43 @@ const AIAssistantChat: React.FC = () => {
 	}
 
 	function openAIAssistantChatConnection() {
-		eventSourceRef.current = createEventSource();
-
-		eventSourceRef.current.addEventListener(
-			'Chat Message Sent',
-			(event) => {
-				setMessages((previousMessages) => {
-					setTimeout(() => {
-						messagesEndRef.current?.scrollIntoView({
-							behavior: 'smooth',
-						});
-					}, 0);
-
-					const dataJSON = JSON.parse(event.data);
-
-					return [
-						...previousMessages,
-						{
-							sender: 'assistant',
-							text: dataJSON['data'],
-						},
-					];
-				});
-
-				setMessage({sender: '', text: ''});
-
-				setIsGenerating(false);
+		createEventSource().then((eventSource) => {
+			if (!eventSource) {
+				return;
 			}
-		);
 
-		eventSourceRef.current.addEventListener('Subscribe', (event) => {
-			eventSourceReference.current = event.data;
+			eventSourceRef.current = eventSource;
+
+			eventSourceRef.current.addEventListener(
+				'Chat Message Sent',
+				(event) => {
+					setMessages((previousMessages) => {
+						setTimeout(() => {
+							messagesEndRef.current?.scrollIntoView({
+								behavior: 'smooth',
+							});
+						}, 0);
+
+						const dataJSON = JSON.parse(event.data);
+
+						return [
+							...previousMessages,
+							{
+								sender: 'assistant',
+								text: dataJSON['data'],
+							},
+						];
+					});
+
+					setMessage('');
+
+					setIsGenerating(false);
+				}
+			);
+
+			eventSourceRef.current.addEventListener('Subscribe', (event) => {
+				eventSourceReference.current = event.data;
+			});
 		});
 	}
 
@@ -197,7 +260,11 @@ const AIAssistantChat: React.FC = () => {
 				</div>
 
 				<div className="ai-assistant-chat__messages-container flex-grow-1 overflow-auto px-3">
-					<AIAssistantMessageBalloon message="Hi! I can help you generate content, titles, tags, or translate your work. What would you like to do?" />
+					<AIAssistantMessageBalloon
+						error={false}
+						message="Hi! I can help you generate content, titles, tags, or
+						translate your work. What would you like to do?"
+					/>
 
 					{messages.map((item, index) =>
 						item.sender === 'user' ? (
@@ -207,6 +274,7 @@ const AIAssistantChat: React.FC = () => {
 							/>
 						) : (
 							<AIAssistantMessageBalloon
+								error={false}
 								key={index}
 								message={item.text}
 							/>
@@ -220,7 +288,7 @@ const AIAssistantChat: React.FC = () => {
 							</div>
 
 							<span className="ai-assistant-chat__generating-loading-text font-weight-semi-bold m-2 tex">
-								Generating...
+								{Liferay.Language.get('generating')}
 							</span>
 						</div>
 					)}
@@ -232,65 +300,37 @@ const AIAssistantChat: React.FC = () => {
 					className="flex-shrink-0 p-3"
 					onSubmit={(event) => onSubmit(event)}
 				>
-					{!messages.length && (
-						<>
-							{Liferay.Language.get('quick-actions')}
-							<ClayLayout.ContentRow className="align-items-center mb-3 mt-2">
-								<ClayLayout.ContentCol className="mr-2">
-									<ClayButton
-										className="ai-assistant-chat__quick-actions-button pl-2 pr-2"
-										displayType="unstyled"
-										small
-									>
-										<ClayIcon
-											className="mr-2"
-											height={12}
-											spritemap={Liferay.Icons.spritemap}
-											symbol="stars"
-											width={12}
-										/>
-										Generate Content
-									</ClayButton>
-								</ClayLayout.ContentCol>
-
-								<ClayLayout.ContentCol>
-									<ClayButton
-										className="ai-assistant-chat__quick-actions-button pl-2 pr-2"
-										displayType="unstyled"
-										small
-									>
-										<ClayIcon
-											className="mr-2"
-											height={12}
-											spritemap={Liferay.Icons.spritemap}
-											symbol="stars"
-											width={12}
-										/>
-										Generate Title
-									</ClayButton>
-								</ClayLayout.ContentCol>
-							</ClayLayout.ContentRow>
-						</>
-					)}
-
-					<div className="border-top d-flex flex-row mb-4 pt-4">
-						<ClayInput
-							className="mr-2"
-							onChange={(event) =>
-								setMessage({
-									sender: 'user',
-									text: event.target.value,
-								})
-							}
+					<div className="align-items-end border-top d-flex flex-row pt-4">
+						<textarea
+							className="ai-assistant-chat__input form-control mr-2"
+							disabled={isGenerating}
+							id="assistant-user-input"
+							onChange={(event) => {
+								setMessage(event.target.value);
+								adjustTextAreaHeight(event.target);
+							}}
+							onKeyDown={(
+								event: React.KeyboardEvent<HTMLTextAreaElement>
+							) => {
+								handleTextAreaKeyDown(event);
+							}}
 							placeholder="Ask me anything..."
-							value={message?.text}
+							ref={textAreaRef}
+							rows={1}
+							value={message}
 						/>
 
-						<ClayButton displayType="primary" type="submit">
+						<ClayButton
+							disabled={!message.trim()}
+							displayType="primary"
+							type="submit"
+						>
 							<ClayIcon
 								height={12}
 								spritemap={Liferay.Icons.spritemap}
-								symbol="order-arrow-up"
+								symbol={
+									isGenerating ? 'square' : 'order-arrow-up'
+								}
 								width={12}
 							/>
 						</ClayButton>

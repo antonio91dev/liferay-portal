@@ -980,6 +980,39 @@ public class AssetCategoriesDisplayContext {
 		return _showSelectAssetDisplayPage;
 	}
 
+	public boolean isVisibilityTypeDisabled(AssetVocabulary vocabulary) {
+		if ((vocabulary == null) ||
+			(vocabulary.getVisibilityType() ==
+				AssetVocabularyConstants.VISIBILITY_TYPE_EMPTY)) {
+
+			return false;
+		}
+
+		return true;
+	}
+
+	public boolean isVisibilityTypeInternalChecked(AssetVocabulary vocabulary) {
+		if ((vocabulary != null) &&
+			(vocabulary.getVisibilityType() ==
+				AssetVocabularyConstants.VISIBILITY_TYPE_INTERNAL)) {
+
+			return true;
+		}
+
+		return false;
+	}
+
+	public boolean isVisibilityTypePublicChecked(AssetVocabulary vocabulary) {
+		if ((vocabulary == null) ||
+			(vocabulary.getVisibilityType() ==
+				AssetVocabularyConstants.VISIBILITY_TYPE_PUBLIC)) {
+
+			return true;
+		}
+
+		return false;
+	}
+
 	private long _getDefaultVocabularyId() throws PortalException {
 		List<AssetVocabulary> assetVocabularies = getVocabularies();
 

@@ -43,6 +43,10 @@ StagingGroupHelper stagingGroupHelper = StagingGroupHelperUtil.getStagingGroupHe
 
 		String portletTitle = PortalUtil.getPortletTitle(portlet, application, locale);
 
+		if (StringUtil.equals(ObjectPortletKeys.OBJECT_DEFINITIONS, portlet.getPortletId())) {
+			portletTitle = LanguageUtil.get(request, "model.resource.com.liferay.object");
+		}
+
 		PortletDataHandlerControl[] exportMetadataPortletDataHandlerControls = portletDataHandler.getExportMetadataPortletDataHandlerControls();
 
 		PortletDataHandlerControl[] exportPortletDataHandlerControls = portletDataHandler.getExportPortletDataHandlerControls();
@@ -80,16 +84,6 @@ StagingGroupHelper stagingGroupHelper = StagingGroupHelperUtil.getStagingGroupHe
 			}
 		}
 
-		List<String> subtitles = null;
-		String tag = null;
-
-		if (exportPortletDataHandlerControls.length == 1) {
-			PortletDataHandlerControl portletDataHandlerControl = exportPortletDataHandlerControls[0];
-
-			subtitles = portletDataHandlerControl.getSubtitles();
-			tag = portletDataHandlerControl.getTag();
-		}
-
 		boolean showPortletDataInput = MapUtil.getBoolean(parameterMap, PortletDataHandlerKeys.PORTLET_DATA + StringPool.UNDERLINE + portlet.getPortletId(), portletDataHandler.isPublishToLiveByDefault()) || MapUtil.getBoolean(parameterMap, PortletDataHandlerKeys.PORTLET_DATA_ALL);
 	%>
 
@@ -97,12 +91,12 @@ StagingGroupHelper stagingGroupHelper = StagingGroupHelperUtil.getStagingGroupHe
 			<liferay-staging:checkbox
 				checked="<%= showPortletDataInput %>"
 				deletions="<%= modelDeletionCount %>"
+				description="<%= portletDataHandler.getDescription(locale) %>"
 				disabled="<%= disableInputs %>"
 				items="<%= exportModelCount %>"
 				label="<%= portletTitle %>"
 				name="<%= PortletDataHandlerKeys.PORTLET_DATA + StringPool.UNDERLINE + portlet.getPortletId() %>"
-				subtitles="<%= subtitles %>"
-				tag="<%= tag %>"
+				tag="<%= portletDataHandler.getTag(locale) %>"
 			/>
 
 			<%
@@ -247,17 +241,19 @@ html = html.trim();
 	<%= html %>
 </ul>
 
-<c:if test="<%= type.equals(Constants.EXPORT) && !stagingGroupHelper.isCompanyGroup(group) %>">
+<c:if test='<%= type.equals(Constants.EXPORT) && (FeatureFlagManagerUtil.isEnabled(company.getCompanyId(), "LPD-43996") || !stagingGroupHelper.isCompanyGroup(group)) %>'>
 	<liferay-util:buffer
 		var="selectedContentOptionsLabel"
 	>
 		<liferay-ui:message key="for-each-of-the-selected-content-types,-export-their" />
 
-		<span aria-label="<%= LanguageUtil.get(request, "comments-associated-to-object-entries-are-currently-excluded-from-the-export") %>" class="lfr-portal-tooltip ml-1" title="<%= LanguageUtil.get(request, "comments-associated-to-object-entries-are-currently-excluded-from-the-export") %>">
-			<clay:icon
-				symbol="question-circle-full"
-			/>
-		</span>
+		<c:if test='<%= !FeatureFlagManagerUtil.isEnabled(company.getCompanyId(), "LPD-43996") %>'>
+			<span aria-label="<%= LanguageUtil.get(request, "comments-associated-to-object-entries-are-currently-excluded-from-the-export") %>" class="lfr-portal-tooltip ml-1" title="<%= LanguageUtil.get(request, "comments-associated-to-object-entries-are-currently-excluded-from-the-export") %>">
+				<clay:icon
+					symbol="question-circle-full"
+				/>
+			</span>
+		</c:if>
 	</liferay-util:buffer>
 
 	<aui:fieldset cssClass="content-options" label="<%= selectedContentOptionsLabel %>">

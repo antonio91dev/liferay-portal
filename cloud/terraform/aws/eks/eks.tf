@@ -27,43 +27,12 @@ module "eks" {
 		}
 	}
 	cloudwatch_log_group_retention_in_days=90
+	compute_config={
+		enabled=true
+		node_pools=["general-purpose"]
+	}
 	create_cloudwatch_log_group=true
 	create_kms_key=false
-	eks_managed_node_groups={
-		"${var.deployment_name}"={
-			ami_type=var.node_group_ami_type
-			block_device_mappings={
-				xvda={
-					device_name="/dev/xvda"
-					ebs={
-						encrypted=true
-						volume_size=var.root_volume_size
-						volume_type=var.root_volume_type
-					}
-				}
-			}
-			cluster_primary_security_group_id=module.eks.cluster_primary_security_group_id
-			desired_size=var.node_group_desired_size
-			disk_size=var.root_volume_size
-			iam_role_additional_policies={
-				AmazonEBSCSIDriverPolicy="arn:${var.arn_partition}:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
-				CloudWatchAgentServerPolicy="arn:${var.arn_partition}:iam::aws:policy/CloudWatchAgentServerPolicy"
-			}
-			instance_types=[var.node_instance_type]
-			max_size=var.node_group_max_size
-			min_size=var.node_group_min_size
-			tags={
-				DeploymentName=var.deployment_name
-				"kubernetes.io/cluster/${module.eks.cluster_name}"="owned"
-				"liferay.cloud/nodegroup/name"=var.deployment_name
-				"liferay.cloud/nodegroup/type"=var.node_instance_type
-			}
-			vpc_security_group_ids=[
-				aws_security_group.cluster.id,
-				aws_security_group.nodes.id
-			]
-		}
-	}
 	enable_cluster_creator_admin_permissions=true
 	enable_irsa=true
 	encryption_config={
@@ -71,6 +40,12 @@ module "eks" {
 	}
 	endpoint_private_access=true
 	endpoint_public_access=true
+	iam_role_additional_policies={
+		AmazonEKSBlockStoragePolicy="arn:${var.arn_partition}:iam::aws:policy/AmazonEKSBlockStoragePolicy"
+		AmazonEKSComputePolicy="arn:${var.arn_partition}:iam::aws:policy/AmazonEKSComputePolicy"
+		AmazonEKSLoadBalancingPolicy="arn:${var.arn_partition}:iam::aws:policy/AmazonEKSLoadBalancingPolicy"
+		AmazonEKSNetworkingPolicy="arn:${var.arn_partition}:iam::aws:policy/AmazonEKSNetworkingPolicy"
+	}
 	kubernetes_version=data.aws_eks_cluster_versions.available.cluster_versions[0].cluster_version
 	name="${var.deployment_name}-eks"
 	node_security_group_id=aws_security_group.nodes.id
@@ -79,6 +54,13 @@ module "eks" {
 	subnet_ids=module.vpc.private_subnets
 	version="21.3.1"
 	vpc_id=module.vpc.vpc_id
+}
+resource "aws_eks_addon" "s3_csi" {
+	addon_name="aws-mountpoint-s3-csi-driver"
+	addon_version=data.aws_eks_addon_version.s3_csi.version
+	cluster_name=module.eks.cluster_name
+	resolve_conflicts_on_update="OVERWRITE"
+	service_account_role_arn=aws_iam_role.s3_csi_driver.arn
 }
 resource "aws_iam_role" "ebs_csi_driver" {
 	assume_role_policy=jsonencode(
@@ -126,6 +108,55 @@ resource "aws_iam_role" "irsa" {
 	)
 	force_detach_policies=true
 	name="${var.deployment_name}-irsa"
+}
+resource "aws_iam_role" "s3_csi_driver" {
+	assume_role_policy=jsonencode(
+		{
+			Statement=[
+				{
+					Action="sts:AssumeRoleWithWebIdentity"
+					Condition={
+						StringEquals={
+							"${module.eks.oidc_provider}:aud"="sts.amazonaws.com"
+							"${module.eks.oidc_provider}:sub"=[
+								"system:serviceaccount:kube-system:s3-csi-driver-controller-sa",
+								"system:serviceaccount:kube-system:s3-csi-driver-sa"
+							]
+						}
+					}
+					Effect="Allow"
+					Principal={
+						Federated=local.oidc_provider_arn
+					}
+				}
+			]
+			Version="2012-10-17"
+		}
+	)
+	force_detach_policies=true
+	name="${var.deployment_name}-s3_csi_driver"
+}
+resource "aws_iam_role_policy" "s3_csi_driver" {
+	policy=jsonencode(
+		{
+			Statement=[
+				{
+					Action=[
+						"s3:GetObject",
+						"s3:ListBucket",
+					]
+					Effect="Allow"
+					Resource=[
+						"arn:${var.arn_partition}:s3:::${var.deployment_name}-overlay-*",
+						"arn:${var.arn_partition}:s3:::${var.deployment_name}-overlay-*/*"
+					]
+					Sid="AllowS3BucketOperations"
+				}
+			]
+			Version="2012-10-17"
+		}
+	)
+	role=aws_iam_role.s3_csi_driver.id
 }
 resource "aws_iam_role_policy" "this" {
 	count = length(var.ecr_repositories) > 0 ? 1 : 0

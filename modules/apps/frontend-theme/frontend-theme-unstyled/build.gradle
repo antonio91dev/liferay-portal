@@ -123,9 +123,9 @@ buildClay {
 		}
 	}
 
-	eachFile new StripPathSegmentsAction(4)
-	from npmInstall.nodeModulesDir
-	include "@clayui/css/src/scss/"
+	eachFile new StripPathSegmentsAction(2)
+	from "../../frontend-js/frontend-js-clay-web/clay/clay-css"
+	include "src/scss/"
 	includeEmptyDirs = false
 	into clayDestinationDir
 }
@@ -155,9 +155,9 @@ buildClayIcons {
 		delete clayIconsDestinationDir
 	}
 
-	eachFile new StripPathSegmentsAction(5)
-	from npmInstall.nodeModulesDir
-	include "@clayui/css/lib/images/icons/"
+	eachFile new StripPathSegmentsAction(3)
+	from "../../frontend-js/frontend-js-clay-web/clay/clay-css"
+	include "src/images/icons/"
 	includeEmptyDirs = false
 	into clayIconsDestinationDir
 }
@@ -171,9 +171,9 @@ buildLexiconIcons {
 		delete lexiconIconsDestinationDir
 	}
 
-	eachFile new StripPathSegmentsAction(5)
-	from npmInstall.nodeModulesDir
-	include "@clayui/css/lib/images/icons/"
+	eachFile new StripPathSegmentsAction(3)
+	from "../../frontend-js/frontend-js-clay-web/clay/clay-css"
+	include "src/images/icons/"
 	includeEmptyDirs = false
 	into lexiconIconsDestinationDir
 }

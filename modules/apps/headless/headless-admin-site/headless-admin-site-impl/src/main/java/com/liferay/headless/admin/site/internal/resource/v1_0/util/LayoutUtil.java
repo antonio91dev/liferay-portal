@@ -11,6 +11,7 @@ import com.liferay.client.extension.type.CET;
 import com.liferay.client.extension.type.manager.CETManager;
 import com.liferay.exportimport.kernel.staging.StagingUtil;
 import com.liferay.fragment.processor.FragmentEntryProcessorRegistry;
+import com.liferay.headless.admin.site.dto.v1_0.BasicWidgetPageWidgetInstance;
 import com.liferay.headless.admin.site.dto.v1_0.ClientExtension;
 import com.liferay.headless.admin.site.dto.v1_0.ContentPageSpecification;
 import com.liferay.headless.admin.site.dto.v1_0.FavIcon;
@@ -18,6 +19,8 @@ import com.liferay.headless.admin.site.dto.v1_0.FavIconClientExtension;
 import com.liferay.headless.admin.site.dto.v1_0.FavIconItemExternalReference;
 import com.liferay.headless.admin.site.dto.v1_0.GeneralConfig;
 import com.liferay.headless.admin.site.dto.v1_0.ItemExternalReference;
+import com.liferay.headless.admin.site.dto.v1_0.NestedApplicationsWidgetPageWidgetInstance;
+import com.liferay.headless.admin.site.dto.v1_0.NestedWidgetSection;
 import com.liferay.headless.admin.site.dto.v1_0.PageExperience;
 import com.liferay.headless.admin.site.dto.v1_0.PageSpecification;
 import com.liferay.headless.admin.site.dto.v1_0.Settings;
@@ -37,7 +40,9 @@ import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalServiceUtil;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryServiceUtil;
 import com.liferay.layout.util.LayoutServiceContextHelperUtil;
+import com.liferay.layout.util.UpdateLayoutModifiedDateThreadLocal;
 import com.liferay.petra.function.transform.TransformUtil;
+import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.language.LanguageUtil;
@@ -68,12 +73,16 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.vulcan.custom.field.CustomFieldsUtil;
 import com.liferay.portal.vulcan.util.LocalizedMapUtil;
+import com.liferay.segments.constants.SegmentsExperienceConstants;
 import com.liferay.segments.model.SegmentsExperience;
+import com.liferay.segments.service.SegmentsExperienceLocalServiceUtil;
 import com.liferay.segments.service.SegmentsExperienceServiceUtil;
 import com.liferay.style.book.model.StyleBookEntry;
 import com.liferay.style.book.service.StyleBookEntryLocalServiceUtil;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -782,6 +791,87 @@ public class LayoutUtil {
 				layout.getPlid(), portletId, configurationMap);
 	}
 
+	private static void _processWidgetPageWidgetInstance(
+			Layout layout, LayoutTypePortlet layoutTypePortlet,
+			List<String> portletIds, ServiceContext serviceContext,
+			WidgetPageWidgetInstance widgetPageWidgetInstance)
+		throws Exception {
+
+		String portletId = PortletIdCodec.encode(
+			widgetPageWidgetInstance.getWidgetName(),
+			widgetPageWidgetInstance.getWidgetInstanceId());
+
+		if (!layoutTypePortlet.hasPortletId(portletId)) {
+			layoutTypePortlet.addPortletId(
+				serviceContext.getUserId(), portletId,
+				widgetPageWidgetInstance.getParentSectionId(),
+				widgetPageWidgetInstance.getPosition());
+		}
+		else if (!Objects.equals(
+					widgetPageWidgetInstance.getParentSectionId(),
+					getParentSectionId(layout, portletId)) ||
+				 !Objects.equals(
+					 widgetPageWidgetInstance.getPosition(),
+					 getPosition(layout, portletId))) {
+
+			layoutTypePortlet.movePortletId(
+				serviceContext.getUserId(), portletId,
+				widgetPageWidgetInstance.getParentSectionId(),
+				widgetPageWidgetInstance.getPosition());
+		}
+
+		_importPortletConfiguration(
+			layout, portletId, widgetPageWidgetInstance);
+
+		PortletPermissionsImporterUtil.importPortletPermissions(
+			layout.getPlid(), portletId, new HashSet<>(),
+			TransformUtil.transform(
+				ListUtil.fromArray(
+					widgetPageWidgetInstance.getWidgetPermissions()),
+				widgetPermission -> HashMapBuilder.<String, Object>put(
+					"actionKeys",
+					ListUtil.fromArray(widgetPermission.getActionIds())
+				).put(
+					"roleKey", widgetPermission.getRoleName()
+				).build()));
+
+		portletIds.remove(portletId);
+
+		if (widgetPageWidgetInstance instanceof BasicWidgetPageWidgetInstance) {
+			return;
+		}
+
+		NestedApplicationsWidgetPageWidgetInstance
+			nestedApplicationsWidgetPageWidgetInstance =
+				(NestedApplicationsWidgetPageWidgetInstance)
+					widgetPageWidgetInstance;
+
+		NestedWidgetSection[] nestedWidgetSections =
+			nestedApplicationsWidgetPageWidgetInstance.
+				getNestedWidgetSections();
+
+		if (nestedWidgetSections == null) {
+			return;
+		}
+
+		for (NestedWidgetSection nestedWidgetSection : nestedWidgetSections) {
+			WidgetPageWidgetInstance[] widgetPageWidgetInstances =
+				nestedWidgetSection.getWidgetPageWidgetInstances();
+
+			if (widgetPageWidgetInstances == null) {
+				continue;
+			}
+
+			for (WidgetPageWidgetInstance nestedWidgetPageWidgetInstance :
+					widgetPageWidgetInstances) {
+
+				_processWidgetPageWidgetInstance(
+					layout, layoutTypePortlet, portletIds, serviceContext,
+					nestedWidgetPageWidgetInstance);
+			}
+		}
+	}
+
 	private static void _setExpandoBridgeAttributes(
 		PageSpecification pageSpecification, ServiceContext serviceContext) {
 
@@ -1049,42 +1139,89 @@ public class LayoutUtil {
 			PageExperience[] pageExperiences, ServiceContext serviceContext)
 		throws Exception {
 
+		PageExperienceUtil.validatePageExperiences(
+			SegmentsExperienceLocalServiceUtil.fetchDefaultSegmentsExperience(
+				layout.getPlid()),
+			pageExperiences);
+
+		if (pageExperiences.length > 1) {
+			SegmentsExperienceUtil.validateSegmentsExperienceLayout(layout);
+		}
+
 		try (AutoCloseable autoCloseable =
 				LayoutServiceContextHelperUtil.getServiceContextAutoCloseable(
 					layout,
 					UserLocalServiceUtil.getUser(serviceContext.getUserId()))) {
 
-			List<SegmentsExperience> segmentsExperiences =
-				SegmentsExperienceServiceUtil.getSegmentsExperiences(
-					layout.getGroupId(), layout.getPlid(), true);
+			Map<String, SegmentsExperience> actualSegmentsExperiencesMap =
+				new HashMap<>();
+			int minPriority = Integer.MIN_VALUE;
 
-			if ((pageExperiences == null) ||
-				(pageExperiences.length != segmentsExperiences.size())) {
-
-				throw new UnsupportedOperationException();
-			}
-
-			Map<String, SegmentsExperience> segmentsExperiencesMap =
+			Map<String, SegmentsExperience> originalSegmentsExperiencesMap =
 				new HashMap<>();
 
-			for (SegmentsExperience segmentsExperience : segmentsExperiences) {
-				segmentsExperiencesMap.put(
+			for (SegmentsExperience segmentsExperience :
+					SegmentsExperienceServiceUtil.getSegmentsExperiences(
+						layout.getGroupId(), layout.getPlid(), true)) {
+
+				originalSegmentsExperiencesMap.put(
 					segmentsExperience.getExternalReferenceCode(),
 					segmentsExperience);
 			}
 
+			Arrays.sort(
+				pageExperiences,
+				Comparator.comparing(
+					PageExperience::getPriority,
+					Comparator.nullsLast(Comparator.naturalOrder())));
+
 			for (PageExperience pageExperience : pageExperiences) {
-				SegmentsExperience segmentsExperience =
-					segmentsExperiencesMap.get(
+				SegmentsExperience oldSegmentsExperience =
+					originalSegmentsExperiencesMap.remove(
 						pageExperience.getExternalReferenceCode());
 
-				if (segmentsExperience == null) {
-					throw new UnsupportedOperationException();
+				int priority = 0;
+
+				if (!Objects.equals(
+						pageExperience.getKey(),
+						SegmentsExperienceConstants.KEY_DEFAULT)) {
+
+					priority = minPriority++;
 				}
 
-				SegmentsExperienceUtil.updateSegmentsExperience(
-					fragmentEntryProcessorRegistry, infoItemServiceRegistry,
-					layout, pageExperience, segmentsExperience, serviceContext);
+				if (oldSegmentsExperience == null) {
+					actualSegmentsExperiencesMap.put(
+						pageExperience.getExternalReferenceCode(),
+						SegmentsExperienceUtil.addSegmentsExperience(
+							fragmentEntryProcessorRegistry,
+							infoItemServiceRegistry, layout, pageExperience,
+							priority, serviceContext));
+				}
+				else {
+					actualSegmentsExperiencesMap.put(
+						pageExperience.getExternalReferenceCode(),
+						SegmentsExperienceUtil.updateSegmentsExperience(
+							fragmentEntryProcessorRegistry,
+							infoItemServiceRegistry, layout, pageExperience,
+							priority, oldSegmentsExperience, serviceContext));
+				}
+			}
+
+			for (SegmentsExperience originalSegmentsExperience :
+					originalSegmentsExperiencesMap.values()) {
+
+				SegmentsExperienceLocalServiceUtil.deleteSegmentsExperience(
+					originalSegmentsExperience);
+			}
+
+			for (PageExperience pageExperience : pageExperiences) {
+				SegmentsExperience actualSegmentsExperience =
+					actualSegmentsExperiencesMap.get(
+						pageExperience.getExternalReferenceCode());
+
+				SegmentsExperienceServiceUtil.updateSegmentsExperiencePriority(
+					actualSegmentsExperience.getSegmentsExperienceId(),
+					GetterUtil.getInteger(pageExperience.getPriority()));
 			}
 		}
 	}
@@ -1109,71 +1246,39 @@ public class LayoutUtil {
 		LayoutTypePortlet layoutTypePortlet =
 			(LayoutTypePortlet)layout.getLayoutType();
 
-		List<String> columns = layoutTypePortlet.getColumns();
-
-		if (widgetPageSections.length != columns.size()) {
+		if (widgetPageSections.length != layoutTypePortlet.getNumOfColumns()) {
 			throw new UnsupportedOperationException();
 		}
 
+		List<String> columns = layoutTypePortlet.getColumns();
 		List<String> portletIds = layoutTypePortlet.getPortletIds();
 
 		boolean layoutCustomizable = GetterUtil.getBoolean(
 			unicodeProperties.get(LayoutConstants.CUSTOMIZABLE_LAYOUT));
 
-		for (WidgetPageSection widgetPageSection : widgetPageSections) {
-			boolean customizable = GetterUtil.getBoolean(
-				unicodeProperties.get(
-					CustomizedPages.namespaceColumnId(
-						widgetPageSection.getId())));
+		try (SafeCloseable safeCloseable =
+				UpdateLayoutModifiedDateThreadLocal.
+					setUpdateLayoutModifiedDateWithSafeCloseable(false)) {
 
-			if (!columns.contains(widgetPageSection.getId()) ||
-				(!layoutCustomizable && customizable)) {
+			for (WidgetPageSection widgetPageSection : widgetPageSections) {
+				boolean customizable = GetterUtil.getBoolean(
+					unicodeProperties.get(
+						CustomizedPages.namespaceColumnId(
+							widgetPageSection.getId())));
 
-				throw new UnsupportedOperationException();
-			}
+				if (!columns.contains(widgetPageSection.getId()) ||
+					(!layoutCustomizable && customizable)) {
 
-			for (WidgetPageWidgetInstance widgetPageWidgetInstance :
-					widgetPageSection.getWidgetPageWidgetInstances()) {
-
-				String portletId = PortletIdCodec.encode(
-					widgetPageWidgetInstance.getWidgetName(),
-					widgetPageWidgetInstance.getWidgetInstanceId());
-
-				if (!layoutTypePortlet.hasPortletId(portletId)) {
-					layoutTypePortlet.addPortletId(
-						serviceContext.getUserId(), portletId,
-						widgetPageWidgetInstance.getParentSectionId(),
-						widgetPageWidgetInstance.getPosition());
-				}
-				else if (!Objects.equals(
-							widgetPageWidgetInstance.getParentSectionId(),
-							getParentSectionId(layout, portletId)) ||
-						 !Objects.equals(
-							 widgetPageWidgetInstance.getPosition(),
-							 getPosition(layout, portletId))) {
-
-					layoutTypePortlet.movePortletId(
-						serviceContext.getUserId(), portletId,
-						widgetPageWidgetInstance.getParentSectionId(),
-						widgetPageWidgetInstance.getPosition());
+					throw new UnsupportedOperationException();
 				}
 
-				_importPortletConfiguration(
-					layout, portletId, widgetPageWidgetInstance);
+				for (WidgetPageWidgetInstance widgetPageWidgetInstance :
+						widgetPageSection.getWidgetPageWidgetInstances()) {
 
-				PortletPermissionsImporterUtil.importPortletPermissions(
-					layout.getPlid(), portletId, new HashSet<>(),
-					TransformUtil.transform(
-						ListUtil.fromArray(
-							widgetPageWidgetInstance.getWidgetPermissions()),
-						widgetPermission -> HashMapBuilder.<String, Object>put(
-							"actionKeys",
-							ListUtil.fromArray(widgetPermission.getActionIds())
-						).put(
-							"roleKey", widgetPermission.getRoleName()
-						).build()));
-
-				portletIds.remove(portletId);
+					_processWidgetPageWidgetInstance(
+						layout, layoutTypePortlet, portletIds, serviceContext,
+						widgetPageWidgetInstance);
+				}
 			}
 		}
 

@@ -27,6 +27,7 @@ export class PagesAdminPage {
 	private readonly pageTitleBox: Locator;
 	private readonly searchButton: Locator;
 	private readonly searchInput: Locator;
+	private readonly themeSelectorTitle: Locator;
 
 	constructor(page: Page) {
 		this.page = page;
@@ -58,6 +59,9 @@ export class PagesAdminPage {
 		);
 		this.searchButton = this.page.getByLabel('Search for', {exact: true});
 		this.searchInput = this.page.getByPlaceholder('Search for');
+		this.themeSelectorTitle = this.page.getByRole('heading', {
+			name: 'Available Themes',
+		});
 	}
 
 	getPageMenuItem(pageName: string): Locator {
@@ -246,28 +250,46 @@ export class PagesAdminPage {
 	}
 
 	async changeTheme(themeName: string) {
-		await this.defineCustomThemeRadio.click();
+		await this.openThemeSelector();
 
-		await this.page
-			.getByRole('button', {name: 'Change Current Theme'})
-			.click();
+		const themeCard = this.getThemeCard(themeName);
 
-		const themeCard = this.page
-			.frameLocator(
-				'iframe[id="_com_liferay_layout_admin_web_portlet_GroupPagesPortlet_selectTheme_iframe_"]'
-			)
-			.getByText(themeName);
-
-		await themeCard.waitFor();
+		await expect(themeCard).toBeVisible();
 
 		await clickAndExpectToBeHidden({
-			target: themeCard,
+			target: this.themeSelectorTitle,
 			trigger: themeCard,
 		});
 
-		await this.configurationSaveButton.waitFor();
+		await expect(this.configurationSaveButton).toBeVisible();
 
 		await this.saveConfiguration();
+	}
+
+	getThemeCard(themeName: string) {
+		return this.page
+			.frameLocator(
+				'iframe[id="_com_liferay_layout_admin_web_portlet_GroupPagesPortlet_selectTheme_iframe_"]'
+			)
+			.getByLabel(`Select ${themeName}`, {exact: true});
+	}
+
+	async openThemeSelector() {
+		const changeThemeButton = this.page.getByRole('button', {
+			disabled: false,
+			exact: true,
+			name: 'Change Current Theme',
+		});
+
+		await clickAndExpectToBeVisible({
+			target: changeThemeButton,
+			trigger: this.defineCustomThemeRadio,
+		});
+
+		await clickAndExpectToBeVisible({
+			target: this.themeSelectorTitle,
+			trigger: changeThemeButton,
+		});
 	}
 
 	async clickOnJavaScriptClientExtensionsTab() {

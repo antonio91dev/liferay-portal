@@ -96,14 +96,34 @@ public class JUnitTestClass extends BaseTestClass {
 		return jsonObject;
 	}
 
-	@Override
-	public long getSharedWeight() {
-		return getAverageTestTaskDuration();
-	}
+	public List<String> getTestClassFileMethodNames() {
+		List<String> testClassFileMethodNames = new ArrayList<>();
 
-	@Override
-	public String getSharedWeightName() {
-		return getTestTaskName();
+		Matcher matcher = _testClassFileNamePattern.matcher(
+			String.valueOf(getTestClassFile()));
+
+		if (!matcher.find()) {
+			return testClassFileMethodNames;
+		}
+
+		String testClassFileName = matcher.group("testClassFileName");
+
+		testClassFileName = testClassFileName.replace(".java", ".class");
+
+		List<String> testClassMethodNames = getTestClassMethodNames();
+
+		if ((testClassMethodNames == null) || testClassMethodNames.isEmpty()) {
+			testClassFileMethodNames.add(testClassFileName);
+
+			return testClassFileMethodNames;
+		}
+
+		for (String testClassMethodName : testClassMethodNames) {
+			testClassFileMethodNames.add(
+				testClassFileName + "#" + testClassMethodName);
+		}
+
+		return testClassFileMethodNames;
 	}
 
 	public List<String> getTestClassMethodNames() {
@@ -540,6 +560,8 @@ public class JUnitTestClass extends BaseTestClass {
 		JenkinsResultsParserUtil.combine(
 			"\\t(?<annotations>(@[\\s\\S]+?))public\\s+void\\s+",
 			"(?<methodName>[^\\(\\s]+)"));
+	private static final Pattern _testClassFileNamePattern = Pattern.compile(
+		".*/(?<testClassFileName>com/.*)");
 
 	private DownstreamBuildReport _cachedDownstreamBuildReport;
 	private List<TestClassReport> _cachedTestClassReports;

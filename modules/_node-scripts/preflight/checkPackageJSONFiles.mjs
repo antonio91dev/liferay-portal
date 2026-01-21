@@ -24,6 +24,7 @@ export async function checkPackageJSONFiles() {
 			'_node-scripts',
 			'**/build',
 			'**/classes',
+			'**/frontend-js-clay-web/clay',
 			'**/frontend-js-jquery-web',
 			'**/integrations/vercel',
 			'**/node_modules',

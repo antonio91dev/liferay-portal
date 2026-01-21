@@ -5,10 +5,10 @@
 
 package com.liferay.jenkins.results.parser.test.clazz;
 
-import com.liferay.jenkins.results.parser.BatchHistory;
 import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
 import com.liferay.jenkins.results.parser.PortalGitWorkingDirectory;
-import com.liferay.jenkins.results.parser.TestHistory;
+import com.liferay.jenkins.results.parser.history.BatchHistory;
+import com.liferay.jenkins.results.parser.history.TestClassHistory;
 import com.liferay.jenkins.results.parser.test.clazz.group.AxisTestClassGroup;
 import com.liferay.jenkins.results.parser.test.clazz.group.BatchTestClassGroup;
 import com.liferay.jenkins.results.parser.test.clazz.group.SegmentTestClassGroup;
@@ -97,6 +97,20 @@ public abstract class BaseTestClass implements TestClass {
 	}
 
 	@Override
+	public long getAverageTotalTestTaskDuration() {
+		if (_averageTotalTestTaskDuration != null) {
+			return _averageTotalTestTaskDuration;
+		}
+
+		BatchTestClassGroup batchTestClassGroup = getBatchTestClassGroup();
+
+		_averageTotalTestTaskDuration =
+			batchTestClassGroup.getAverageTotalTestTaskDuration(getTestName());
+
+		return _averageTotalTestTaskDuration;
+	}
+
+	@Override
 	public AxisTestClassGroup getAxisTestClassGroup() {
 		return _axisTestClassGroup;
 	}
@@ -136,6 +150,20 @@ public abstract class BaseTestClass implements TestClass {
 	}
 
 	@Override
+	public long getLongestTestTaskDuration() {
+		if (_longestTestTaskDuration != null) {
+			return _longestTestTaskDuration;
+		}
+
+		BatchTestClassGroup batchTestClassGroup = getBatchTestClassGroup();
+
+		_longestTestTaskDuration =
+			batchTestClassGroup.getLongestTestTaskDuration(getTestName());
+
+		return _longestTestTaskDuration;
+	}
+
+	@Override
 	public String getName() {
 		PortalGitWorkingDirectory portalGitWorkingDirectory =
 			getPortalGitWorkingDirectory();
@@ -156,34 +184,14 @@ public abstract class BaseTestClass implements TestClass {
 	}
 
 	@Override
-	public long getSharedWeight() {
-		return 0L;
-	}
-
-	@Override
-	public String getSharedWeightName() {
-		return null;
-	}
-
-	@Override
 	public File getTestClassFile() {
 		return _testClassFile;
 	}
 
 	@Override
-	public List<TestClassMethod> getTestClassMethods() {
-		return _testClassMethods;
-	}
-
-	@Override
-	public String getTestClassName() {
-		return getName();
-	}
-
-	@Override
-	public TestHistory getTestHistory() {
-		if (_testHistory != null) {
-			return _testHistory;
+	public TestClassHistory getTestClassHistory() {
+		if (_testClassHistory != null) {
+			return _testClassHistory;
 		}
 
 		BatchTestClassGroup batchTestClassGroup = getBatchTestClassGroup();
@@ -194,9 +202,19 @@ public abstract class BaseTestClass implements TestClass {
 			return null;
 		}
 
-		_testHistory = batchHistory.getTestHistory(getTestName());
+		_testClassHistory = batchHistory.getTestClassHistory(getTestName());
 
-		return _testHistory;
+		return _testClassHistory;
+	}
+
+	@Override
+	public List<TestClassMethod> getTestClassMethods() {
+		return _testClassMethods;
+	}
+
+	@Override
+	public String getTestClassName() {
+		return getName();
 	}
 
 	@Override
@@ -239,6 +257,24 @@ public abstract class BaseTestClass implements TestClass {
 	@Override
 	public boolean isIgnored() {
 		return false;
+	}
+
+	@Override
+	public boolean isIsolated() {
+		return isLatestReportMissing();
+	}
+
+	public boolean isLatestReportMissing() {
+		if (_latestBuildReportMissing != null) {
+			return _latestBuildReportMissing;
+		}
+
+		BatchTestClassGroup batchTestClassGroup = getBatchTestClassGroup();
+
+		_latestBuildReportMissing = batchTestClassGroup.isLatestReportMissing(
+			getTestName());
+
+		return _latestBuildReportMissing;
 	}
 
 	@Override
@@ -355,11 +391,14 @@ public abstract class BaseTestClass implements TestClass {
 	private Long _averageDuration;
 	private Long _averageOverheadDuration;
 	private Long _averageTestTaskDuration;
+	private Long _averageTotalTestTaskDuration;
 	private AxisTestClassGroup _axisTestClassGroup;
 	private BatchTestClassGroup _batchTestClassGroup;
+	private Boolean _latestBuildReportMissing;
+	private Long _longestTestTaskDuration;
 	private SegmentTestClassGroup _segmentTestClassGroup;
 	private final File _testClassFile;
+	private TestClassHistory _testClassHistory;
 	private final List<TestClassMethod> _testClassMethods = new ArrayList<>();
-	private TestHistory _testHistory;
 
 }

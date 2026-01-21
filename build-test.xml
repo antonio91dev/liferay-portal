@@ -860,7 +860,7 @@ jdbc.default.password=${database.password}
 
 jdbc.default.connectionTimeout=600000
 jdbc.default.maximumPoolSize=30
-jdbc.default.minimumIdle=0]]></echo>
+jdbc.default.minimumIdle=5]]></echo>
 
 			<if>
 				<equals arg1="${database.type}" arg2="oracle" />
@@ -7822,6 +7822,8 @@ org.apache.catalina.startup.ClassLoaderFactory.level=INFO]]>
 
 			<property name="docker.start.script" value="docker_start.sh" />
 
+			<echo>Starting Docker container for @{image} on host @{name} with run options: @{run.options}.</echo>
+
 			<if>
 				<or>
 					<contains string="@{name}" substring="amazonlinux2022" />
@@ -7902,7 +7904,7 @@ org.apache.catalina.startup.ClassLoaderFactory.level=INFO]]>
 					</not>
 				</or>
 				<then>
-					<fail>Unable to start docker container:
+					<fail>Unable to start Docker container:
 ${docker.start.error}</fail>
 				</then>
 			</if>
@@ -12615,7 +12617,7 @@ jdbc.default.password=${database.password}
 
 jdbc.default.connectionTimeout=600000
 jdbc.default.maximumPoolSize=${database.max.pool.size}
-jdbc.default.minimumIdle=0
+jdbc.default.minimumIdle=5
 
 enterprise.product.notification.enabled=false
 company.security.strangers.verify=false

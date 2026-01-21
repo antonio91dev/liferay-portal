@@ -21,20 +21,19 @@ import './SideMenu.css';
 const ACTIVATION_PATH = 'activation';
 
 const expandGroupForSideMenu = (group) => {
-    if (group.name === 'Liferay Cloud' && group.activationProductName) {
-        
-        const productNames = group.activationProductName.split(',')
-            .map(name => name.trim())
-            .filter(name => name.length > 0);
+	if (group.name === 'Liferay Cloud' && group.activationProductName) {
+		const productNames = group.activationProductName.split(',')
+			.map(name => name.trim())
+			.filter(name => name.length > 0);
 
-        return productNames.map((productName) => ({
-            ...group,
-            name: productName,
-            displayName: productName
-        }));
-    }
-    
-    return [group];
+		return productNames.map((productName) => ({
+			...group,
+			name: productName,
+			displayName: productName
+		}));
+	}
+	
+	return [group];
 };
 
 const SideMenu = () => {
@@ -73,18 +72,14 @@ const SideMenu = () => {
 	);
 
 	const hasSaasSubscription = useMemo(
-		() => {
-			const allowedERCs = [
-				`${project?.externalReferenceCode}_liferay-saas`,
-				`${project?.externalReferenceCode}_liferay-cloud`
-			];
-	
-			return subscriptionGroups?.some(({externalReferenceCode}) =>
-				allowedERCs.includes(externalReferenceCode)
-			);
-		},
-		[project?.externalReferenceCode, subscriptionGroups]
-	);
+        () =>
+            subscriptionGroups?.some(
+                (subscription) =>
+                    subscription.externalReferenceCode ===
+                    `${project?.externalReferenceCode}_liferay-saas`
+            ),
+        [subscriptionGroups, project?.externalReferenceCode]
+    );
 
 	const hasSLASubscription = useMemo(
 		() =>
@@ -113,11 +108,11 @@ const SideMenu = () => {
 			const expandedGroups = activationSubscriptionGroups?.flatMap(expandGroupForSideMenu);
 
 			return expandedGroups?.sort(
-                (a, b) => {
-                    const aDisplayName = a.displayName || a.activationProductName || a.name;
-                    const bDisplayName = b.displayName || b.activationProductName || b.name;
+				(a, b) => {
+					const aDisplayName = a.displayName || a.activationProductName || a.name;
+					const bDisplayName = b.displayName || b.activationProductName || b.name;
 
-                    return aDisplayName.localeCompare(bDisplayName);
+					return aDisplayName.localeCompare(bDisplayName);
 				}
 			).map(
 				({ displayName, activationProductName, name}, index) => {
@@ -125,11 +120,13 @@ const SideMenu = () => {
 
 					const redirectPage = getKebabCase(itemDisplayName);
 
-					const iconKey = name === PRODUCT_TYPES.dxpCloud
-						? 'lxc'
-						: name === PRODUCT_TYPES.liferayExperienceCloud
-							? 'experienceCloud'
-							: redirectPage.split('-')[0];
+					const iconKey = activationProductName.split(',')
+						.includes(PRODUCT_TYPES.dxpCloud)
+							? 'lxc'
+							: activationProductName.split(',')
+								.includes(PRODUCT_TYPES.liferayExperienceCloud)
+									? 'experienceCloud'
+									: redirectPage.split('-')[0];
 
 					const menuUpdateStatus = (isActive) =>
 						setMenuItemActiveStatus(

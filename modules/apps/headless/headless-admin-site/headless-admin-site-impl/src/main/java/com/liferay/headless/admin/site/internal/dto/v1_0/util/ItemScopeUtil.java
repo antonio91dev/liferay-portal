@@ -9,7 +9,7 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.GroupConstants;
 import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
-import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.ScopeUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.vulcan.scope.Scope;
 
@@ -18,40 +18,11 @@ import com.liferay.portal.vulcan.scope.Scope;
  */
 public class ItemScopeUtil {
 
-	public static Long getGroupId(
-		long companyId, Scope scope, long scopeGroupId) {
-
-		if ((scope == null) ||
-			Validator.isNull(scope.getExternalReferenceCode())) {
-
-			return scopeGroupId;
-		}
-
-		Group group = GroupLocalServiceUtil.fetchGroupByExternalReferenceCode(
-			scope.getExternalReferenceCode(), companyId);
-
-		if (group == null) {
-			return null;
-		}
-
-		return group.getGroupId();
-	}
-
 	public static Long getItemGroupId(
 		long companyId, Scope scope, long scopeGroupId) {
 
-		if ((scope == null) || (scope.getExternalReferenceCode() == null)) {
-			return scopeGroupId;
-		}
-
-		Group group = GroupLocalServiceUtil.fetchGroupByExternalReferenceCode(
-			scope.getExternalReferenceCode(), companyId);
-
-		if (group == null) {
-			return null;
-		}
-
-		return group.getGroupId();
+		return ScopeUtil.getItemGroupId(
+			companyId, _getScopeExternalReferenceCode(scope), scopeGroupId);
 	}
 
 	public static Scope getItemScope(long itemScopeGroupId, long scopeGroupId)
@@ -99,20 +70,16 @@ public class ItemScopeUtil {
 			Scope itemScope, long scopeGroupId)
 		throws PortalException {
 
-		if (itemScope == null) {
+		return ScopeUtil.getItemScopeExternalReferenceCode(
+			_getScopeExternalReferenceCode(itemScope), scopeGroupId);
+	}
+
+	private static String _getScopeExternalReferenceCode(Scope scope) {
+		if (scope == null) {
 			return null;
 		}
 
-		Group group = GroupLocalServiceUtil.getGroup(scopeGroupId);
-
-		if (StringUtil.equals(
-				itemScope.getExternalReferenceCode(),
-				group.getExternalReferenceCode())) {
-
-			return null;
-		}
-
-		return itemScope.getExternalReferenceCode();
+		return scope.getExternalReferenceCode();
 	}
 
 }

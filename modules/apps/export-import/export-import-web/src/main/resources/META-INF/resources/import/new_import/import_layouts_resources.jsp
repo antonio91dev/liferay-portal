@@ -233,37 +233,24 @@ ManifestSummary manifestSummary = ExportImportHelperUtil.getManifestSummary(user
 
 												String portletTitle = PortalUtil.getPortletTitle(portlet, application, locale);
 
-												long importModelCount = portletDataHandler.getExportModelCount(manifestSummary);
+												if (StringUtil.equals(ObjectPortletKeys.OBJECT_DEFINITIONS, portlet.getPortletId())) {
+													portletTitle = LanguageUtil.get(request, "model.resource.com.liferay.object");
+												}
 
+												long importModelCount = portletDataHandler.getExportModelCount(manifestSummary);
 												long modelDeletionCount = manifestSummary.getModelDeletionCount(portletDataHandler.getDeletionSystemEventStagedModelTypes());
+												String tag = portletDataHandler.getTag(locale);
 											%>
 
 												<c:if test="<%= (importModelCount > 0) || (modelDeletionCount > 0) %>">
 													<li class="tree-item">
-
-														<%
-														PortletDataHandlerControl[] importPortletDataHandlerControls = portletDataHandler.getImportPortletDataHandlerControls();
-
-														String subtitles = null;
-														String tag = null;
-
-														if (importPortletDataHandlerControls.length == 1) {
-															PortletDataHandlerControl portletDataHandlerControl = importPortletDataHandlerControls[0];
-
-															subtitles = StringUtil.merge(TransformUtil.transform(portletDataHandlerControl.getSubtitles(), subtitle -> LanguageUtil.get(request, subtitle)), StringPool.COMMA_AND_SPACE);
-															tag = portletDataHandlerControl.getTag();
-														}
-
-														PortletDataHandlerControl[] importMetadataPortletDataHandlerControls = portletDataHandler.getImportMetadataPortletDataHandlerControls();
-														%>
-
 														<liferay-util:buffer
 															var="badgeHTML"
 														>
 															<c:if test="<%= Validator.isNotNull(tag) %>">
 																<clay:label
 																	displayType="primary"
-																	label="<%= HtmlUtil.escape(LanguageUtil.get(request, tag)) %>"
+																	label="<%= tag %>"
 																/>
 															</c:if>
 
@@ -272,18 +259,17 @@ ManifestSummary manifestSummary = ExportImportHelperUtil.getManifestSummary(user
 														</liferay-util:buffer>
 
 														<%
+														String description = portletDataHandler.getDescription(locale);
 														String rootControlId = PortletDataHandlerKeys.PORTLET_DATA + StringPool.UNDERLINE + portlet.getRootPortletId();
 														%>
 
 														<div class="input-checkbox">
 															<aui:input checked="<%= true %>" label="<%= portletTitle + badgeHTML %>" name="<%= rootControlId %>" type="checkbox" />
 
-															<c:if test="<%= Validator.isNotNull(subtitles) %>">
-																<ul class="lfr-tree list-unstyled">
-																	<li>
-																		<span class="selected-labels"><%= subtitles %></span>
-																	</li>
-																</ul>
+															<c:if test="<%= Validator.isNotNull(description) %>">
+																<div class="selected-labels">
+																	<%= HtmlUtil.escape(description) %>
+																</div>
 															</c:if>
 														</div>
 
@@ -312,6 +298,11 @@ ManifestSummary manifestSummary = ExportImportHelperUtil.getManifestSummary(user
 																</span>
 															</li>
 														</ul>
+
+														<%
+														PortletDataHandlerControl[] importMetadataPortletDataHandlerControls = portletDataHandler.getImportMetadataPortletDataHandlerControls();
+														PortletDataHandlerControl[] importPortletDataHandlerControls = portletDataHandler.getImportPortletDataHandlerControls();
+														%>
 
 														<c:if test="<%= ArrayUtil.isNotEmpty(importMetadataPortletDataHandlerControls) || (ArrayUtil.isNotEmpty(importPortletDataHandlerControls) && !portletDataHandler.isEmptyControlsAllowed()) %>">
 															<div class="hide" id="<portlet:namespace />content_<%= portlet.getRootPortletId() %>">
@@ -390,7 +381,7 @@ ManifestSummary manifestSummary = ExportImportHelperUtil.getManifestSummary(user
 
 										</ul>
 
-										<c:if test="<%= !stagingGroupHelper.isCompanyGroup(group) %>">
+										<c:if test='<%= FeatureFlagManagerUtil.isEnabled(company.getCompanyId(), "LPD-43996") || !stagingGroupHelper.isCompanyGroup(group) %>'>
 											<aui:fieldset cssClass="content-options" label="for-each-of-the-selected-content-types,-import-their">
 												<span class="selected-labels" id="<portlet:namespace />selectedContentOptions"></span>
 

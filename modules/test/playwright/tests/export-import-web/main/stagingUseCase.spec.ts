@@ -3,7 +3,6 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {ObjectDefinitionAPI} from '@liferay/object-admin-rest-client-js';
 import {expect, mergeTests} from '@playwright/test';
 import {createReadStream, readdirSync} from 'fs';
 import path from 'path';
@@ -22,6 +21,7 @@ import {uiElementsPageTest} from '../../../fixtures/uiElementsTest';
 import {webContentDisplayPageTest} from '../../../fixtures/webContentDisplayPageTest';
 import {workflowPagesTest} from '../../../fixtures/workflowPagesTest';
 import getRandomString from '../../../utils/getRandomString';
+import {normalizeRestPath} from '../../../utils/normalizeRestPath';
 import {reloadUntilVisible} from '../../../utils/reloadUntilVisible';
 import {enableLocalStaging} from '../../../utils/staging';
 import getBasicWebContentStructureId from '../../../utils/structured-content/getBasicWebContentStructureId';
@@ -30,7 +30,6 @@ import {exportImportConfig} from './export_import.config';
 import {exportPageTest} from './fixtures/exportPageTest';
 import {stagingConfigurationPageTest} from './fixtures/stagingConfigurationPageTest';
 import {stagingPageTest} from './fixtures/stagingPageTest';
-import {objectDefitionRequestData} from './utils/objectDefitionRequestData';
 import {unzipAndCheckFolder} from './utils/stagingUtil';
 
 const test = mergeTests(
@@ -69,16 +68,14 @@ const testWithBatchStagingFF = mergeTests(
 );
 
 testWithBatchStagingFF(
-	'Object entries can be staged through batch',
-	{tag: ['@LPD-72343']},
+	'Object entries can not be staged through batch',
+	{tag: ['@LPD-70661', '@LPD-72343']},
 	async ({apiHelpers, stagingPage}) => {
-		const objectActionAPIClient =
-			await apiHelpers.buildRestClient(ObjectDefinitionAPI);
-
-		const {body: objectDefinition} =
-			await objectActionAPIClient.postObjectDefinition(
-				objectDefitionRequestData({scope: 'site'})
-			);
+		const objectDefinition =
+			await apiHelpers.objectAdmin.postRandomObjectDefinition({
+				scope: 'site',
+				status: {code: 0},
+			});
 
 		apiHelpers.data.push({
 			id: objectDefinition.id,
@@ -94,84 +91,19 @@ testWithBatchStagingFF(
 			type: 'site',
 		});
 
-		const initialObjectEntry = await apiHelpers.objectEntry.postObjectEntry(
+		await apiHelpers.objectEntry.postObjectEntry(
 			{externalReferenceCode: getRandomString(), name: getRandomString()},
-			`c/tests/scopes/${site.name}`
+			`${normalizeRestPath(objectDefinition.restContextPath)}/scopes/${site.name}`
 		);
 
 		await stagingPage.goto(site.name);
-		await stagingPage.enableLocalStaging([
-			objectDefinition.pluralLabel.en_US,
-		]);
+		await stagingPage.localStagingButton.click();
 
-		expect(
-			await apiHelpers.objectEntry.getObjectEntryByExternalReferenceCode({
-				applicationName: `c/tests/scopes/${site.name}`,
-				externalReferenceCode: initialObjectEntry.externalReferenceCode,
-			})
-		).toMatchObject({
-			externalReferenceCode: initialObjectEntry.externalReferenceCode,
-			name: initialObjectEntry.name,
-			scopeKey: site.name,
-		});
-
-		const stagingSite =
-			await apiHelpers.headlessAdminUser.getSiteByFriendlyUrlPath(
-				`${site.friendlyUrlPath}-staging`
-			);
-
-		expect(
-			await apiHelpers.objectEntry.getObjectEntryByExternalReferenceCode({
-				applicationName: `c/tests/scopes/${stagingSite.key}`,
-				externalReferenceCode: initialObjectEntry.externalReferenceCode,
-			})
-		).toMatchObject({
-			externalReferenceCode: initialObjectEntry.externalReferenceCode,
-			name: initialObjectEntry.name,
-			scopeKey: stagingSite.key,
-		});
-
-		const objectEntry = await apiHelpers.objectEntry.postObjectEntry(
-			{externalReferenceCode: getRandomString(), name: getRandomString()},
-			`c/tests/scopes/${stagingSite.key}`
-		);
-
-		expect(
-			await apiHelpers.objectEntry.getObjectEntryByExternalReferenceCode({
-				applicationName: `c/tests/scopes/${stagingSite.key}`,
-				externalReferenceCode: objectEntry.externalReferenceCode,
-			})
-		).toMatchObject({
-			externalReferenceCode: objectEntry.externalReferenceCode,
-			name: objectEntry.name,
-			scopeKey: stagingSite.key,
-		});
-
-		expect(
-			await apiHelpers.objectEntry.getObjectEntryByExternalReferenceCode({
-				applicationName: `c/tests/scopes/${site.name}`,
-				externalReferenceCode: objectEntry.externalReferenceCode,
-			})
-		).toEqual({
-			status: 'NOT_FOUND',
-		});
-
-		await stagingPage.goto(stagingSite.key);
-		await stagingPage.publish({
-			rangeAll: true,
-			selectedEntities: [objectDefinition.pluralLabel.en_US],
-		});
-
-		expect(
-			await apiHelpers.objectEntry.getObjectEntryByExternalReferenceCode({
-				applicationName: `c/tests/scopes/${site.name}`,
-				externalReferenceCode: objectEntry.externalReferenceCode,
-			})
-		).toMatchObject({
-			externalReferenceCode: objectEntry.externalReferenceCode,
-			name: objectEntry.name,
-			scopeKey: site.name,
-		});
+		await expect(
+			stagingPage.stagedPortletCheckbox(
+				objectDefinition.pluralLabel.en_US
+			)
+		).toHaveCount(0);
 	}
 );
 

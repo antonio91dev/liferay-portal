@@ -46,6 +46,8 @@ Import-Package:\
 	\
 	!io.netty.internal.*,\
 	\
+	!io.opentelemetry.*,\
+	\
 	!javassist.*,\
 	\
 	!javax.activation,\

@@ -544,7 +544,7 @@ const FrontendDataSetContent = ({
 
 		let initialVisibleFieldNames = {};
 
-		if (!Liferay.FeatureFlags['LPD-10683'] && activeViewSettings) {
+		if (!snapshotsEnabled && activeViewSettings) {
 			const {name: activeViewName, visibleFieldNames} =
 				JSON.parse(activeViewSettings);
 
@@ -1927,7 +1927,9 @@ const FrontendDataSetContent = ({
 							className={classNames(
 								`data-set-wrapper visualization-mode-${activeView.contentRenderer}`,
 								className,
-								selectable
+								{
+									selectable,
+								}
 							)}
 							data-testid={`visualization-mode-${activeView.name}`}
 							ref={dataSetWrapperRef}

@@ -110,6 +110,7 @@ export default async function format(
 			codeFilename: filepath,
 			config: stylelintConfig,
 			fix: true,
+			ignorePattern: ['**/clay-*/**/*.scss'],
 			syntax: extName.replace('.', ''),
 		});
 
@@ -131,9 +132,11 @@ export default async function format(
 					);
 				}
 			});
+
+			return output.endsWith('\n') ? output : `${output}\n`;
 		}
 
-		return output.endsWith('\n') ? output : `${output}\n`;
+		return input;
 	}
 
 	// Run the format process

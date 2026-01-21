@@ -1,3 +1,10 @@
+output "ci_uploader_access_key_id" {
+  value=aws_iam_access_key.ci_uploader.id
+}
+output "ci_uploader_access_key_secret" {
+  sensitive=true
+  value=aws_iam_access_key.ci_uploader.secret
+}
 output "cluster_name" {
 	value=var.cluster_name
 }
@@ -27,4 +34,7 @@ output "s3_bucket_id_active" {
 }
 output "s3_bucket_id_inactive" {
 	value=local.bucket_inactive.s3_bucket_id
+}
+output "s3_bucket_id_overlay" {
+	value=local.bucket_overlay.s3_bucket_id
 }

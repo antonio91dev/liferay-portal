@@ -7,17 +7,21 @@ package com.liferay.headless.digital.sales.room.internal.resource.v1_0;
 
 import com.liferay.account.model.AccountEntry;
 import com.liferay.account.service.AccountEntryService;
+import com.liferay.exportimport.kernel.configuration.ExportImportConfigurationSettingsMapFactory;
+import com.liferay.exportimport.kernel.service.ExportImportConfigurationLocalService;
+import com.liferay.exportimport.kernel.service.ExportImportLocalService;
 import com.liferay.headless.digital.sales.room.dto.v1_0.DigitalSalesRoom;
 import com.liferay.headless.digital.sales.room.dto.v1_0.FileEntry;
 import com.liferay.headless.digital.sales.room.dto.v1_0.UserAccountBrief;
 import com.liferay.headless.digital.sales.room.internal.dto.v1_0.converter.DigitalSalesRoomDTOConverterContext;
+import com.liferay.headless.digital.sales.room.internal.util.v1_0.ExportImportUtil;
 import com.liferay.headless.digital.sales.room.resource.v1_0.DigitalSalesRoomResource;
 import com.liferay.headless.digital.sales.room.resource.v1_0.UserAccountBriefResource;
 import com.liferay.layout.util.LayoutServiceContextHelper;
 import com.liferay.object.constants.ObjectActionKeys;
 import com.liferay.object.definition.security.permission.resource.ObjectDefinitionPortletResourcePermissionRegistryUtil;
 import com.liferay.object.model.ObjectDefinition;
-import com.liferay.object.model.ObjectEntry;
+import com.liferay.object.rest.dto.v1_0.ObjectEntry;
 import com.liferay.object.rest.manager.v1_0.ObjectEntryManager;
 import com.liferay.object.rest.manager.v1_0.ObjectEntryManagerRegistry;
 import com.liferay.object.service.ObjectDefinitionLocalService;
@@ -32,6 +36,7 @@ import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.GroupConstants;
+import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
@@ -39,6 +44,7 @@ import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermi
 import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermission;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.GroupService;
+import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextFactory;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
@@ -48,6 +54,7 @@ import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LinkedHashMapBuilder;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -72,6 +79,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -100,14 +108,15 @@ public class DigitalSalesRoomResourceImpl
 		Group group = _groupService.getGroup(digitalSalesRoomId);
 		ObjectDefinition objectDefinition = _getObjectDefinition();
 
-		ObjectEntry objectEntry = _objectEntryLocalService.getObjectEntry(
-			group.getExternalReferenceCode(), group.getGroupId(),
-			objectDefinition.getObjectDefinitionId());
+		com.liferay.object.model.ObjectEntry serviceBuilderObjectEntry =
+			_objectEntryLocalService.getObjectEntry(
+				group.getExternalReferenceCode(), group.getGroupId(),
+				objectDefinition.getObjectDefinitionId());
 
-		_checkPermission(ActionKeys.DELETE, objectEntry);
+		_checkPermission(ActionKeys.DELETE, serviceBuilderObjectEntry);
 
 		_objectEntryLocalService.deleteObjectEntry(
-			objectEntry.getObjectEntryId());
+			serviceBuilderObjectEntry.getObjectEntryId());
 
 		_groupLocalService.deleteGroup(group.getGroupId());
 	}
@@ -180,6 +189,15 @@ public class DigitalSalesRoomResourceImpl
 	}
 
 	@Override
+	public Page<DigitalSalesRoom>
+			getDigitalSalesRoomTemplateDigitalSalesRoomsPage(
+				Long digitalSalesRoomTemplateId)
+		throws Exception {
+
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
 	public DigitalSalesRoom patchDigitalSalesRoom(
 			Long digitalSalesRoomId, DigitalSalesRoom digitalSalesRoom)
 		throws Exception {
@@ -193,13 +211,12 @@ public class DigitalSalesRoomResourceImpl
 		Group group = _groupService.getGroup(digitalSalesRoomId);
 		ObjectDefinition objectDefinition = _getObjectDefinition();
 
-		ObjectEntry objectEntry = _objectEntryLocalService.getObjectEntry(
-			group.getExternalReferenceCode(), group.getGroupId(),
-			objectDefinition.getObjectDefinitionId());
+		com.liferay.object.model.ObjectEntry serviceBuilderObjectEntry =
+			_objectEntryLocalService.getObjectEntry(
+				group.getExternalReferenceCode(), group.getGroupId(),
+				objectDefinition.getObjectDefinitionId());
 
-		_checkPermission(ActionKeys.UPDATE, objectEntry);
-
-		ServiceContext serviceContext = _getServiceContext();
+		_checkPermission(ActionKeys.UPDATE, serviceBuilderObjectEntry);
 
 		group = _groupLocalService.updateGroup(
 			group.getGroupId(), group.getParentGroupId(),
@@ -209,24 +226,33 @@ public class DigitalSalesRoomResourceImpl
 			group.getMembershipRestriction(),
 			GetterUtil.get(
 				digitalSalesRoom.getFriendlyUrlPath(), group.getFriendlyURL()),
-			group.isInheritContent(), group.isActive(), serviceContext);
+			group.isInheritContent(), group.isActive(), _getServiceContext());
 
-		if (digitalSalesRoom.getAccountId() == 0) {
-			Map<String, Serializable> values = objectEntry.getValues();
+		ObjectEntryManager objectEntryManager =
+			_objectEntryManagerRegistry.getObjectEntryManager(
+				objectDefinition.getCompanyId(),
+				objectDefinition.getStorageType());
 
-			digitalSalesRoom.setAccountId(
-				() -> GetterUtil.getLong(values.get("accountId")));
-		}
+		DefaultDTOConverterContext defaultDTOConverterContext =
+			new DefaultDTOConverterContext(
+				contextAcceptLanguage.isAcceptAllLanguages(), null,
+				_dtoConverterRegistry, contextHttpServletRequest, null,
+				contextAcceptLanguage.getPreferredLocale(), contextUriInfo,
+				contextUser);
 
-		_objectEntryLocalService.partialUpdateObjectEntry(
-			objectEntry.getUserId(), objectEntry.getObjectEntryId(),
-			objectEntry.getObjectEntryFolderId(),
-			_getProperties(digitalSalesRoom, group), serviceContext);
+		defaultDTOConverterContext.setAttribute("addActions", Boolean.FALSE);
+
+		ObjectEntry objectEntry = objectEntryManager.partialUpdateObjectEntry(
+			objectDefinition.getCompanyId(), defaultDTOConverterContext,
+			group.getExternalReferenceCode(), objectDefinition,
+			_toObjectEntry(digitalSalesRoom, group), group.getGroupKey());
 
 		_updateFrontendTokensValues(digitalSalesRoom, group);
 		_updateNestedResources(digitalSalesRoom, group);
 
-		return _toDigitalSalesRoom(group, objectEntry);
+		return _toDigitalSalesRoom(
+			group,
+			_objectEntryLocalService.getObjectEntry(objectEntry.getId()));
 	}
 
 	@Override
@@ -273,10 +299,9 @@ public class DigitalSalesRoomResourceImpl
 
 		defaultDTOConverterContext.setAttribute("addActions", Boolean.FALSE);
 
-		com.liferay.object.rest.dto.v1_0.ObjectEntry objectEntry =
-			objectEntryManager.addObjectEntry(
-				defaultDTOConverterContext, objectDefinition,
-				_toObjectEntry(digitalSalesRoom, group), group.getGroupKey());
+		ObjectEntry objectEntry = objectEntryManager.addObjectEntry(
+			defaultDTOConverterContext, objectDefinition,
+			_toObjectEntry(digitalSalesRoom, group), group.getGroupKey());
 
 		group.setClassPK(objectEntry.getId());
 
@@ -290,9 +315,89 @@ public class DigitalSalesRoomResourceImpl
 			_objectEntryLocalService.getObjectEntry(objectEntry.getId()));
 	}
 
+	@Override
+	public DigitalSalesRoom postDigitalSalesRoomTemplateDigitalSalesRoom(
+			Long digitalSalesRoomTemplateId, DigitalSalesRoom digitalSalesRoom)
+		throws Exception {
+
+		if (!FeatureFlagManagerUtil.isEnabled(
+				contextCompany.getCompanyId(), "LPD-66359")) {
+
+			throw new UnsupportedOperationException();
+		}
+
+		ObjectDefinition dsrTemplateObjectDefinition =
+			_objectDefinitionLocalService.
+				getObjectDefinitionByExternalReferenceCode(
+					"L_DSR_TEMPLATE", contextCompany.getCompanyId());
+		Group sourceGroup = _groupService.getGroup(digitalSalesRoomTemplateId);
+
+		if (!Objects.equals(
+				dsrTemplateObjectDefinition.getClassName(),
+				sourceGroup.getClassName())) {
+
+			throw new UnsupportedOperationException();
+		}
+
+		long[] layoutIds = ListUtil.toLongArray(
+			_layoutLocalService.getLayouts(sourceGroup.getGroupId(), false),
+			Layout::getLayoutId);
+
+		if (ArrayUtil.isEmpty(layoutIds)) {
+			throw new UnsupportedOperationException();
+		}
+
+		Group targetGroup = _addGroup(
+			digitalSalesRoom.getExternalReferenceCode(),
+			digitalSalesRoom.getDescription(),
+			digitalSalesRoom.getFriendlyUrlPath(), "blank-site-initializer",
+			digitalSalesRoom.getName());
+
+		ObjectDefinition objectDefinition = _getObjectDefinition();
+
+		targetGroup.setClassName(objectDefinition.getClassName());
+
+		ObjectEntryManager objectEntryManager =
+			_objectEntryManagerRegistry.getObjectEntryManager(
+				objectDefinition.getCompanyId(),
+				objectDefinition.getStorageType());
+
+		DefaultDTOConverterContext defaultDTOConverterContext =
+			new DefaultDTOConverterContext(
+				contextAcceptLanguage.isAcceptAllLanguages(), null,
+				_dtoConverterRegistry, contextHttpServletRequest, null,
+				contextAcceptLanguage.getPreferredLocale(), contextUriInfo,
+				contextUser);
+
+		defaultDTOConverterContext.setAttribute("addActions", Boolean.FALSE);
+
+		ObjectEntry objectEntry = objectEntryManager.addObjectEntry(
+			defaultDTOConverterContext, objectDefinition,
+			_toObjectEntry(digitalSalesRoom, targetGroup),
+			targetGroup.getGroupKey());
+
+		targetGroup.setClassPK(objectEntry.getId());
+
+		targetGroup = _groupLocalService.updateGroup(targetGroup);
+
+		ExportImportUtil.importLayouts(
+			_exportImportConfigurationLocalService,
+			_exportImportConfigurationSettingsMapFactory,
+			_exportImportLocalService, layoutIds, sourceGroup.getGroupId(),
+			targetGroup.getGroupId(), contextUser);
+
+		_updateFrontendTokensValues(digitalSalesRoom, targetGroup);
+		_updateNestedResources(digitalSalesRoom, targetGroup);
+
+		return _toDigitalSalesRoom(
+			targetGroup,
+			_objectEntryLocalService.getObjectEntry(objectEntry.getId()));
+	}
+
 	private Map<String, String> _addAction(
 		String actionName, long groupId, String methodName,
-		ModelResourcePermission<ObjectEntry> modelResourcePermission,
+		ModelResourcePermission<com.liferay.object.model.ObjectEntry>
+			modelResourcePermission,
 		long objectEntryId) {
 
 		Map<String, String> action = addAction(
@@ -365,16 +470,19 @@ public class DigitalSalesRoomResourceImpl
 		}
 	}
 
-	private void _checkPermission(String actionId, ObjectEntry objectEntry)
+	private void _checkPermission(
+			String actionId,
+			com.liferay.object.model.ObjectEntry serviceBuilderObjectEntry)
 		throws Exception {
 
-		ModelResourcePermission<ObjectEntry> modelResourcePermission =
-			_objectEntryService.getModelResourcePermission(
-				objectEntry.getObjectDefinitionId());
+		ModelResourcePermission<com.liferay.object.model.ObjectEntry>
+			modelResourcePermission =
+				_objectEntryService.getModelResourcePermission(
+					serviceBuilderObjectEntry.getObjectDefinitionId());
 
 		modelResourcePermission.check(
 			PermissionThreadLocal.getPermissionChecker(),
-			objectEntry.getObjectEntryId(), actionId);
+			serviceBuilderObjectEntry.getObjectEntryId(), actionId);
 	}
 
 	private Map<Locale, String> _getDescriptionMap(
@@ -518,7 +626,7 @@ public class DigitalSalesRoomResourceImpl
 		return HashMapBuilder.<String, Serializable>put(
 			"accountId",
 			() -> {
-				if (digitalSalesRoom.getAccountId() == 0) {
+				if (GetterUtil.getLong(digitalSalesRoom.getAccountId()) == 0) {
 					return null;
 				}
 
@@ -548,9 +656,9 @@ public class DigitalSalesRoomResourceImpl
 				).build();
 			}
 		).put(
-			"channelId", digitalSalesRoom.getChannelId()
+			"channelId", digitalSalesRoom::getChannelId
 		).put(
-			"channelName", digitalSalesRoom.getChannelName()
+			"channelName", digitalSalesRoom::getChannelName
 		).put(
 			"clientLogo",
 			() -> {
@@ -571,13 +679,13 @@ public class DigitalSalesRoomResourceImpl
 				).build();
 			}
 		).put(
-			"clientName", digitalSalesRoom.getClientName()
+			"clientName", digitalSalesRoom::getClientName
 		).put(
 			"externalReferenceCode", group.getExternalReferenceCode()
 		).put(
-			"primaryColor", digitalSalesRoom.getPrimaryColor()
+			"primaryColor", digitalSalesRoom::getPrimaryColor
 		).put(
-			"secondaryColor", digitalSalesRoom.getSecondaryColor()
+			"secondaryColor", digitalSalesRoom::getSecondaryColor
 		).build();
 	}
 
@@ -632,12 +740,14 @@ public class DigitalSalesRoomResourceImpl
 	}
 
 	private DigitalSalesRoom _toDigitalSalesRoom(
-			Group group, ObjectEntry objectEntry)
+			Group group,
+			com.liferay.object.model.ObjectEntry serviceBuilderObjectEntry)
 		throws Exception {
 
-		ModelResourcePermission<ObjectEntry> modelResourcePermission =
-			ModelResourcePermissionRegistryUtil.getModelResourcePermission(
-				objectEntry.getModelClassName());
+		ModelResourcePermission<com.liferay.object.model.ObjectEntry>
+			modelResourcePermission =
+				ModelResourcePermissionRegistryUtil.getModelResourcePermission(
+					serviceBuilderObjectEntry.getModelClassName());
 
 		return _digitalSalesRoomDTOConverter.toDTO(
 			new DigitalSalesRoomDTOConverterContext(
@@ -647,24 +757,24 @@ public class DigitalSalesRoomResourceImpl
 					_addAction(
 						ActionKeys.DELETE, group.getGroupId(),
 						"deleteDigitalSalesRoom", modelResourcePermission,
-						objectEntry.getObjectEntryId())
+						serviceBuilderObjectEntry.getObjectEntryId())
 				).put(
 					"update",
 					_addAction(
 						ActionKeys.UPDATE, group.getGroupId(),
 						"patchDigitalSalesRoom", modelResourcePermission,
-						objectEntry.getObjectEntryId())
+						serviceBuilderObjectEntry.getObjectEntryId())
 				).build(),
 				_dtoConverterRegistry, group.getGroupId(),
-				contextAcceptLanguage.getPreferredLocale(), objectEntry,
-				contextUriInfo, contextUser),
+				contextAcceptLanguage.getPreferredLocale(),
+				serviceBuilderObjectEntry, contextUriInfo, contextUser),
 			group);
 	}
 
-	private com.liferay.object.rest.dto.v1_0.ObjectEntry _toObjectEntry(
+	private ObjectEntry _toObjectEntry(
 		DigitalSalesRoom digitalSalesRoom, Group group) {
 
-		return new com.liferay.object.rest.dto.v1_0.ObjectEntry() {
+		return new ObjectEntry() {
 			{
 				setProperties(
 					() -> Collections.unmodifiableMap(
@@ -741,6 +851,17 @@ public class DigitalSalesRoomResourceImpl
 	private DTOConverterRegistry _dtoConverterRegistry;
 
 	@Reference
+	private ExportImportConfigurationLocalService
+		_exportImportConfigurationLocalService;
+
+	@Reference
+	private ExportImportConfigurationSettingsMapFactory
+		_exportImportConfigurationSettingsMapFactory;
+
+	@Reference
+	private ExportImportLocalService _exportImportLocalService;
+
+	@Reference
 	private GroupLocalService _groupLocalService;
 
 	@Reference
@@ -748,6 +869,9 @@ public class DigitalSalesRoomResourceImpl
 
 	@Reference
 	private JSONFactory _jsonFactory;
+
+	@Reference
+	private LayoutLocalService _layoutLocalService;
 
 	@Reference
 	private LayoutServiceContextHelper _layoutServiceContextHelper;

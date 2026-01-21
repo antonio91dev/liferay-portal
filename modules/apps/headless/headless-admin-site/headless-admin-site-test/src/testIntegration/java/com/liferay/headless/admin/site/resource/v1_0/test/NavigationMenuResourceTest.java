@@ -24,11 +24,15 @@ import com.liferay.expando.kernel.service.ExpandoColumnLocalService;
 import com.liferay.expando.kernel.service.ExpandoTableLocalService;
 import com.liferay.headless.admin.site.client.custom.field.CustomField;
 import com.liferay.headless.admin.site.client.custom.field.CustomValue;
+import com.liferay.headless.admin.site.client.dto.v1_0.DisplayPageNavigationMenuItemSettings;
 import com.liferay.headless.admin.site.client.dto.v1_0.NavigationMenu;
 import com.liferay.headless.admin.site.client.dto.v1_0.NavigationMenuItem;
+import com.liferay.headless.admin.site.client.dto.v1_0.PageNavigationMenuItemSettings;
+import com.liferay.headless.admin.site.client.dto.v1_0.URLNavigationMenuItemSettings;
 import com.liferay.headless.admin.site.client.pagination.Page;
 import com.liferay.headless.admin.site.client.pagination.Pagination;
 import com.liferay.headless.admin.site.client.permission.Permission;
+import com.liferay.headless.admin.site.client.problem.Problem;
 import com.liferay.headless.admin.site.client.resource.v1_0.NavigationMenuResource;
 import com.liferay.journal.constants.JournalFolderConstants;
 import com.liferay.journal.model.JournalArticle;
@@ -36,6 +40,9 @@ import com.liferay.journal.test.util.JournalTestUtil;
 import com.liferay.layout.test.util.LayoutTestUtil;
 import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.json.JSONFactory;
+import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.model.Role;
@@ -47,6 +54,7 @@ import com.liferay.portal.kernel.service.ResourceActionLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
+import com.liferay.portal.kernel.test.util.HTTPTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.RoleTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
@@ -55,6 +63,7 @@ import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.FriendlyURLNormalizer;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.MapUtil;
@@ -317,6 +326,8 @@ public class NavigationMenuResourceTest
 	public void testPostSiteNavigationMenu() throws Exception {
 		super.testPostSiteNavigationMenu();
 
+		_testPostSiteNavigationMenuBatchWithInvalidItemModel();
+		_testPostSiteNavigationMenuWithInvalidItemModel();
 		_testPostSiteNavigationMenuWithNavigationType();
 		_testPostSiteNavigationMenuWithPermissions();
 	}
@@ -546,6 +557,17 @@ public class NavigationMenuResourceTest
 			CustomField.class);
 	}
 
+	private Object _getNavigationMenuItemSettings(Layout layout)
+		throws PortalException {
+
+		return new PageNavigationMenuItemSettings() {
+			{
+				setExternalReferenceCode(layout.getExternalReferenceCode());
+				setPrivatePage(GetterUtil.getBoolean(layout.isPrivateLayout()));
+			}
+		};
+	}
+
 	private ServiceContext _getServiceContext(boolean expandoBridgeAttributes)
 		throws Exception {
 
@@ -563,40 +585,6 @@ public class NavigationMenuResourceTest
 		}
 
 		return serviceContext;
-	}
-
-	private Map<String, String> _getTypeSettings(
-		Layout layout, Map<String, String> nameI18nMap, String type,
-		String useCustomName) {
-
-		HashMapBuilder.HashMapWrapper<String, String> hashMapBuilder =
-			HashMapBuilder.put(
-				"defaultLanguageId",
-				LocaleUtil.toLanguageId(LocaleUtil.getDefault()));
-
-		for (Map.Entry<String, String> entry : nameI18nMap.entrySet()) {
-			hashMapBuilder.put(
-				"name_" + LocaleUtil.fromLanguageId(entry.getKey()),
-				nameI18nMap.get(entry.getKey()));
-		}
-
-		if (type.equals("layout")) {
-			return hashMapBuilder.put(
-				"groupId", GetterUtil.getString(layout.getGroupId())
-			).put(
-				"layoutUuid", layout.getUuid()
-			).put(
-				"privateLayout", GetterUtil.getString(layout.isPrivateLayout())
-			).put(
-				"title", layout.getTitle()
-			).put(
-				"useCustomName", useCustomName
-			).build();
-		}
-
-		return hashMapBuilder.put(
-			"useCustomName", useCustomName
-		).build();
 	}
 
 	private NavigationMenu _randomNavigationMenu(
@@ -635,6 +623,9 @@ public class NavigationMenuResourceTest
 		return new NavigationMenuItem[] {
 			new NavigationMenuItem() {
 				{
+					availableLanguages = new String[] {
+						LocaleUtil.toW3cLanguageId("en_US")
+					};
 					customFields = new CustomField[] {
 						new CustomField() {
 							{
@@ -659,10 +650,14 @@ public class NavigationMenuResourceTest
 							}
 						}
 					};
+					defaultLanguageId = "en_US";
 					name = RandomTestUtil.randomString();
 					navigationMenuItems = new NavigationMenuItem[] {
 						new NavigationMenuItem() {
 							{
+								availableLanguages = new String[] {
+									LocaleUtil.toW3cLanguageId("en_US")
+								};
 								customFields = new CustomField[] {
 									new CustomField() {
 										{
@@ -691,82 +686,87 @@ public class NavigationMenuResourceTest
 										}
 									}
 								};
+								defaultLanguageId = "en_US";
 								name = RandomTestUtil.randomString();
 								navigationMenuItems = new NavigationMenuItem[0];
+								navigationMenuItemSettings =
+									new URLNavigationMenuItemSettings() {
+										{
+											url = "https://www.google.com";
+											useNewTab = false;
+										}
+									};
 								type = "url";
-								typeSettings = HashMapBuilder.put(
-									"name_en_US", name
-								).put(
-									"url", "https://www.google.com"
-								).put(
-									"useNewTab", "false"
-								).build();
 							}
 						}
 					};
 					type = "node";
-					typeSettings = HashMapBuilder.put(
-						"defaultLanguageId", "en_US"
-					).put(
-						"name_en_US", name
-					).build();
 				}
 			}
 		};
 	}
 
 	private NavigationMenuItem[] _randomNavigationMenuItems(
-		Layout layout1, Layout layout2, Map<String, String> nameI18nMap1,
-		Map<String, String> nameI18nMap2) {
+			Layout layout1, Layout layout2, Map<String, String> nameI18nMap1,
+			Map<String, String> nameI18nMap2)
+		throws PortalException {
 
 		return new NavigationMenuItem[] {
 			new NavigationMenuItem() {
 				{
+					defaultLanguageId = LocaleUtil.toLanguageId(
+						LocaleUtil.getDefault());
 					externalReferenceCode = RandomTestUtil.randomString();
 					name_i18n = nameI18nMap1;
 					type = "node";
-					typeSettings = _getTypeSettings(
-						layout1, nameI18nMap1, "node", "false");
 					useCustomName = false;
 				}
 			},
 			new NavigationMenuItem() {
 				{
+					defaultLanguageId = LocaleUtil.toLanguageId(
+						LocaleUtil.getDefault());
 					externalReferenceCode = RandomTestUtil.randomString();
 					name_i18n = nameI18nMap1;
+					navigationMenuItemSettings = _getNavigationMenuItemSettings(
+						layout1);
 					type = "layout";
-					typeSettings = _getTypeSettings(
-						layout1, nameI18nMap1, "layout", "true");
 					useCustomName = true;
 				}
 			},
 			new NavigationMenuItem() {
 				{
+					defaultLanguageId = LocaleUtil.toLanguageId(
+						LocaleUtil.getDefault());
 					externalReferenceCode = RandomTestUtil.randomString();
 					name_i18n = nameI18nMap2;
+					navigationMenuItemSettings = _getNavigationMenuItemSettings(
+						layout1);
 					type = "layout";
-					typeSettings = _getTypeSettings(
-						layout1, nameI18nMap2, "layout", "true");
 					useCustomName = true;
 				}
 			},
 			new NavigationMenuItem() {
 				{
+					defaultLanguageId = LocaleUtil.toLanguageId(
+						LocaleUtil.getDefault());
 					externalReferenceCode = RandomTestUtil.randomString();
 					name_i18n = nameI18nMap1;
+					navigationMenuItemSettings = _getNavigationMenuItemSettings(
+						layout1);
 					type = "layout";
-					typeSettings = _getTypeSettings(
-						layout1, nameI18nMap1, "layout", "false");
 					useCustomName = false;
 				}
 			},
 			new NavigationMenuItem() {
 				{
+					defaultLanguageId = LocaleUtil.toLanguageId(
+						LocaleUtil.getDefault());
 					externalReferenceCode = RandomTestUtil.randomString();
 					name_i18n = nameI18nMap1;
+					navigationMenuItemSettings = _getNavigationMenuItemSettings(
+						layout2);
 					type = "layout";
-					typeSettings = _getTypeSettings(
-						layout2, nameI18nMap1, "layout", "false");
 					useCustomName = false;
 				}
 			}
@@ -1115,6 +1115,100 @@ public class NavigationMenuResourceTest
 		Assert.assertEquals(0, page.getTotalCount());
 	}
 
+	private void _testPostSiteNavigationMenuBatchWithInvalidItemModel()
+		throws Exception {
+
+		NavigationMenu navigationMenu = _randomNavigationMenu(false);
+
+		String navigationMenuItemExternalReferenceCode =
+			RandomTestUtil.randomString();
+
+		String modelExternalReferenceCode = RandomTestUtil.randomString();
+
+		NavigationMenuItem[] navigationMenuItems = {
+			new NavigationMenuItem() {
+				{
+					externalReferenceCode =
+						navigationMenuItemExternalReferenceCode;
+					navigationMenuItemSettings =
+						new DisplayPageNavigationMenuItemSettings() {
+							{
+								className = JournalArticle.class.getName();
+								externalReferenceCode =
+									modelExternalReferenceCode;
+								type = "Web Content Article";
+							}
+						};
+					type = JournalArticle.class.getName();
+				}
+			}
+		};
+
+		navigationMenu.setNavigationMenuItems(navigationMenuItems);
+
+		waitForFinish(
+			"COMPLETED",
+			HTTPTestUtil.invokeToJSONObject(
+				JSONUtil.put(
+					_jsonFactory.createJSONObject(navigationMenu.toString())
+				).toString(),
+				"headless-admin-site/v1.0/sites/" +
+					testGroup.getExternalReferenceCode() +
+						"/navigation-menus/batch",
+				Http.Method.POST));
+
+		SiteNavigationMenuItem siteNavigationMenuItem =
+			_siteNavigationMenuItemLocalService.
+				fetchSiteNavigationMenuItemByExternalReferenceCode(
+					navigationMenuItemExternalReferenceCode,
+					testGroup.getGroupId());
+
+		String typeSettings = siteNavigationMenuItem.getTypeSettings();
+
+		Assert.assertTrue(typeSettings.contains(modelExternalReferenceCode));
+	}
+
+	private void _testPostSiteNavigationMenuWithInvalidItemModel()
+		throws Exception {
+
+		NavigationMenu navigationMenu = _randomNavigationMenu(false);
+
+		String navigationMenuItemExternalReferenceCode =
+			RandomTestUtil.randomString();
+
+		NavigationMenuItem[] navigationMenuItems = {
+			new NavigationMenuItem() {
+				{
+					externalReferenceCode =
+						navigationMenuItemExternalReferenceCode;
+					navigationMenuItemSettings =
+						new DisplayPageNavigationMenuItemSettings() {
+							{
+								className = JournalArticle.class.getName();
+								externalReferenceCode =
+									RandomTestUtil.randomString();
+								type = "Web Content Article";
+							}
+						};
+					type = JournalArticle.class.getName();
+				}
+			}
+		};
+
+		navigationMenu.setNavigationMenuItems(navigationMenuItems);
+
+		Assert.assertThrows(
+			Problem.ProblemException.class,
+			() -> navigationMenuResource.postSiteNavigationMenu(
+				testGroup.getExternalReferenceCode(), navigationMenu));
+
+		Assert.assertNull(
+			_siteNavigationMenuItemLocalService.
+				fetchSiteNavigationMenuItemByExternalReferenceCode(
+					navigationMenuItemExternalReferenceCode,
+					testGroup.getGroupId()));
+	}
+
 	private void _testPostSiteNavigationMenuWithNavigationType()
 		throws Exception {
 
@@ -1249,6 +1343,9 @@ public class NavigationMenuResourceTest
 
 	@Inject
 	private FriendlyURLNormalizer _friendlyURLNormalizer;
+
+	@Inject
+	private JSONFactory _jsonFactory;
 
 	@Inject
 	private Portal _portal;

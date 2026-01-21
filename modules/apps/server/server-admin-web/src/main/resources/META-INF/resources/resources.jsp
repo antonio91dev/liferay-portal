@@ -316,7 +316,15 @@ long usedMemory = totalMemory - runtime.freeMemory();
 		</aui:fieldset>
 
 		<%
-		List<DataCleanup> moduleDataCleanups = DataCleanupUtil.getModuleDataCleanups();
+		List<DataCleanup> moduleDataCleanups = TransformUtil.transform(
+			DataCleanupUtil.getModuleDataCleanups(),
+			moduleDataCleanup -> {
+				if (!moduleDataCleanup.isEnabled() || (ReleaseLocalServiceUtil.fetchRelease(moduleDataCleanup.getServletContextName()) != null)) {
+					return moduleDataCleanup;
+				}
+
+				return null;
+			});
 		%>
 
 		<c:if test="<%= ListUtil.isNotEmpty(moduleDataCleanups) %>">
@@ -336,9 +344,6 @@ long usedMemory = totalMemory - runtime.freeMemory();
 
 					<%
 					for (DataCleanup moduleDataCleanup : moduleDataCleanups) {
-						if (moduleDataCleanup.isEnabled() && (ReleaseLocalServiceUtil.fetchRelease(moduleDataCleanup.getServletContextName()) == null)) {
-							continue;
-						}
 					%>
 
 						<li class="list-group-item list-group-item-flex">

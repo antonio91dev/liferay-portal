@@ -13,7 +13,6 @@ import ClayLayout from '@clayui/layout';
 import ClayList from '@clayui/list';
 import ClayLoadingIndicator from '@clayui/loading-indicator';
 import ClayModal, {useModal} from '@clayui/modal';
-import {Observer} from '@clayui/modal/lib/types';
 import {ClayPaginationBarWithBasicItems} from '@clayui/pagination-bar';
 import ClaySticker from '@clayui/sticker';
 import {ClayTooltipProvider} from '@clayui/tooltip';
@@ -35,12 +34,11 @@ import ThemeContext from '../../shared/ThemeContext';
 // @ts-ignore
 
 import removeDuplicates from '../../utils/functions/remove_duplicates';
-
-// @ts-ignore
-
 import sub from '../../utils/language/sub';
 import {IAssetSubtype, ISelectedSubtype} from './../../utils/types';
 import {isMissing} from './SelectTypes';
+
+import type {Observer} from '@clayui/modal/src/types';
 
 export function SearchableSubtypesModal({
 	className,
@@ -367,14 +365,16 @@ export function SearchableSubtypesModal({
 												<Cell>
 													<div className="d-flex">
 														<ClayCheckbox
-															aria-label={sub(
-																Liferay.Language.get(
-																	'select-x'
-																),
-																[
-																	item.assetSubtypeLocalizedName,
-																]
-															)}
+															aria-label={
+																sub(
+																	Liferay.Language.get(
+																		'select-x'
+																	),
+																	[
+																		item.assetSubtypeLocalizedName,
+																	]
+																) as string
+															}
 															checked={isSelected(
 																item
 															)}

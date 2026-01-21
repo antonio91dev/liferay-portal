@@ -5,10 +5,10 @@
 
 package com.liferay.jenkins.results.parser.test.clazz.group;
 
-import com.liferay.jenkins.results.parser.BatchHistory;
 import com.liferay.jenkins.results.parser.DownstreamBuildReport;
 import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
 import com.liferay.jenkins.results.parser.Job;
+import com.liferay.jenkins.results.parser.history.BatchHistory;
 import com.liferay.jenkins.results.parser.test.clazz.TestClass;
 import com.liferay.jenkins.results.parser.test.clazz.TestClassFactory;
 
@@ -32,8 +32,7 @@ public class AxisTestClassGroup extends BaseTestClassGroup {
 		}
 
 		_averageDuration =
-			getAverageOverheadDuration() + getAverageTotalTestDuration() +
-				getAverageTotalTestTaskDuration();
+			getAverageOverheadDuration() + getAverageTotalTestDuration();
 
 		if (_averageDuration <= 0L) {
 			BatchHistory batchHistory = getBatchHistory();
@@ -82,10 +81,6 @@ public class AxisTestClassGroup extends BaseTestClassGroup {
 		}
 
 		return _averageTotalTestDuration;
-	}
-
-	public long getAverageTotalTestTaskDuration() {
-		return 0L;
 	}
 
 	public String getAxisName() {
@@ -167,6 +162,8 @@ public class AxisTestClassGroup extends BaseTestClassGroup {
 			"average_duration", getAverageDuration()
 		).put(
 			"axis_name", getAxisName()
+		).put(
+			"grouping_strategy", String.valueOf(getGroupingStrategy())
 		);
 
 		JSONArray testClassesJSONArray = new JSONArray();
@@ -255,7 +252,7 @@ public class AxisTestClassGroup extends BaseTestClassGroup {
 
 		setSegmentTestClassGroup(segmentTestClassGroup);
 
-		JSONArray testClassesJSONArray = jsonObject.getJSONArray(
+		JSONArray testClassesJSONArray = jsonObject.optJSONArray(
 			"test_classes");
 
 		if ((testClassesJSONArray == null) || testClassesJSONArray.isEmpty()) {
@@ -305,6 +302,10 @@ public class AxisTestClassGroup extends BaseTestClassGroup {
 		}
 
 		return _getBaseSlaveLabel();
+	}
+
+	protected GroupingStrategy getGroupingStrategy() {
+		return _batchTestClassGroup.getGroupingStrategy();
 	}
 
 	protected void setBatchTestClassGroup(

@@ -77,8 +77,8 @@ public class ResourceActionPostUpgradeDataCleanupProcessTest
 			new AtomicReference<>();
 		AtomicReference<ResourceAction> resourceActionAtomicReference2 =
 			new AtomicReference<>();
-		String resourceActionActionId1 = "VIEW";
-		String resourceActionActionId2 = "EDIT";
+		String resourceActionActionId1 = "EDIT";
+		String resourceActionActionId2 = "VIEW";
 		String resourceActionName =
 			"com.liferay.test." + RandomTestUtil.randomString();
 

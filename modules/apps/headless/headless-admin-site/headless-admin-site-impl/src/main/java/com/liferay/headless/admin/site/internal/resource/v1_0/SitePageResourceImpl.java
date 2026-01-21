@@ -6,8 +6,6 @@
 package com.liferay.headless.admin.site.internal.resource.v1_0;
 
 import com.liferay.client.extension.type.manager.CETManager;
-import com.liferay.document.library.kernel.model.DLFileEntry;
-import com.liferay.document.library.kernel.service.DLFileEntryService;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.vulcan.batch.engine.ExportImportVulcanBatchEngineTaskItemDelegate;
 import com.liferay.fragment.processor.FragmentEntryProcessorRegistry;
@@ -23,6 +21,8 @@ import com.liferay.headless.admin.site.dto.v1_0.SitePage;
 import com.liferay.headless.admin.site.dto.v1_0.SitePageNavigationSettings;
 import com.liferay.headless.admin.site.dto.v1_0.SitemapSettings;
 import com.liferay.headless.admin.site.dto.v1_0.WidgetPageSettings;
+import com.liferay.headless.admin.site.internal.dto.v1_0.util.FileEntryUtil;
+import com.liferay.headless.admin.site.internal.dto.v1_0.util.ItemScopeUtil;
 import com.liferay.headless.admin.site.internal.dto.v1_0.util.SitePageTypeUtil;
 import com.liferay.headless.admin.site.internal.odata.entity.v1_0.SitePageEntityModel;
 import com.liferay.headless.admin.site.internal.resource.v1_0.util.GroupUtil;
@@ -79,8 +79,10 @@ import jakarta.ws.rs.core.MultivaluedMap;
 
 import java.io.Serializable;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
@@ -143,6 +145,11 @@ public class SitePageResourceImpl
 			@Override
 			public String getModelClassName() {
 				return Layout.class.getName();
+			}
+
+			@Override
+			public List<String> getNestedFields() {
+				return Collections.singletonList("pageSpecifications");
 			}
 
 			@Override
@@ -222,6 +229,11 @@ public class SitePageResourceImpl
 
 			@Override
 			public boolean isHidden() {
+				return true;
+			}
+
+			@Override
+			public boolean isStagingSupported() {
 				return true;
 			}
 
@@ -430,6 +442,11 @@ public class SitePageResourceImpl
 			existingSitePage.setPageSpecifications(
 				sitePage::getPageSpecifications);
 		}
+
+		if (sitePage.getTaxonomyCategoryItemExternalReferences() != null) {
+			existingSitePage.setTaxonomyCategoryItemExternalReferences(
+				sitePage::getTaxonomyCategoryItemExternalReferences);
+		}
 	}
 
 	private Layout _addLayout(
@@ -535,33 +552,6 @@ public class SitePageResourceImpl
 		return layout;
 	}
 
-	private long _getFileEntryId(
-			ItemExternalReference itemExternalReference,
-			ServiceContext serviceContext)
-		throws Exception {
-
-		long groupId = serviceContext.getScopeGroupId();
-
-		com.liferay.portal.vulcan.scope.Scope scope =
-			itemExternalReference.getScope();
-
-		if (scope != null) {
-			groupId = GroupUtil.getGroupId(
-				true, true, serviceContext.getCompanyId(),
-				scope.getExternalReferenceCode());
-		}
-
-		DLFileEntry dlFileEntry =
-			_dlFileEntryService.fetchFileEntryByExternalReferenceCode(
-				groupId, itemExternalReference.getExternalReferenceCode());
-
-		if (dlFileEntry == null) {
-			throw new UnsupportedOperationException();
-		}
-
-		return dlFileEntry.getFileEntryId();
-	}
-
 	private long _getParentLayoutId(
 			long defaultParentLayoutId, long groupId,
 			String parentSitePageExternalReferenceCode,
@@ -613,7 +603,8 @@ public class SitePageResourceImpl
 		if (sitePageNavigationSettings != null) {
 			queryString = GetterUtil.getString(
 				sitePageNavigationSettings.getQueryString());
-			target = sitePageNavigationSettings.getTarget();
+			target = GetterUtil.getString(
+				sitePageNavigationSettings.getTarget());
 
 			if (sitePageNavigationSettings.getTargetType() ==
 					SitePageNavigationSettings.TargetType.NEW_TAB) {
@@ -622,11 +613,10 @@ public class SitePageResourceImpl
 			}
 		}
 
-		SitemapSettings.ChangeFrequency changeFrequency =
-			SitemapSettings.ChangeFrequency.DAILY;
-		String sitemapInclude = "1";
-		String sitemapIncludeChildLayouts = "true";
-		String sitemapPagePriority = "0.0";
+		String changeFrequency = StringPool.BLANK;
+		String sitemapInclude = StringPool.BLANK;
+		String sitemapIncludeChildLayouts = StringPool.BLANK;
+		String sitemapPagePriority = StringPool.BLANK;
 		SEOSettings seoSettings = pageSettings.getSeoSettings();
 
 		if (seoSettings != null) {
@@ -634,17 +624,26 @@ public class SitePageResourceImpl
 
 			if (sitemapSettings != null) {
 				if (sitemapSettings.getChangeFrequency() != null) {
-					changeFrequency = sitemapSettings.getChangeFrequency();
+					changeFrequency = StringUtil.toLowerCase(
+						sitemapSettings.getChangeFrequencyAsString());
 				}
 
 				if (Boolean.FALSE.equals(sitemapSettings.getInclude())) {
 					sitemapInclude = "0";
+				}
+				else if (Boolean.TRUE.equals(sitemapSettings.getInclude())) {
+					sitemapInclude = "1";
 				}
 
 				if (Boolean.FALSE.equals(
 						sitemapSettings.getIncludeChildSitePages())) {
 
 					sitemapIncludeChildLayouts = "false";
+				}
+				else if (Boolean.TRUE.equals(
+							sitemapSettings.getIncludeChildSitePages())) {
+
+					sitemapIncludeChildLayouts = "true";
 				}
 
 				if (sitemapSettings.getPagePriority() != null) {
@@ -660,8 +659,7 @@ public class SitePageResourceImpl
 			).setProperty(
 				LayoutTypePortletConstants.QUERY_STRING, queryString
 			).setProperty(
-				LayoutTypePortletConstants.SITEMAP_CHANGEFREQ,
-				StringUtil.toLowerCase(changeFrequency.getValue())
+				LayoutTypePortletConstants.SITEMAP_CHANGEFREQ, changeFrequency
 			).setProperty(
 				LayoutTypePortletConstants.SITEMAP_INCLUDE, sitemapInclude
 			).setProperty(
@@ -845,7 +843,8 @@ public class SitePageResourceImpl
 		boolean openGraphDescriptionEnabled = false;
 		Map<Locale, String> openGraphDescriptionMap = new HashMap<>();
 		Map<Locale, String> openGraphImageAltMap = new HashMap<>();
-		long openGraphImageFileEntryId = 0;
+		String openGraphImageFileEntryERC = null;
+		String openGraphImageFileEntryScopeERC = null;
 		boolean openGraphTitleEnabled = false;
 		Map<Locale, String> openGraphTitleMap = new HashMap<>();
 
@@ -869,8 +868,18 @@ public class SitePageResourceImpl
 				openGraphSettings.getImage();
 
 			if (itemExternalReference != null) {
-				openGraphImageFileEntryId = _getFileEntryId(
-					itemExternalReference, serviceContext);
+				openGraphImageFileEntryERC =
+					itemExternalReference.getExternalReferenceCode();
+
+				openGraphImageFileEntryScopeERC =
+					ItemScopeUtil.getItemScopeExternalReferenceCode(
+						itemExternalReference.getScope(),
+						serviceContext.getScopeGroupId());
+
+				FileEntryUtil.fetchFileEntryByExternalReferenceCode(
+					serviceContext.getCompanyId(), openGraphImageFileEntryERC,
+					itemExternalReference.getScope(),
+					serviceContext.getScopeGroupId());
 			}
 
 			openGraphTitleMap = LocalizedMapUtil.getLocalizedMap(
@@ -884,8 +893,9 @@ public class SitePageResourceImpl
 		_layoutSEOEntryService.updateLayoutSEOEntry(
 			groupId, false, layoutId, canonicalURLEnabled, canonicalURLMap,
 			openGraphDescriptionEnabled, openGraphDescriptionMap,
-			openGraphImageAltMap, openGraphImageFileEntryId,
-			openGraphTitleEnabled, openGraphTitleMap, serviceContext);
+			openGraphImageAltMap, openGraphImageFileEntryERC,
+			openGraphImageFileEntryScopeERC, openGraphTitleEnabled,
+			openGraphTitleMap, serviceContext);
 
 		CustomMetaTag[] customMetaTags = new CustomMetaTag[0];
 
@@ -987,9 +997,6 @@ public class SitePageResourceImpl
 
 	@Reference
 	private CETManager _cetManager;
-
-	@Reference
-	private DLFileEntryService _dlFileEntryService;
 
 	@Reference
 	private DTOConverterRegistry _dtoConverterRegistry;

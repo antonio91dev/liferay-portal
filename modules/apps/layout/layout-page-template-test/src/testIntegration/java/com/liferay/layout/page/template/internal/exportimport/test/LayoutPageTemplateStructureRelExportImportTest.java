@@ -6,19 +6,23 @@
 package com.liferay.layout.page.template.internal.exportimport.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.asset.list.constants.AssetListEntryTypeConstants;
+import com.liferay.asset.list.model.AssetListEntry;
+import com.liferay.asset.list.service.AssetListEntryLocalService;
 import com.liferay.document.library.kernel.model.DLFileEntryTypeConstants;
 import com.liferay.document.library.kernel.model.DLFolderConstants;
 import com.liferay.document.library.kernel.service.DLAppLocalService;
-import com.liferay.document.library.kernel.service.DLAppLocalServiceUtil;
+import com.liferay.exportimport.kernel.lar.PortletDataHandlerKeys;
 import com.liferay.exportimport.test.util.lar.BaseExportImportTestCase;
+import com.liferay.journal.model.JournalArticle;
+import com.liferay.layout.page.template.service.LayoutPageTemplateStructureServiceUtil;
 import com.liferay.layout.provider.LayoutStructureProvider;
 import com.liferay.layout.test.util.ContentLayoutTestUtil;
 import com.liferay.layout.test.util.LayoutTestUtil;
 import com.liferay.layout.util.constants.LayoutDataItemTypeConstants;
-import com.liferay.layout.util.structure.ContainerStyledLayoutStructureItem;
-import com.liferay.layout.util.structure.FormStyledLayoutStructureItem;
 import com.liferay.layout.util.structure.LayoutStructure;
 import com.liferay.layout.util.structure.LayoutStructureItem;
+import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.language.Language;
@@ -27,8 +31,8 @@ import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.LayoutLocalService;
-import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.test.TestInfo;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -38,13 +42,16 @@ import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.UnicodePropertiesBuilder;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 import com.liferay.segments.service.SegmentsExperienceLocalService;
 
-import java.util.List;
+import java.util.Map;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -70,188 +77,318 @@ public class LayoutPageTemplateStructureRelExportImportTest
 	@Override
 	public void setUp() throws Exception {
 		super.setUp();
+
+		layout = LayoutTestUtil.addTypeContentLayout(group);
+
+		_segmentsExperienceId =
+			_segmentsExperienceLocalService.fetchDefaultSegmentsExperienceId(
+				layout.getPlid());
+
+		_serviceContext = ServiceContextTestUtil.getServiceContext(
+			group.getGroupId(), TestPropsValues.getUserId());
+
+		ServiceContextThreadLocal.pushServiceContext(_serviceContext);
+	}
+
+	@After
+	@Override
+	public void tearDown() throws Exception {
+		super.tearDown();
+
+		ServiceContextThreadLocal.popServiceContext();
 	}
 
 	@Test
-	public void testBackgroundImageMappedValuesImport() throws Exception {
-		Layout exportedLayout = LayoutTestUtil.addTypeContentLayout(group);
+	@TestInfo("LPD-72839")
+	public void testCollectionDisplay() throws Exception {
+		AssetListEntry assetListEntry1 = _addAssetListEntry(group);
 
-		// Delete and readd to ensure a different layout ID (not ID or UUID).
-		// See LPS-32132.
-
-		LayoutLocalServiceUtil.deleteLayout(
-			exportedLayout, new ServiceContext());
-
-		exportedLayout = LayoutTestUtil.addTypeContentLayout(group);
-
-		FileEntry exportedFileEntry = DLAppLocalServiceUtil.addFileEntry(
-			null, TestPropsValues.getUserId(), group.getGroupId(),
-			DLFolderConstants.DEFAULT_PARENT_FOLDER_ID,
-			RandomTestUtil.randomString() + ".png", ContentTypes.IMAGE_PNG,
-			_read("dependencies/sample.png"), null, null, null,
-			ServiceContextTestUtil.getServiceContext(group.getGroupId()));
-
-		ContentLayoutTestUtil.addItemToLayout(
-			JSONUtil.put(
-				"styles",
-				JSONUtil.put(
-					"backgroundImage",
-					JSONUtil.put(
-						"className", FileEntry.class.getName()
-					).put(
-						"classNameId", _portal.getClassNameId(FileEntry.class)
-					).put(
-						"classPK", exportedFileEntry.getFileEntryId()
-					).put(
-						"classTypeId",
-						String.valueOf(
-							DLFileEntryTypeConstants.
-								FILE_ENTRY_TYPE_ID_BASIC_DOCUMENT)
-					).put(
-						"itemSubtype",
-						_language.get(
-							LocaleUtil.ENGLISH,
-							DLFileEntryTypeConstants.NAME_BASIC_DOCUMENT)
-					).put(
-						"itemType", "Document"
-					).put(
-						"title", exportedFileEntry.getTitle()
-					).put(
-						"type",
-						"com.liferay.item.selector.criteria." +
-							"InfoItemItemSelectorReturnType"
-					))
-			).toString(),
-			LayoutDataItemTypeConstants.TYPE_CONTAINER, exportedLayout,
-			_layoutStructureProvider,
-			_segmentsExperienceLocalService.fetchDefaultSegmentsExperienceId(
-				exportedLayout.getPlid()));
+		String itemId = ContentLayoutTestUtil.addCollectionDisplayToLayout(
+			_getCollectionJSONObject(
+				assetListEntry1.getAssetListEntryId(), null, null),
+			layout, _layoutStructureProvider, null, null, 0,
+			_segmentsExperienceId);
 
 		exportImportLayouts(
-			new long[] {exportedLayout.getLayoutId()}, getImportParameterMap());
+			new long[] {layout.getLayoutId()}, getImportParameterMap());
 
-		Layout importedLayout = _layoutLocalService.getLayoutByUuidAndGroupId(
-			exportedLayout.getUuid(), importedGroup.getGroupId(), false);
+		AssetListEntry importedAssetListEntry =
+			_assetListEntryLocalService.getAssetListEntryByUuidAndGroupId(
+				assetListEntry1.getUuid(), importedGroup.getGroupId());
 
-		LayoutStructure importedLayoutStructure =
-			_layoutStructureProvider.getLayoutStructure(
-				importedLayout.getPlid(),
-				_segmentsExperienceLocalService.
-					fetchDefaultSegmentsExperienceId(importedLayout.getPlid()));
+		importedLayout = _layoutLocalService.getLayoutByUuidAndGroupId(
+			layout.getUuid(), importedGroup.getGroupId(), false);
 
-		LayoutStructureItem mainLayoutStructureItem =
-			importedLayoutStructure.getMainLayoutStructureItem();
-
-		List<String> childrenItemIds =
-			mainLayoutStructureItem.getChildrenItemIds();
-
-		Assert.assertEquals(
-			childrenItemIds.toString(), 1, childrenItemIds.size());
-
-		LayoutStructureItem layoutStructureItem =
-			importedLayoutStructure.getLayoutStructureItem(
-				childrenItemIds.get(0));
-
-		Assert.assertTrue(
-			layoutStructureItem instanceof ContainerStyledLayoutStructureItem);
-
-		ContainerStyledLayoutStructureItem containerStyledLayoutStructureItem =
-			(ContainerStyledLayoutStructureItem)layoutStructureItem;
-
-		JSONObject backgroundImageJSONObject =
-			containerStyledLayoutStructureItem.getBackgroundImageJSONObject();
-
-		FileEntry importedDLFileEntry =
-			_dlAppLocalService.getFileEntryByUuidAndGroupId(
-				exportedFileEntry.getUuid(), importedGroup.getGroupId());
-
-		Assert.assertEquals(
-			importedDLFileEntry.getFileEntryId(),
-			backgroundImageJSONObject.getLong("classPK"));
-	}
-
-	@Test
-	@TestInfo("LPD-67912")
-	public void testFormContainerSuccessMessageWithMappedLayout()
-		throws Exception {
-
-		Layout layout1 = LayoutTestUtil.addTypeContentLayout(group);
-		Layout layout2 = LayoutTestUtil.addTypeContentLayout(group);
-
-		ContentLayoutTestUtil.addItemToLayout(
-			JSONUtil.put(
-				"classNameId", "0"
-			).put(
-				"classTypeId", "0"
-			).put(
-				"successMessage",
-				JSONUtil.put(
-					"layout",
-					JSONUtil.put(
-						"groupId", layout2.getGroupId()
-					).put(
-						"layoutId", layout2.getLayoutId()
-					).put(
-						"layoutUuid", layout2.getUuid()
-					).put(
-						"privateLayout", layout2.isPrivateLayout()
-					))
-			).toString(),
-			LayoutDataItemTypeConstants.TYPE_FORM, layout1,
-			_layoutStructureProvider,
-			_segmentsExperienceLocalService.fetchDefaultSegmentsExperienceId(
-				layout1.getPlid()));
-
-		exportImportLayouts(
-			new long[] {layout2.getLayoutId(), layout1.getLayoutId()},
-			getImportParameterMap());
-
-		Layout importedLayout1 = _layoutLocalService.getLayoutByUuidAndGroupId(
-			layout1.getUuid(), importedGroup.getGroupId(), false);
-
-		LayoutStructure importedLayoutStructure =
-			_layoutStructureProvider.getLayoutStructure(
-				importedLayout1.getPlid(),
-				_segmentsExperienceLocalService.
-					fetchDefaultSegmentsExperienceId(
-						importedLayout1.getPlid()));
-
-		List<FormStyledLayoutStructureItem> formStyledLayoutStructureItems =
-			importedLayoutStructure.getFormStyledLayoutStructureItems();
-
-		FormStyledLayoutStructureItem formStyledLayoutStructureItem =
-			formStyledLayoutStructureItems.get(0);
-
-		JSONObject successMessageJSONObject =
-			formStyledLayoutStructureItem.getSuccessMessageJSONObject();
-
-		JSONObject layoutJSONObject = successMessageJSONObject.getJSONObject(
-			"layout");
-
-		Assert.assertEquals(
-			importedGroup.getGroupId(), layoutJSONObject.getLong("groupId"));
-
-		Layout importedLayout2 = _layoutLocalService.getLayoutByUuidAndGroupId(
-			layout2.getUuid(), importedGroup.getGroupId(), false);
-
-		Assert.assertEquals(
-			importedLayout2.getLayoutId(),
-			layoutJSONObject.getLong("layoutId"));
-	}
-
-	@Test
-	@TestInfo("LPD-67912")
-	public void testFormContainerSuccessMessageWithMappedLayoutWithScope()
-		throws Exception {
-
-		Layout layout1 = LayoutTestUtil.addTypeContentLayout(group);
+		_assertCollectionConfig(
+			importedAssetListEntry.getAssetListEntryId(), null,
+			_getLayoutStructureItem(itemId, importedLayout.getPlid()), null);
 
 		Group guestGroup = _groupLocalService.getGroup(
 			TestPropsValues.getGroupId());
 
-		Layout layout2 = LayoutTestUtil.addTypeContentLayout(guestGroup);
+		AssetListEntry assetListEntry2 = _addAssetListEntry(guestGroup);
 
-		ContentLayoutTestUtil.addItemToLayout(
+		_updateLayoutStructureItem(
+			itemId,
+			itemConfigJSONObject -> itemConfigJSONObject.put(
+				"collection",
+				_getCollectionJSONObject(
+					assetListEntry2.getAssetListEntryId(), null, null)));
+
+		exportImportLayouts(
+			new long[] {layout.getLayoutId()}, getImportParameterMap());
+
+		_assertCollectionConfig(
+			assetListEntry2.getAssetListEntryId(), null,
+			_getLayoutStructureItem(itemId, importedLayout.getPlid()), null);
+
+		String externalReferenceCode = RandomTestUtil.randomString();
+
+		_updateLayoutStructureItem(
+			itemId,
+			itemConfigJSONObject -> itemConfigJSONObject.put(
+				"collection",
+				_getCollectionJSONObject(0, externalReferenceCode, null)));
+
+		exportImportLayouts(
+			new long[] {layout.getLayoutId()}, getImportParameterMap());
+
+		_assertCollectionConfig(
+			0, externalReferenceCode,
+			_getLayoutStructureItem(itemId, importedLayout.getPlid()), null);
+
+		AssetListEntry assetListEntry3 = _addAssetListEntry(group);
+
+		_updateLayoutStructureItem(
+			itemId,
+			itemConfigJSONObject -> itemConfigJSONObject.put(
+				"collection",
+				_getCollectionJSONObject(
+					0, assetListEntry3.getExternalReferenceCode(), null)));
+
+		exportImportLayouts(
+			new long[] {layout.getLayoutId()}, getImportParameterMap());
+
+		importedAssetListEntry =
+			_assetListEntryLocalService.getAssetListEntryByUuidAndGroupId(
+				assetListEntry3.getUuid(), importedGroup.getGroupId());
+
+		_assertCollectionConfig(
+			0, importedAssetListEntry.getExternalReferenceCode(),
+			_getLayoutStructureItem(itemId, importedLayout.getPlid()), null);
+
+		AssetListEntry assetListEntry4 = _addAssetListEntry(guestGroup);
+
+		_updateLayoutStructureItem(
+			itemId,
+			itemConfigJSONObject -> itemConfigJSONObject.put(
+				"collection",
+				_getCollectionJSONObject(
+					0, assetListEntry4.getExternalReferenceCode(),
+					guestGroup.getExternalReferenceCode())));
+
+		exportImportLayouts(
+			new long[] {layout.getLayoutId()}, getImportParameterMap());
+
+		_assertCollectionConfig(
+			0, assetListEntry4.getExternalReferenceCode(),
+			_getLayoutStructureItem(itemId, importedLayout.getPlid()),
+			guestGroup.getExternalReferenceCode());
+	}
+
+	@Test
+	@TestInfo("LPD-72839")
+	public void testContainer() throws Exception {
+		FileEntry fileEntry1 = _addFileEntry(_serviceContext);
+
+		JSONObject jsonObject = ContentLayoutTestUtil.addItemToLayout(
+			JSONUtil.put(
+				"link",
+				_getFileEntryJSONObject(
+					fileEntry1.getFileEntryId(), null, null, "FileEntry_title")
+			).put(
+				"styles",
+				JSONUtil.put(
+					"backgroundImage",
+					_getFileEntryJSONObject(
+						fileEntry1.getFileEntryId(), null, null, null))
+			).toString(),
+			LayoutDataItemTypeConstants.TYPE_CONTAINER, layout,
+			_layoutStructureProvider,
+			_segmentsExperienceLocalService.fetchDefaultSegmentsExperienceId(
+				layout.getPlid()));
+
+		String itemId = jsonObject.getString("addedItemId");
+
+		exportImportLayouts(
+			new long[] {layout.getLayoutId()}, getImportParameterMap());
+
+		importedLayout = _layoutLocalService.getLayoutByUuidAndGroupId(
+			layout.getUuid(), importedGroup.getGroupId(), false);
+
+		FileEntry importedFileEntry =
+			_dlAppLocalService.getFileEntryByUuidAndGroupId(
+				fileEntry1.getUuid(), importedGroup.getGroupId());
+
+		_assertContainerConfig(
+			importedFileEntry.getFileEntryId(), null,
+			_getLayoutStructureItem(itemId, importedLayout.getPlid()), null);
+
+		String externalReferenceCode = RandomTestUtil.randomString();
+
+		_updateLayoutStructureItem(
+			itemId,
+			itemConfigJSONObject -> {
+				itemConfigJSONObject.put(
+					"link",
+					_getFileEntryJSONObject(
+						0, externalReferenceCode, null, "FileEntry_title"));
+
+				JSONObject stylesJSONObject =
+					itemConfigJSONObject.getJSONObject("styles");
+
+				stylesJSONObject.put(
+					"backgroundImage",
+					_getFileEntryJSONObject(
+						0, externalReferenceCode, null, null));
+
+				return itemConfigJSONObject;
+			});
+
+		exportImportLayouts(
+			new long[] {layout.getLayoutId()}, getImportParameterMap());
+
+		_assertContainerConfig(
+			0, externalReferenceCode,
+			_getLayoutStructureItem(itemId, importedLayout.getPlid()), null);
+
+		FileEntry fileEntry2 = _addFileEntry(_serviceContext);
+
+		_updateLayoutStructureItem(
+			itemId,
+			itemConfigJSONObject -> {
+				itemConfigJSONObject.put(
+					"link",
+					_getFileEntryJSONObject(
+						0, fileEntry2.getExternalReferenceCode(), null,
+						"FileEntry_title"));
+
+				JSONObject stylesJSONObject =
+					itemConfigJSONObject.getJSONObject("styles");
+
+				stylesJSONObject.put(
+					"backgroundImage",
+					_getFileEntryJSONObject(
+						0, fileEntry2.getExternalReferenceCode(), null, null));
+
+				return itemConfigJSONObject;
+			});
+
+		exportImportLayouts(
+			new long[] {layout.getLayoutId()}, getImportParameterMap());
+
+		importedFileEntry = _dlAppLocalService.getFileEntryByUuidAndGroupId(
+			fileEntry2.getUuid(), importedGroup.getGroupId());
+
+		_assertContainerConfig(
+			0, importedFileEntry.getExternalReferenceCode(),
+			_getLayoutStructureItem(itemId, importedLayout.getPlid()), null);
+
+		Group guestGroup = _groupLocalService.getGroup(
+			TestPropsValues.getGroupId());
+
+		FileEntry fileEntry3 = _addFileEntry(
+			ServiceContextTestUtil.getServiceContext(guestGroup.getGroupId()));
+
+		_updateLayoutStructureItem(
+			itemId,
+			itemConfigJSONObject -> {
+				itemConfigJSONObject.put(
+					"link",
+					_getFileEntryJSONObject(
+						fileEntry3.getFileEntryId(), null, null,
+						"FileEntry_title"));
+
+				JSONObject stylesJSONObject =
+					itemConfigJSONObject.getJSONObject("styles");
+
+				stylesJSONObject.put(
+					"backgroundImage",
+					_getFileEntryJSONObject(
+						fileEntry3.getFileEntryId(), null, null, null));
+
+				return itemConfigJSONObject;
+			});
+
+		exportImportLayouts(
+			new long[] {layout.getLayoutId()}, getImportParameterMap());
+
+		_assertContainerConfig(
+			fileEntry3.getFileEntryId(), null,
+			_getLayoutStructureItem(itemId, importedLayout.getPlid()), null);
+
+		_updateLayoutStructureItem(
+			itemId,
+			itemConfigJSONObject -> {
+				itemConfigJSONObject.put(
+					"link",
+					_getFileEntryJSONObject(
+						0, fileEntry3.getExternalReferenceCode(),
+						guestGroup.getExternalReferenceCode(),
+						"FileEntry_title"));
+
+				JSONObject stylesJSONObject =
+					itemConfigJSONObject.getJSONObject("styles");
+
+				stylesJSONObject.put(
+					"backgroundImage",
+					_getFileEntryJSONObject(
+						0, fileEntry3.getExternalReferenceCode(),
+						guestGroup.getExternalReferenceCode(), null));
+
+				return itemConfigJSONObject;
+			});
+
+		exportImportLayouts(
+			new long[] {layout.getLayoutId()}, getImportParameterMap());
+
+		_assertContainerConfig(
+			0, fileEntry3.getExternalReferenceCode(),
+			_getLayoutStructureItem(itemId, importedLayout.getPlid()),
+			guestGroup.getExternalReferenceCode());
+
+		Layout mappedLayout = LayoutTestUtil.addTypeContentLayout(group);
+
+		_updateLayoutStructureItem(
+			itemId,
+			itemConfigJSONObject -> itemConfigJSONObject.put(
+				"link",
+				JSONUtil.put(
+					"layout",
+					_getLayoutJSONObject(
+						null, group.getGroupId(), mappedLayout.getLayoutId(),
+						mappedLayout.getUuid(), mappedLayout.isPrivateLayout(),
+						null))));
+
+		exportImportLayouts(
+			new long[] {layout.getLayoutId()}, getImportParameterMap());
+
+		Layout importedMappedLayout =
+			_layoutLocalService.getLayoutByUuidAndGroupId(
+				mappedLayout.getUuid(), importedGroup.getGroupId(), false);
+
+		_assertLayoutJSONObject(
+			null, importedGroup.getGroupId(), "link",
+			importedMappedLayout.getLayoutId(),
+			_getLayoutStructureItem(itemId, importedLayout.getPlid()), null);
+	}
+
+	@Test
+	@TestInfo({"LPD-67912", "LPD-72839"})
+	public void testFormContainer() throws Exception {
+		Layout mappedLayout1 = LayoutTestUtil.addTypeContentLayout(group);
+
+		JSONObject jsonObject = ContentLayoutTestUtil.addItemToLayout(
 			JSONUtil.put(
 				"classNameId", "0"
 			).put(
@@ -260,55 +397,492 @@ public class LayoutPageTemplateStructureRelExportImportTest
 				"successMessage",
 				JSONUtil.put(
 					"layout",
-					JSONUtil.put(
-						"groupId", layout2.getGroupId()
-					).put(
-						"layoutId", layout2.getLayoutId()
-					).put(
-						"layoutUuid", layout2.getUuid()
-					).put(
-						"privateLayout", layout2.isPrivateLayout()
-					))
+					_getLayoutJSONObject(
+						null, mappedLayout1.getGroupId(),
+						mappedLayout1.getLayoutId(), mappedLayout1.getUuid(),
+						mappedLayout1.isPrivateLayout(), null))
 			).toString(),
-			LayoutDataItemTypeConstants.TYPE_FORM, layout1,
+			LayoutDataItemTypeConstants.TYPE_FORM, layout,
 			_layoutStructureProvider,
 			_segmentsExperienceLocalService.fetchDefaultSegmentsExperienceId(
-				layout1.getPlid()));
+				layout.getPlid()));
+
+		String itemId = jsonObject.getString("addedItemId");
 
 		exportImportLayouts(
-			new long[] {layout1.getLayoutId()}, getImportParameterMap());
+			new long[] {layout.getLayoutId()}, getImportParameterMap());
 
-		Layout importedLayout = _layoutLocalService.getLayoutByUuidAndGroupId(
-			layout1.getUuid(), importedGroup.getGroupId(), false);
+		importedLayout = _layoutLocalService.getLayoutByUuidAndGroupId(
+			layout.getUuid(), importedGroup.getGroupId(), false);
 
-		LayoutStructure importedLayoutStructure =
+		Layout importedMappedLayout =
+			_layoutLocalService.getLayoutByUuidAndGroupId(
+				mappedLayout1.getUuid(), importedGroup.getGroupId(), false);
+
+		_assertLayoutJSONObject(
+			null, importedGroup.getGroupId(), "successMessage",
+			importedMappedLayout.getLayoutId(),
+			_getLayoutStructureItem(itemId, importedLayout.getPlid()), null);
+
+		Group guestGroup = _groupLocalService.getGroup(
+			TestPropsValues.getGroupId());
+
+		Layout guestGroupLayout1 = LayoutTestUtil.addTypeContentLayout(
+			guestGroup);
+
+		_updateLayoutStructureItem(
+			itemId,
+			itemConfigJSONObject -> {
+				JSONObject successMessageJSONObject =
+					itemConfigJSONObject.getJSONObject("successMessage");
+
+				successMessageJSONObject.put(
+					"layout",
+					_getLayoutJSONObject(
+						null, guestGroup.getGroupId(),
+						guestGroupLayout1.getLayoutId(),
+						guestGroupLayout1.getUuid(),
+						guestGroupLayout1.isPrivateLayout(), null));
+
+				return itemConfigJSONObject;
+			});
+
+		exportImportLayouts(
+			new long[] {layout.getLayoutId()}, getImportParameterMap());
+
+		importedLayout = _layoutLocalService.getLayoutByUuidAndGroupId(
+			layout.getUuid(), importedGroup.getGroupId(), false);
+
+		_assertLayoutJSONObject(
+			null, guestGroup.getGroupId(), "successMessage",
+			guestGroupLayout1.getLayoutId(),
+			_getLayoutStructureItem(itemId, importedLayout.getPlid()), null);
+
+		String externalReferenceCode = RandomTestUtil.randomString();
+
+		_updateLayoutStructureItem(
+			itemId,
+			itemConfigJSONObject -> {
+				JSONObject successMessageJSONObject =
+					itemConfigJSONObject.getJSONObject("successMessage");
+
+				successMessageJSONObject.put(
+					"layout",
+					_getLayoutJSONObject(
+						externalReferenceCode, 0, 0, null, null, null));
+
+				return itemConfigJSONObject;
+			});
+
+		exportImportLayouts(
+			new long[] {layout.getLayoutId()}, getImportParameterMap());
+
+		_assertLayoutJSONObject(
+			externalReferenceCode, 0, "successMessage", 0,
+			_getLayoutStructureItem(itemId, importedLayout.getPlid()), null);
+
+		Layout mappedLayout2 = LayoutTestUtil.addTypeContentLayout(group);
+
+		_updateLayoutStructureItem(
+			itemId,
+			itemConfigJSONObject -> {
+				JSONObject successMessageJSONObject =
+					itemConfigJSONObject.getJSONObject("successMessage");
+
+				successMessageJSONObject.put(
+					"layout",
+					_getLayoutJSONObject(
+						mappedLayout2.getExternalReferenceCode(), 0, 0, null,
+						null, null));
+
+				return itemConfigJSONObject;
+			});
+
+		exportImportLayouts(
+			new long[] {layout.getLayoutId()}, getImportParameterMap());
+
+		importedMappedLayout = _layoutLocalService.getLayoutByUuidAndGroupId(
+			mappedLayout2.getUuid(), importedGroup.getGroupId(), false);
+
+		_assertLayoutJSONObject(
+			importedMappedLayout.getExternalReferenceCode(), 0,
+			"successMessage", 0,
+			_getLayoutStructureItem(itemId, importedLayout.getPlid()), null);
+
+		Layout guestGroupLayout2 = LayoutTestUtil.addTypeContentLayout(
+			guestGroup);
+
+		_updateLayoutStructureItem(
+			itemId,
+			itemConfigJSONObject -> {
+				JSONObject successMessageJSONObject =
+					itemConfigJSONObject.getJSONObject("successMessage");
+
+				successMessageJSONObject.put(
+					"layout",
+					_getLayoutJSONObject(
+						guestGroupLayout2.getExternalReferenceCode(), 0, 0,
+						null, null, guestGroup.getExternalReferenceCode()));
+
+				return itemConfigJSONObject;
+			});
+
+		exportImportLayouts(
+			new long[] {layout.getLayoutId()}, getImportParameterMap());
+
+		_assertLayoutJSONObject(
+			guestGroupLayout2.getExternalReferenceCode(), 0, "successMessage",
+			0, _getLayoutStructureItem(itemId, importedLayout.getPlid()),
+			guestGroup.getExternalReferenceCode());
+	}
+
+	@Override
+	protected Map<String, String[]> getImportParameterMap() throws Exception {
+		Map<String, String[]> importParameterMap =
+			super.getImportParameterMap();
+
+		importParameterMap.put(
+			PortletDataHandlerKeys.PORTLET_DATA,
+			new String[] {Boolean.FALSE.toString()});
+
+		importParameterMap.put(
+			PortletDataHandlerKeys.PORTLET_DATA_ALL,
+			new String[] {Boolean.FALSE.toString()});
+
+		return importParameterMap;
+	}
+
+	private AssetListEntry _addAssetListEntry(Group group) throws Exception {
+		return _assetListEntryLocalService.addAssetListEntry(
+			null, TestPropsValues.getUserId(), group.getGroupId(),
+			RandomTestUtil.randomString(),
+			AssetListEntryTypeConstants.TYPE_DYNAMIC,
+			UnicodePropertiesBuilder.create(
+				true
+			).put(
+				"anyAssetType",
+				String.valueOf(_portal.getClassNameId(JournalArticle.class))
+			).buildString(),
+			_serviceContext);
+	}
+
+	private FileEntry _addFileEntry(ServiceContext serviceContext)
+		throws Exception {
+
+		return _dlAppLocalService.addFileEntry(
+			RandomTestUtil.randomString(), TestPropsValues.getUserId(),
+			serviceContext.getScopeGroupId(),
+			DLFolderConstants.DEFAULT_PARENT_FOLDER_ID,
+			RandomTestUtil.randomString() + ".png", ContentTypes.IMAGE_PNG,
+			_read("dependencies/sample.png"), null, null, null, serviceContext);
+	}
+
+	private void _assertCollectionConfig(
+		long classPK, String externalReferenceCode,
+		LayoutStructureItem layoutStructureItem,
+		String scopeExternalReferenceCode) {
+
+		JSONObject itemConfigJSONObject =
+			layoutStructureItem.getItemConfigJSONObject();
+
+		JSONObject collectionJSONObject = itemConfigJSONObject.getJSONObject(
+			"collection");
+
+		_assertMappedField(
+			classPK, externalReferenceCode, collectionJSONObject,
+			scopeExternalReferenceCode);
+	}
+
+	private void _assertContainerConfig(
+		long classPK, String externalReferenceCode,
+		LayoutStructureItem layoutStructureItem,
+		String scopeExternalReferenceCode) {
+
+		JSONObject itemConfigJSONObject =
+			layoutStructureItem.getItemConfigJSONObject();
+
+		JSONObject linkJSONObject = itemConfigJSONObject.getJSONObject("link");
+
+		_assertMappedField(
+			classPK, externalReferenceCode, linkJSONObject,
+			scopeExternalReferenceCode);
+
+		JSONObject stylesJSONObject = itemConfigJSONObject.getJSONObject(
+			"styles");
+
+		JSONObject backgroundImageJSONObject = stylesJSONObject.getJSONObject(
+			"backgroundImage");
+
+		_assertMappedField(
+			classPK, externalReferenceCode, backgroundImageJSONObject,
+			scopeExternalReferenceCode);
+	}
+
+	private void _assertLayoutJSONObject(
+		String externalReferenceCode, long groupId, String key, long layoutId,
+		LayoutStructureItem layoutStructureItem,
+		String scopeExternalReferenceCode) {
+
+		JSONObject itemConfigJSONObject =
+			layoutStructureItem.getItemConfigJSONObject();
+
+		JSONObject jsonObject = itemConfigJSONObject.getJSONObject(key);
+
+		JSONObject layoutJSONObject = jsonObject.getJSONObject("layout");
+
+		if (Validator.isNotNull(externalReferenceCode)) {
+			Assert.assertEquals(
+				externalReferenceCode,
+				layoutJSONObject.getString("externalReferenceCode"));
+		}
+		else {
+			Assert.assertFalse(layoutJSONObject.has("externalReferenceCode"));
+		}
+
+		if (groupId > 0) {
+			Assert.assertEquals(groupId, layoutJSONObject.getLong("groupId"));
+		}
+		else {
+			Assert.assertFalse(layoutJSONObject.has("groupId"));
+		}
+
+		if (layoutId > 0) {
+			Assert.assertEquals(layoutId, layoutJSONObject.getLong("layoutId"));
+		}
+		else {
+			Assert.assertFalse(layoutJSONObject.has("layoutId"));
+		}
+
+		if (Validator.isNotNull(scopeExternalReferenceCode)) {
+			Assert.assertEquals(
+				scopeExternalReferenceCode,
+				layoutJSONObject.getString("scopeExternalReferenceCode"));
+		}
+		else {
+			Assert.assertFalse(
+				layoutJSONObject.has("scopeExternalReferenceCode"));
+		}
+	}
+
+	private void _assertMappedField(
+		long classPK, String externalReferenceCode, JSONObject jsonObject,
+		String scopeExternalReferenceCode) {
+
+		if (classPK > 0) {
+			Assert.assertEquals(classPK, jsonObject.getLong("classPK"));
+		}
+		else {
+			Assert.assertFalse(jsonObject.has("classPK"));
+		}
+
+		if (Validator.isNotNull(externalReferenceCode)) {
+			Assert.assertEquals(
+				externalReferenceCode,
+				jsonObject.getString("externalReferenceCode"));
+		}
+		else {
+			Assert.assertFalse(jsonObject.has("externalReferenceCode"));
+		}
+
+		if (Validator.isNotNull(scopeExternalReferenceCode)) {
+			Assert.assertEquals(
+				scopeExternalReferenceCode,
+				jsonObject.getString("scopeExternalReferenceCode"));
+		}
+		else {
+			Assert.assertFalse(jsonObject.has("scopeExternalReferenceCode"));
+		}
+	}
+
+	private JSONObject _getCollectionJSONObject(
+		long classPK, String externalReferenceCode,
+		String scopeExternalReferenceCode) {
+
+		return JSONUtil.put(
+			"classPK",
+			() -> {
+				if (classPK <= 0) {
+					return null;
+				}
+
+				return classPK;
+			}
+		).put(
+			"externalReferenceCode",
+			() -> {
+				if (Validator.isNull(externalReferenceCode)) {
+					return null;
+				}
+
+				return externalReferenceCode;
+			}
+		).put(
+			"scopeExternalReferenceCode",
+			() -> {
+				if (Validator.isNull(scopeExternalReferenceCode)) {
+					return null;
+				}
+
+				return scopeExternalReferenceCode;
+			}
+		).put(
+			"type",
+			"com.liferay.item.selector.criteria.InfoListItemSelectorReturnType"
+		);
+	}
+
+	private JSONObject _getFileEntryJSONObject(
+		long classPK, String externalReferenceCode,
+		String scopeExternalReferenceCode, String fieldId) {
+
+		return JSONUtil.put(
+			"className", FileEntry.class.getName()
+		).put(
+			"classNameId", _portal.getClassNameId(FileEntry.class)
+		).put(
+			"classPK",
+			() -> {
+				if (classPK <= 0) {
+					return null;
+				}
+
+				return classPK;
+			}
+		).put(
+			"classTypeId",
+			String.valueOf(
+				DLFileEntryTypeConstants.FILE_ENTRY_TYPE_ID_BASIC_DOCUMENT)
+		).put(
+			"externalReferenceCode",
+			() -> {
+				if (Validator.isNull(externalReferenceCode)) {
+					return null;
+				}
+
+				return externalReferenceCode;
+			}
+		).put(
+			"fieldId", fieldId
+		).put(
+			"itemSubtype",
+			_language.get(
+				LocaleUtil.ENGLISH,
+				DLFileEntryTypeConstants.NAME_BASIC_DOCUMENT)
+		).put(
+			"itemType", "Document"
+		).put(
+			"scopeExternalReferenceCode",
+			() -> {
+				if (Validator.isNull(scopeExternalReferenceCode)) {
+					return null;
+				}
+
+				return scopeExternalReferenceCode;
+			}
+		).put(
+			"type",
+			"com.liferay.item.selector.criteria.InfoItemItemSelectorReturnType"
+		);
+	}
+
+	private JSONObject _getLayoutJSONObject(
+		String externalReferenceCode, long groupId, long layoutId,
+		String layoutUuid, Boolean privateLayout,
+		String scopeExternalReferenceCode) {
+
+		return JSONUtil.put(
+			"externalReferenceCode",
+			() -> {
+				if (Validator.isNull(externalReferenceCode)) {
+					return null;
+				}
+
+				return externalReferenceCode;
+			}
+		).put(
+			"groupId",
+			() -> {
+				if (groupId <= 0) {
+					return null;
+				}
+
+				return groupId;
+			}
+		).put(
+			"layoutId",
+			() -> {
+				if (layoutId <= 0) {
+					return null;
+				}
+
+				return layoutId;
+			}
+		).put(
+			"layoutUuid",
+			() -> {
+				if (Validator.isNull(layoutUuid)) {
+					return null;
+				}
+
+				return layoutUuid;
+			}
+		).put(
+			"privateLayout", privateLayout
+		).put(
+			"scopeExternalReferenceCode",
+			() -> {
+				if (Validator.isNull(scopeExternalReferenceCode)) {
+					return null;
+				}
+
+				return scopeExternalReferenceCode;
+			}
+		);
+	}
+
+	private LayoutStructureItem _getLayoutStructureItem(
+		String itemId, long plid) {
+
+		long segmentsExperienceId =
+			_segmentsExperienceLocalService.fetchDefaultSegmentsExperienceId(
+				plid);
+
+		LayoutStructure layoutStructure =
 			_layoutStructureProvider.getLayoutStructure(
-				importedLayout.getPlid(),
-				_segmentsExperienceLocalService.
-					fetchDefaultSegmentsExperienceId(importedLayout.getPlid()));
+				plid, segmentsExperienceId);
 
-		List<FormStyledLayoutStructureItem> formStyledLayoutStructureItems =
-			importedLayoutStructure.getFormStyledLayoutStructureItems();
-
-		FormStyledLayoutStructureItem formStyledLayoutStructureItem =
-			formStyledLayoutStructureItems.get(0);
-
-		JSONObject successMessageJSONObject =
-			formStyledLayoutStructureItem.getSuccessMessageJSONObject();
-
-		JSONObject layoutJSONObject = successMessageJSONObject.getJSONObject(
-			"layout");
-
-		Assert.assertEquals(
-			layout2.getGroupId(), layoutJSONObject.getLong("groupId"));
-		Assert.assertEquals(
-			layout2.getLayoutId(), layoutJSONObject.getLong("layoutId"));
+		return layoutStructure.getLayoutStructureItem(itemId);
 	}
 
 	private byte[] _read(String fileName) throws Exception {
 		return FileUtil.getBytes(
 			LayoutPageTemplateStructureRelExportImportTest.class, fileName);
 	}
+
+	private void _updateLayoutStructureItem(
+			String itemId,
+			UnsafeFunction<JSONObject, JSONObject, Exception> unsafeFunction)
+		throws Exception {
+
+		LayoutStructure layoutStructure =
+			_layoutStructureProvider.getLayoutStructure(
+				layout.getPlid(), _segmentsExperienceId);
+
+		LayoutStructureItem layoutStructureItem =
+			layoutStructure.getLayoutStructureItem(itemId);
+
+		layoutStructureItem.updateItemConfig(
+			unsafeFunction.apply(
+				layoutStructureItem.getItemConfigJSONObject()));
+
+		LayoutPageTemplateStructureServiceUtil.
+			updateLayoutPageTemplateStructureData(
+				layout.getGroupId(), layout.getPlid(), _segmentsExperienceId,
+				layoutStructure.toString());
+	}
+
+	@Inject
+	private AssetListEntryLocalService _assetListEntryLocalService;
 
 	@Inject
 	private DLAppLocalService _dlAppLocalService;
@@ -328,7 +902,11 @@ public class LayoutPageTemplateStructureRelExportImportTest
 	@Inject
 	private Portal _portal;
 
+	private long _segmentsExperienceId;
+
 	@Inject
 	private SegmentsExperienceLocalService _segmentsExperienceLocalService;
+
+	private ServiceContext _serviceContext;
 
 }

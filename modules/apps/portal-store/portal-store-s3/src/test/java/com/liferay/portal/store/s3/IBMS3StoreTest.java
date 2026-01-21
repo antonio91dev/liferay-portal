@@ -53,52 +53,52 @@ public class IBMS3StoreTest {
 
 	@Before
 	public void setUp() {
-		_ibmS3StoreConfiguration = Mockito.mock(S3StoreConfiguration.class);
+		_s3StoreConfiguration = Mockito.mock(S3StoreConfiguration.class);
 
 		Mockito.when(
-			_ibmS3StoreConfiguration.accessKey()
+			_s3StoreConfiguration.accessKey()
 		).thenReturn(
 			RandomTestUtil.randomString()
 		);
 
 		Mockito.when(
-			_ibmS3StoreConfiguration.bucketName()
+			_s3StoreConfiguration.bucketName()
 		).thenReturn(
 			RandomTestUtil.randomString()
 		);
 
 		Mockito.when(
-			_ibmS3StoreConfiguration.connectionTimeout()
+			_s3StoreConfiguration.connectionTimeout()
 		).thenReturn(
 			1000
 		);
 
 		Mockito.when(
-			_ibmS3StoreConfiguration.httpClientMaxConnections()
+			_s3StoreConfiguration.httpClientMaxConnections()
 		).thenReturn(
 			1
 		);
 
 		Mockito.when(
-			_ibmS3StoreConfiguration.maxPoolSize()
+			_s3StoreConfiguration.maxPoolSize()
 		).thenReturn(
 			1
 		);
 
 		Mockito.when(
-			_ibmS3StoreConfiguration.s3Region()
+			_s3StoreConfiguration.s3Region()
 		).thenReturn(
 			"us-east-1"
 		);
 
 		Mockito.when(
-			_ibmS3StoreConfiguration.s3StorageClass()
+			_s3StoreConfiguration.s3StorageClass()
 		).thenReturn(
 			"STANDARD"
 		);
 
 		Mockito.when(
-			_ibmS3StoreConfiguration.secretKey()
+			_s3StoreConfiguration.secretKey()
 		).thenReturn(
 			RandomTestUtil.randomString()
 		);
@@ -107,7 +107,7 @@ public class IBMS3StoreTest {
 			() -> ConfigurableUtil.createConfigurable(
 				Mockito.eq(S3StoreConfiguration.class), Mockito.anyMap())
 		).thenReturn(
-			_ibmS3StoreConfiguration
+			_s3StoreConfiguration
 		);
 	}
 
@@ -139,39 +139,39 @@ public class IBMS3StoreTest {
 
 	private void _setUpHasFile(String proxyUserName, String proxyPassword) {
 		Mockito.when(
-			_ibmS3StoreConfiguration.proxyHost()
+			_s3StoreConfiguration.proxyHost()
 		).thenReturn(
 			_inetSocketAddress.getHostString()
 		);
 
 		Mockito.when(
-			_ibmS3StoreConfiguration.proxyPort()
+			_s3StoreConfiguration.proxyPort()
 		).thenReturn(
 			_inetSocketAddress.getPort()
 		);
 
 		if (Validator.isNotNull(proxyUserName)) {
 			Mockito.when(
-				_ibmS3StoreConfiguration.proxyAuthType()
+				_s3StoreConfiguration.proxyAuthType()
 			).thenReturn(
 				"username-password"
 			);
 
 			Mockito.when(
-				_ibmS3StoreConfiguration.proxyPassword()
+				_s3StoreConfiguration.proxyPassword()
 			).thenReturn(
 				proxyPassword
 			);
 
 			Mockito.when(
-				_ibmS3StoreConfiguration.proxyUsername()
+				_s3StoreConfiguration.proxyUsername()
 			).thenReturn(
 				proxyUserName
 			);
 		}
 		else {
 			Mockito.when(
-				_ibmS3StoreConfiguration.proxyAuthType()
+				_s3StoreConfiguration.proxyAuthType()
 			).thenReturn(
 				"none"
 			);
@@ -262,6 +262,6 @@ public class IBMS3StoreTest {
 		Mockito.mockStatic(ConfigurableUtil.class);
 	private final InetSocketAddress _inetSocketAddress = new InetSocketAddress(
 		"localhost", 4250);
-	private S3StoreConfiguration _ibmS3StoreConfiguration;
+	private S3StoreConfiguration _s3StoreConfiguration;
 
 }

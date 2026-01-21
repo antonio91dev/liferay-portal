@@ -56,9 +56,6 @@ public interface ObjectEntryResource {
 	public Response deleteObjectEntryBatch(String callbackURL, Object object)
 		throws Exception;
 
-	public void deleteObjectEntryByVersion(Long objectEntryId, Integer version)
-		throws Exception;
-
 	public void deleteScopeScopeKeyByExternalReferenceCode(
 			String scopeKey, String externalReferenceCode)
 		throws Exception;
@@ -99,16 +96,7 @@ public interface ObjectEntryResource {
 			com.liferay.portal.kernel.search.Sort[] sorts)
 		throws Exception;
 
-	public Page<ObjectEntry> getObjectEntriesVersionsPage(
-			Long objectEntryId, Pagination pagination,
-			com.liferay.portal.kernel.search.Sort[] sorts)
-		throws Exception;
-
 	public ObjectEntry getObjectEntry(Long objectEntryId) throws Exception;
-
-	public ObjectEntry getObjectEntryByVersion(
-			Long objectEntryId, Integer version)
-		throws Exception;
 
 	public Page<com.liferay.portal.vulcan.permission.Permission>
 			getObjectEntryPermissionsPage(Long objectEntryId, String roleNames)
@@ -189,6 +177,10 @@ public interface ObjectEntryResource {
 			String externalReferenceCode, Integer version)
 		throws Exception;
 
+	public ObjectEntry postByExternalReferenceCodeExpire(
+			String externalReferenceCode)
+		throws Exception;
+
 	public void postByExternalReferenceCodeSubscribe(
 			String externalReferenceCode)
 		throws Exception;
@@ -224,17 +216,6 @@ public interface ObjectEntryResource {
 
 	public ObjectEntry postObjectEntryByObjectEntryFolderMoveReplace(
 			Long objectEntryId, Long objectEntryFolderId)
-		throws Exception;
-
-	public ObjectEntry postObjectEntryByVersionCopy(
-			Long objectEntryId, Integer version)
-		throws Exception;
-
-	public ObjectEntry postObjectEntryByVersionExpire(
-			Long objectEntryId, Integer version)
-		throws Exception;
-
-	public ObjectEntry postObjectEntryExpire(Long objectEntryId)
 		throws Exception;
 
 	public ObjectEntry postScopeScopeKey(
@@ -289,10 +270,6 @@ public interface ObjectEntryResource {
 		throws Exception;
 
 	public Response putObjectEntryBatch(String callbackURL, Object object)
-		throws Exception;
-
-	public ObjectEntry putObjectEntryByVersionRestore(
-			Long objectEntryId, Integer version)
 		throws Exception;
 
 	public void putObjectEntryObjectActionObjectActionName(

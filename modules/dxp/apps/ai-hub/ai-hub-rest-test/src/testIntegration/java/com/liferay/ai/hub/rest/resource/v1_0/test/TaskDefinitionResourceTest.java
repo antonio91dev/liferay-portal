@@ -9,9 +9,12 @@ import com.liferay.ai.hub.rest.client.dto.v1_0.TaskDefinition;
 import com.liferay.ai.hub.rest.client.pagination.Page;
 import com.liferay.ai.hub.rest.client.pagination.Pagination;
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
-import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
-import com.liferay.portal.kernel.test.AssertUtils;
+import com.liferay.portal.kernel.security.permission.PermissionChecker;
+import com.liferay.portal.kernel.security.permission.PermissionCheckerFactoryUtil;
+import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
+import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
+import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.test.rule.FeatureFlag;
 import com.liferay.portal.test.rule.Inject;
@@ -37,19 +40,34 @@ public class TaskDefinitionResourceTest
 
 	@BeforeClass
 	public static void setUpClass() throws Exception {
+		_originalPermissionChecker =
+			PermissionThreadLocal.getPermissionChecker();
+
+		PermissionThreadLocal.setPermissionChecker(
+			PermissionCheckerFactoryUtil.create(TestPropsValues.getUser()));
+
 		_originalName = PrincipalThreadLocal.getName();
 
 		PrincipalThreadLocal.setName(TestPropsValues.getUserId());
 
+		ServiceContextThreadLocal.pushServiceContext(
+			ServiceContextTestUtil.getServiceContext(
+				TestPropsValues.getGroupId(), TestPropsValues.getUserId()));
+
 		SiteInitializer siteInitializer =
-			_siteInitializerRegistry.getSiteInitializer("ai-hub-initializer");
+			_siteInitializerRegistry.getSiteInitializer(
+				"com.liferay.ai.hub.site.initializer");
 
 		siteInitializer.initialize(TestPropsValues.getGroupId());
 	}
 
 	@AfterClass
 	public static void tearDownClass() {
+		PermissionThreadLocal.setPermissionChecker(_originalPermissionChecker);
+
 		PrincipalThreadLocal.setName(_originalName);
+
+		ServiceContextThreadLocal.popServiceContext();
 	}
 
 	@Test
@@ -58,21 +76,60 @@ public class TaskDefinitionResourceTest
 			taskDefinitionResource.getTaskDefinitionsPage(
 				null, null, Pagination.of(1, 10), null);
 
-		AssertUtils.assertEquals(
+		assertEquals(
 			List.of(
-				WorkflowDefinitionConstants.NAME_CHANGE_TONE,
-				WorkflowDefinitionConstants.NAME_CHAT_MESSAGE_PIPELINE,
-				WorkflowDefinitionConstants.NAME_FIX_SPELLING_AND_GRAMMAR,
-				WorkflowDefinitionConstants.NAME_IMPROVE_WRITING,
-				WorkflowDefinitionConstants.NAME_MAKE_LONGER,
-				WorkflowDefinitionConstants.NAME_MAKE_SHORTER),
-			TransformUtil.transform(page.getItems(), TaskDefinition::getName));
+				new TaskDefinition() {
+					{
+						name = WorkflowDefinitionConstants.NAME_CHANGE_TONE;
+						version = 1;
+					}
+				},
+				new TaskDefinition() {
+					{
+						name =
+							WorkflowDefinitionConstants.
+								NAME_CHAT_MESSAGE_PIPELINE;
+						version = 1;
+					}
+				},
+				new TaskDefinition() {
+					{
+						name =
+							WorkflowDefinitionConstants.
+								NAME_FIX_SPELLING_AND_GRAMMAR;
+						version = 1;
+					}
+				},
+				new TaskDefinition() {
+					{
+						name = WorkflowDefinitionConstants.NAME_IMPROVE_WRITING;
+						version = 1;
+					}
+				},
+				new TaskDefinition() {
+					{
+						name = WorkflowDefinitionConstants.NAME_MAKE_LONGER;
+						version = 1;
+					}
+				},
+				new TaskDefinition() {
+					{
+						name = WorkflowDefinitionConstants.NAME_MAKE_SHORTER;
+						version = 1;
+					}
+				}),
+			(List<TaskDefinition>)page.getItems());
 	}
 
 	@Ignore
 	@Override
 	@Test
 	public void testGetTaskDefinitionsPageWithPagination() {
+	}
+
+	@Override
+	protected String[] getAdditionalAssertFieldNames() {
+		return new String[] {"name", "version"};
 	}
 
 	@Override
@@ -83,6 +140,7 @@ public class TaskDefinitionResourceTest
 	}
 
 	private static String _originalName;
+	private static PermissionChecker _originalPermissionChecker;
 
 	@Inject
 	private static SiteInitializerRegistry _siteInitializerRegistry;

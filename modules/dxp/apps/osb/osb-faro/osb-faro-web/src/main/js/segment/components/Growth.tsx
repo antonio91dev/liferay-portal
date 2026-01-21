@@ -111,7 +111,8 @@ interface ISegmentGrowthChartProps {
 	hasSelectedPoint: boolean;
 	height?: number;
 	individualCounts?: {anonymousCount: number; knownCount: number};
-	selectedPoint: number;
+	selectedPoint?: number;
+	onSelectedPointChange?: (selectedPoint: number) => void;
 }
 
 interface ITooltipProps {
@@ -127,7 +128,8 @@ export const SegmentGrowthChart: React.FC<ISegmentGrowthChartProps> = ({
 		anonymousCount: 0,
 		knownCount: 0
 	},
-	selectedPoint
+	selectedPoint,
+	onSelectedPointChange
 }) => {
 	const [legendHoverItem, setLegendHoverItem] = useState(null);
 	const [mouseOutside, setMouseOutside] = useState(false);
@@ -302,6 +304,14 @@ export const SegmentGrowthChart: React.FC<ISegmentGrowthChartProps> = ({
 
 	const yAxisWidth = getYAxisWidth(data, 'value');
 
+	const handleClick = data => {
+		if (data?.activeTooltipIndex === undefined) {
+			return;
+		}
+
+		onSelectedPointChange(data?.activeTooltipIndex);
+	};
+
 	return (
 		<ComposedChartWithEmptyState
 			emptyDescription={
@@ -331,6 +341,7 @@ export const SegmentGrowthChart: React.FC<ISegmentGrowthChartProps> = ({
 			<ResponsiveContainer height={height}>
 				<AreaChart
 					data={data}
+					onClick={handleClick}
 					onMouseLeave={() => setMouseOutside(true)}
 					onMouseMove={() => setMouseOutside(false)}
 				>
@@ -557,7 +568,6 @@ interface ISegmentGrowthWithList {
 	id: string;
 	individualCounts?: {anonymousCount: number; knownCount: number};
 	selectedPoint: number;
-	shouldShowMembershipList?: boolean;
 	timeZoneId: string;
 }
 
@@ -570,7 +580,6 @@ const SegmentGrowthWithList: React.FC<ISegmentGrowthWithList> = ({
 	id,
 	individualCounts,
 	selectedPoint,
-	shouldShowMembershipList = true,
 	timeZoneId
 }) => {
 	const [showMembershipList, setShowMembershipList] = useState(true);
@@ -645,10 +654,9 @@ const SegmentGrowthWithList: React.FC<ISegmentGrowthWithList> = ({
 				/>
 			</div>
 
-			{shouldShowMembershipList && showMembershipList && (
+			{showMembershipList && (
 				<>
 					<SelectedPointInfo />
-
 					<SearchableEntityTable
 						{...paginationParams}
 						columns={getColumns()}

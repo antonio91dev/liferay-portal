@@ -175,6 +175,11 @@ livenessProbe:
     timeoutSeconds: 5
 nameOverride: ""
 nodeSelector: {}
+overlay:
+    bucketName: ""
+    bucketPath: ""
+    dirs: []
+    enabled: false
 podAnnotations: {}
 podLabels: {}
 podSecurityContext:
@@ -279,6 +284,9 @@ volumeMounts:
     -   mountPath: /opt/liferay/metrics
         name: liferay-persistent-volume
         subPath: liferay/metrics
+    -   mountPath: /opt/liferay/osgi/client-extensions
+        name: liferay-persistent-volume
+        subPath: osgi/client-extensions
     -   mountPath: /opt/liferay/osgi/configs
         name: liferay-persistent-volume
         subPath: osgi/configs

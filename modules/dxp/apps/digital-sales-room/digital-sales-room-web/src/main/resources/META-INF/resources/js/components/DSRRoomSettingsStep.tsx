@@ -59,8 +59,11 @@ function getChannelId(
 function DSRRoomSettingsStep({
 	numberOfSteps,
 	setHandleStepSubmit,
+	showHeader = true,
+	step = 2,
 }: TDSRRoomDetailsStepProps) {
-	const {dataContext, setDataContext} = useContext<TDSRContext>(DSRContext);
+	const {dataContext, loading, setDataContext} =
+		useContext<TDSRContext>(DSRContext);
 
 	const [accountName, setAccountName] = useState(dataContext.accountName);
 	const [accounts, setAccounts] = useState<Array<TAccount>>([]);
@@ -153,6 +156,14 @@ function DSRRoomSettingsStep({
 	);
 
 	useEffect(() => {
+		setCurrentAccountName(dataContext.accountName || '');
+	}, [dataContext.accountName]);
+
+	useEffect(() => {
+		setCurrentChannelName(dataContext.channelName || '');
+	}, [dataContext.channelName]);
+
+	useEffect(() => {
 		DigitalSalesRoomService.getAccounts(accountName)
 			.then((data) => {
 				setAccounts(
@@ -202,24 +213,35 @@ function DSRRoomSettingsStep({
 
 	return (
 		<>
-			<div>
-				<div className="mb-1 text-secondary" data-qa-id="stepLocator">
-					{sub(Liferay.Language.get('step-x-of-x'), 2, numberOfSteps)}
-				</div>
+			{showHeader ? (
+				<div>
+					<div
+						className="mb-1 text-secondary"
+						data-qa-id="stepLocator"
+					>
+						{sub(
+							Liferay.Language.get('step-x-of-x'),
+							step,
+							numberOfSteps
+						)}
+					</div>
 
-				<div
-					className="mb-1 text-6 text-weight-bold"
-					data-qa-id="stepTitle"
-				>
-					{Liferay.Language.get('room-settings')}
-				</div>
+					<div
+						className="mb-1 text-6 text-weight-bold"
+						data-qa-id="stepTitle"
+					>
+						{Liferay.Language.get('room-settings')}
+					</div>
 
-				<div className="text-secondary">
-					{Liferay.Language.get(
-						'select-the-channel-associated-with-the-digital-sales-room'
-					)}
+					<div className="text-secondary">
+						{Liferay.Language.get(
+							'select-the-channel-associated-with-the-digital-sales-room'
+						)}
+					</div>
 				</div>
-			</div>
+			) : (
+				<></>
+			)}
 			<div className="mt-4 row">
 				<ClayForm.Group
 					className={classNames('col-12', {
@@ -235,6 +257,7 @@ function DSRRoomSettingsStep({
 						className="mb-3"
 						data-qa-id="selectChannelInput"
 						defaultValue={String(dataContext.channelId || '')}
+						disabled={loading}
 						filterKey="name"
 						id="channelId"
 						items={channels}
@@ -297,6 +320,7 @@ function DSRRoomSettingsStep({
 						className="mb-3"
 						data-qa-id="selectAccountInput"
 						defaultValue={String(dataContext.accountId || '')}
+						disabled={loading}
 						filterKey="name"
 						id="accountId"
 						items={accounts}

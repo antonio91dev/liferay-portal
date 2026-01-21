@@ -36,29 +36,42 @@ let {result: useStateHookResult} = renderHook(() =>
 );
 
 const component = ({
+	loading = false,
 	numberOfSteps = 1,
 	setHandleStepSubmit,
-}: TDSRRoomDetailsStepProps) => {
+	showHeader = true,
+}: TDSRRoomDetailsStepProps & {loading?: boolean}) => {
 	return (
 		<DSRContext.Provider
 			value={{
 				dataContext: useStateHookResult.current[0],
+				loading,
 				setDataContext: useStateHookResult.current[1],
 			}}
 		>
 			<DSRRoomDetailsStep
 				numberOfSteps={numberOfSteps}
 				setHandleStepSubmit={setHandleStepSubmit}
+				showHeader={showHeader}
 			/>
 		</DSRContext.Provider>
 	);
 };
 
 const renderComponent = ({
+	loading = false,
 	numberOfSteps = 1,
 	setHandleStepSubmit,
-}: TDSRRoomDetailsStepProps) => {
-	return render(component({numberOfSteps, setHandleStepSubmit}));
+	showHeader = true,
+}: TDSRRoomDetailsStepProps & {loading?: boolean}) => {
+	return render(
+		component({
+			loading,
+			numberOfSteps,
+			setHandleStepSubmit,
+			showHeader,
+		})
+	);
 };
 
 describe('DSRRoomDetailsStep', () => {
@@ -88,9 +101,28 @@ describe('DSRRoomDetailsStep', () => {
 		expect(screen.getByTestId('clientLogoSticker')).toBeInTheDocument();
 		expect(screen.getByTestId('friendlyURLInput')).toBeInTheDocument();
 		expect(screen.getByTestId('primaryColorInput')).toBeInTheDocument();
+		expect(screen.getByTestId('roomNameInput')).toBeInTheDocument();
 		expect(screen.getByTestId('secondaryColorInput')).toBeInTheDocument();
 		expect(screen.getByTestId('stepLocator')).toBeInTheDocument();
 		expect(screen.getByTestId('stepTitle')).toBeInTheDocument();
+	});
+
+	it('hides header based on the parameter', async () => {
+		renderComponent({
+			numberOfSteps: 1,
+			setHandleStepSubmit: () => {},
+			showHeader: false,
+		});
+
+		expect(screen.getByTestId('bannerImage')).toBeInTheDocument();
+		expect(screen.getByTestId('clientNameInput')).toBeInTheDocument();
+		expect(screen.getByTestId('clientLogoSticker')).toBeInTheDocument();
+		expect(screen.getByTestId('friendlyURLInput')).toBeInTheDocument();
+		expect(screen.getByTestId('primaryColorInput')).toBeInTheDocument();
+		expect(screen.getByTestId('roomNameInput')).toBeInTheDocument();
+		expect(screen.getByTestId('secondaryColorInput')).toBeInTheDocument();
+		expect(screen.queryByTestId('stepLocator')).not.toBeInTheDocument();
+		expect(screen.queryByTestId('stepTitle')).not.toBeInTheDocument();
 	});
 
 	it.skip('upload client logo', async () => {
@@ -244,5 +276,21 @@ describe('DSRRoomDetailsStep', () => {
 
 		expect(screen.queryByTestId('clientNameError')).toBeInTheDocument();
 		expect(screen.queryByTestId('roomNameError')).toBeInTheDocument();
+	});
+
+	it('disables fields and buttons when loading is true', async () => {
+		renderComponent({
+			loading: true,
+			numberOfSteps: 1,
+			setHandleStepSubmit: () => {},
+		});
+
+		expect(screen.getByTestId('clientLogoButton')).toBeDisabled();
+		expect(screen.getByTestId('clientLogoInput')).toBeDisabled();
+		expect(screen.getByTestId('clientNameInput')).toBeDisabled();
+		expect(screen.getByTestId('friendlyURLInput')).toBeDisabled();
+		expect(screen.getByTestId('primaryColorInput')).toBeDisabled();
+		expect(screen.getByTestId('roomNameInput')).toBeDisabled();
+		expect(screen.getByTestId('secondaryColorInput')).toBeDisabled();
 	});
 });
